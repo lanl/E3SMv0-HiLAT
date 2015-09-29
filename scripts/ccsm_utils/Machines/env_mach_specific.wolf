@@ -12,10 +12,7 @@ if ( $COMPILER == "intel" ) then
 endif
 
 if ( $COMPILER == "pgi" ) then
-	# 13.10 is too old to support
-	# PGI support is currently disabled until we have access to a newer version
-	# (i.e. 14.10)
-	module load pgi/13.10
+	module load pgi/14.10
 endif
 
 if ( $COMPILER == "gnu" ) then
