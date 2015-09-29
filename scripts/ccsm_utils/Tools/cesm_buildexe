@@ -240,7 +240,7 @@ cd $CCSMROOT
 if (-d $CCSMROOT/.git) then
   set status_gitcmd = `git describe 2>&1`
   if ($? != 0 ) then
-    echo "'git describe' failed because could not find associated tag"
+    echo "'git describe' failed because it could not find associated tag"
   else
     git describe > $EXEROOT/GIT_DESCRIBE.$LID
     chmod 664 $EXEROOT/GIT_DESCRIBE.$LID
