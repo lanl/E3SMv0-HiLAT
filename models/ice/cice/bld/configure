@@ -134,6 +134,15 @@ GetOptions(
     "nx=i"                      => \$opts{'nx'},
     "ny=i"                      => \$opts{'ny'},
     "ntr_aero=s"                => \$opts{'ntr_aero'},
+    "nicelyr=s"                 => \$opts{'nicelyr'},
+    "nsnwlyr=s"                 => \$opts{'nsnwlyr'},
+    "trlvl=s"                   => \$opts{'trlvl'},
+    "trpnd=s"                   => \$opts{'trpnd'},
+    "trage=s"                   => \$opts{'trage'},
+    "trfy=s"                    => \$opts{'trfy'},
+    "trbri=s"                   => \$opts{'trbri'},
+    "trbgcs=s"                  => \$opts{'trbgcs'},
+    "nbgclyr=s"                 => \$opts{'nbgclyr'},
     "ntasks=s"                  => \$opts{'ntasks'},
     "nthreads=s"                => \$opts{'nthreads'},
     "nodecomp!"	                => \$opts{'nodecomp'},
@@ -293,15 +302,68 @@ EOF
 }
 if ($print>=2) { print "cice : ncat         is $ncat $eol";}
 
+if (defined $opts{'nsnwlyr'}) {
+    $cfg_ref->set('nsnwlyr', $opts{'nsnwlyr'});
+} else {
+    $cfg_ref->set('nsnwlyr', 1);
+}
+
 # Tracers
 if (defined $opts{'ntr_aero'}) {
     $cfg_ref->set('ntr_aero', $opts{'ntr_aero'});
 } else {
     if ($cice_mode eq 'prescribed') {
-	$cfg_ref->set('ntr_aero', 0);
+        $cfg_ref->set('ntr_aero', 0);
     } else {
-	$cfg_ref->set('ntr_aero', 3);
+        $cfg_ref->set('ntr_aero', 3);
     }
+}
+
+if (defined $opts{'trage'}) {
+    $cfg_ref->set('trage', $opts{'trage'});
+} else {
+    $cfg_ref->set('trage', 1);
+}
+
+if (defined $opts{'trfy'}) {
+    $cfg_ref->set('trfy', $opts{'trfy'});
+} else {
+    $cfg_ref->set('trfy', 1);
+}
+
+if (defined $opts{'trpnd'}) {
+    $cfg_ref->set('trpnd', $opts{'trpnd'});
+} else {
+    $cfg_ref->set('trpnd', 1);
+}
+
+if (defined $opts{'trlvl'}) {
+    $cfg_ref->set('trlvl', $opts{'trlvl'});
+} else {
+    $cfg_ref->set('trlvl', 0);
+}
+
+if (defined $opts{'trbri'}) {
+    $cfg_ref->set('trbri', $opts{'trbri'});
+} else {
+    $cfg_ref->set('trbri', 0);
+}
+
+#BGC
+if (defined $opts{'nbgclyr'}) {
+    $cfg_ref->set('nbgclyr', $opts{'nbgclyr'});
+} else {
+    if ($cice_mode eq 'prescribed') {
+	$cfg_ref->set('nbgclyr', 0);
+    } else {
+	$cfg_ref->set('nbgclyr', 3);
+    }
+}
+
+if (defined $opts{'trbgcs'}) {
+    $cfg_ref->set('trbgcs', $opts{'trbgcs'});
+} else {
+    $cfg_ref->set('trbgcs', 0);
 }
 
 #-----------------------------------------------------------------------------------------------
@@ -320,6 +382,22 @@ my $nlat  = $opts{'ny'};
 $cfg_ref->set('nlat',$nlat);
 $cfg_ref->set('nlon',$nlon);
 
+# Need to override for extended grid configurations
+if ($hgrid =~ 'ar9v4') {
+    $cfg_ref->set('nlat',720);
+    $cfg_ref->set('nlon',1280);
+}
+
+if (defined $opts{'nicelyr'}) {
+    $cfg_ref->set('nicelyr', $opts{'nicelyr'});
+} else {
+    if ($hgrid =~ m/ar9v.*/ ) {
+       $cfg_ref->set('nicelyr', 7);
+    } else {
+       $cfg_ref->set('nicelyr', 4);
+    }
+}
+
 # Override resolution settings to configure for SCAM mode.  The override is needed
 # because in SCAM mode the -hgrid option is used to specify the resolution of default
 # datasets from which single data columns are extracted.
@@ -328,6 +406,9 @@ if ($scam) {
     $cfg_ref->set('nlat', 1);
     $cfg_ref->set('nlon', 1);
 }
+
+my $nlon  = $cfg_ref->get('nlon');
+my $nlat  = $cfg_ref->get('nlat');
 
 if ($print>=2) { print "cice : grid         is $hgrid     $eol";}
 if ($print>=2) { print "cice : nlon         is $nlon      $eol";}
@@ -344,8 +425,22 @@ if ($ntr_aero gt "6"){
 EOF
 }
 
-my $cice_cppdefs = " -DCCSMCOUPLED -Dcoupled -Dncdf -DNCAT=$ncat -DNXGLOB=$nlon -DNYGLOB=$nlat -DNTR_AERO=$ntr_aero";
+my $nicelyr = $cfg_ref->get('nicelyr');
+my $nsnwlyr = $cfg_ref->get('nsnwlyr');
+my $nbgclyr = $cfg_ref->get('nbgclyr');
+my $trage   = $cfg_ref->get('trage');
+my $trfy    = $cfg_ref->get('trfy');
+my $trlvl   = $cfg_ref->get('trlvl');
+my $trpnd   = $cfg_ref->get('trpnd');
+my $trbri   = $cfg_ref->get('trbri');
+my $trbgcs  = $cfg_ref->get('trbgcs');
 
+my $cice_cppdefs = " -DCCSMCOUPLED -Dncdf -DNUMIN=11 -DNUMAX=99 -DNICECAT=$ncat -DNXGLOB=$nlon -DNYGLOB=$nlat -DNTRAERO=$ntr_aero -DNBGCLYR=$nbgclyr -DNICELYR=$nicelyr -DNSNWLYR=$nsnwlyr -DTRAGE=$trage -DTRFY=$trfy -DTRLVL=$trlvl -DTRPND=$trpnd -DTRBRI=$trbri -DTRBGCS=$trbgcs";
+
+# Trigger RASM options with ar9v grid, otherwise set CESM options
+if ($hgrid =~ m/ar9v.*/ ) {
+    $cice_cppdefs = "$cice_cppdefs -DRASM_MODS";
+}
 #-----------------------------------------------------------------------------------------------
 # Determine if will set the cice decomposition
 my $set_decomp = (defined $opts{'nodecomp'}) ? 0 : 1;
@@ -549,7 +644,9 @@ sub write_filepath
     $fh->open(">$file") or die "** can't open filepath file: $file\n";
 
     print $fh "$CASEROOT/SourceMods/src.cice\n";
-    print $fh "$CODEROOT/ice/cice/src/drivers/cpl\n";
+    print $fh "$CODEROOT/ice/cice/src/drivers/cesm\n";
+    print $fh "$CODEROOT/ice/cice/src/io_pio\n";
+#    print $fh "$CODEROOT/ice/cice/src/io_netcdf\n";
     print $fh "$CODEROOT/ice/cice/src/mpi\n";
     print $fh "$CODEROOT/ice/cice/src/source\n";
 
