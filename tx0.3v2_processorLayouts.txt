@@ -2,21 +2,16 @@ Total #                      subgrid                    processor layout        
 of processors         POP_BLCKX x POP_BLCKY        POP_NX_BLOCKS x POP_NY_BLOCKS       (e.g., wolf)      (e.g., mustang)
                     or CICE_BLCKX x CICE_BLCKY
 -------------------------------------------------------------------------------------------------------------------------
-480                          60x36                         20x24                          30                  20
-480 (CICE only)              20x108                        not needed                     30                  20
-480 (CICE only)              10x216                        not needed                     30                  20
-480 (CICE only)              15x144                        not needed                     30                  20
-576                          50x36                         24x24                          36                  24
-576 (CICE only)              25x72                         not needed                     36                  24
-720                          40x36                         30x24                          45                  30
-720 (CICE only)              20x72                         not needed                     45                  30
-960                          30x36                         40x24                          60                  40
-960 (CICE only)              10x108                        not needed                     60                  40
-1152                         25x36                         48x24                          72                  48
-1728                         25x24                         48x36                         108                  72
-2160                         20x24                         60x36                         135                  90
-2880                         20x18                         60x48                         180                 120
-3240                         20x16                         60x54                         n/a                 135
+480                          50x40                         24x20                          30                  20
+480 (CICE only)              20x100                  not needed (60x8)                    30                  20
+480 (CICE only)              10x200                  not needed (120x4)                   30                  20
+600                          40x40                         30x20                         n/a                  25
+960                          40x25                         30x32                          60                  40
+960 (CICE only)              10x100                  not needed (120x8)                   60                  40
+1536                         25x25                         48x32                          96                  64
+1920                         25x20                         48x40                         120                  80
+2400                         20x20                         60x40                         150                 100 
+3000                         20x16                         60x50                         n/a                 125
 
 Other settings for env_build.xml:
 POP_AUTO_DECOMP = false

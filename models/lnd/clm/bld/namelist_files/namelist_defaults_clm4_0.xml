@@ -196,6 +196,10 @@ ic_tod="0" sim_year="2000" glc_nec="0" irrig=".false." crop="off" >lnd/clm2/init
 ic_tod="0" sim_year="2000" glc_nec="0" irrig=".false." crop="off" >lnd/clm2/initdata/clmi.BCN_0051-01-01_48x96_gx3v7_simyr2000_c120930.nc
 </finidat>
 
+<!-- The following finidat files are used even when mask is different from gx1, making the
+     run to fail at runtime. Need to fix it. Commenting all these out for now, so that
+     finidat='' (will be set automatically at runtime).
+                                                         Milena Veneziani, Oct 2015
 <finidat hgrid="ne30np4"  maxpft="17"  mask="gx1v6" bgc="none" ic_ymd="18500101" 
 ic_tod="0" sim_year="1850" glc_nec="0" irrig=".false.">lnd/clm2/initdata_map/clmi.BCN.0170-01-01_ne30np4_gx1v6_simyr1850_c121001.nc
 </finidat>
@@ -219,6 +223,7 @@ ic_tod="0" sim_year="2000" glc_nec="0" irrig=".false.">lnd/clm2/initdata/clmi.BC
 <finidat hgrid="ne30np4"  maxpft="17"  mask="gx1v6" bgc="cndv" ic_ymd="20000101" 
 ic_tod="0" sim_year="2000" glc_nec="0" irrig=".false.">lnd/clm2/initdata/clmi.BCN.2000-01-01_ne30np4_gx1v6_simyr2000_c110328.nc
 </finidat>
+-->
 
 
 <!-- ELR 12Dec14 added b/c finidat not picked-up by namelist creation script.  maxxpft, mask, bgc unknown -->

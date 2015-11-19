@@ -105,12 +105,16 @@
 <!-- init_ts_nml -->
 <!---------------------------->
 
+<init_ts_option>'file'</init_ts_option>
+
 <init_ts_file ocn_grid="gx3v7">  ocn/pop/gx3v7/ic/ts_PHC2_jan_ic_gx3v7_20100107.ieeer8</init_ts_file>
 <init_ts_file ocn_grid="gx1v6">  ocn/pop/gx1v6/ic/ts_PHC2_jan_ic_gx1v6_20090205.ieeer8</init_ts_file>
 <init_ts_file ocn_grid="tx1v1">  ocn/pop/tx1v1/ic/ts_jan_ic_20050510.ieeer8</init_ts_file>
 <init_ts_file ocn_grid="tx0.1v2">ocn/pop/tx0.1v2/ic/GC007v3.pop.r.0001-01-16-00000</init_ts_file>
 <init_ts_hdr_file ocn_grid="tx0.1v2">ocn/pop/tx0.1v2/ic/GC007v3.pop.r.0001-01-16-00000.hdr</init_ts_hdr_file>
 <init_ts_file ocn_grid="tx0.3v2">ocn/pop/tx0.3v2/ic/TS_CUR.r.t0.3v2_100l_init1c.00000111</init_ts_file>
+
+<init_ts_file_fmt>'bin'</init_ts_file_fmt>
 
 <init_ts_suboption>'null'</init_ts_suboption>
 <init_ts_suboption ocn_grid="tx0.1v2">'spunup'</init_ts_suboption>

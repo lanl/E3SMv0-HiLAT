@@ -140,14 +140,21 @@ ic_tod="0" sim_year="1850"  glc_nec="0" use_crop=".false." >lnd/clm2/initdata_ma
 
 <!-- Initial condition file with CLM45BGC -->
 <!-- Note that we use a BGC initial file even for SP cases (since we haven't bothered to make an SP version at this resolution -->
+
+<!-- The following finidat files are used even when mask is different from gx1, making the
+     run to fail at runtime. Need to fix it. Commenting all these out for now, so that
+     finidat='' (will be set automatically at runtime).
+                                                          Milena Veneziani, Oct 2015
 <finidat hgrid="ne30np4"   maxpft="17"  mask="gx1v6" use_cn=".false." ic_ymd="18500101" more_vertlayers=".false."
 ic_tod="0" sim_year="1850" glc_nec="0" use_crop=".false." >lnd/clm2/initdata_map/clmi.I1850CRUCLM45BGC.0241-01-01.ne30np4_g1v6_simyr1850_c140111.nc
 </finidat>
-
+-->
 <!-- Initial condition file with CLM45BGC (also works for no-cent, Vertical layers and Nitrification/Denitrification NEED to be on) -->
+<!--
 <finidat hgrid="ne30np4"   maxpft="17"  mask="gx1v6" use_cn=".true." use_cndv=".false." ic_ymd="18500101" more_vertlayers=".false." use_nitrif_denitrif=".true." use_vertsoilc=".true."
 ic_tod="0" sim_year="1850" glc_nec="0" use_crop=".false." >lnd/clm2/initdata_map/clmi.I1850CRUCLM45BGC.0241-01-01.ne30np4_g1v6_simyr1850_c140111.nc
 </finidat>
+-->
 
 
 <!-- Initial condition files with CLM45BGCDV -->

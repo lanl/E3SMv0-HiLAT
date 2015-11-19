@@ -348,7 +348,7 @@ Each grid is associated with five names
 </gridhorz>
 
 <gridhorz name="tx0.3v2">
-  <nx>1200</nx> <ny>864</ny>
+  <nx>1200</nx> <ny>800</ny>
   <desc>tx0.3v2 is tripole v2 3/10-deg 100 level grid:</desc>
 </gridhorz>
 
