@@ -1,0 +1,22 @@
+Total #                      subgrid                    processor layout              16 proc nodes       24 proc nodes
+of processors         POP_BLCKX x POP_BLCKY        POP_NX_BLOCKS x POP_NY_BLOCKS       (e.g., wolf)      (e.g., mustang)
+                    or CICE_BLCKX x CICE_BLCKY
+-------------------------------------------------------------------------------------------------------------------------
+480                          50x40                         24x20                          30                  20
+480 (CICE only)              20x100                  not needed (60x8)                    30                  20
+480 (CICE only)              10x200                  not needed (120x4)                   30                  20
+600                          40x40                         30x20                         n/a                  25
+960                          40x25                         30x32                          60                  40
+960 (CICE only)              10x100                  not needed (120x8)                   60                  40
+1536                         25x25                         48x32                          96                  64
+1920                         25x20                         48x40                         120                  80
+2400                         20x20                         60x40                         150                 100 
+3000                         20x16                         60x50                         n/a                 125
+
+Other settings for env_build.xml:
+POP_AUTO_DECOMP = false
+POP_MXBLCKS = 1
+POP_DECOMPTYPE = cartesian
+CICE_AUTO_DECOMP = false
+CICE_MXBLCKS = 1
+CICE_DECOMPTYPE = blkrobin

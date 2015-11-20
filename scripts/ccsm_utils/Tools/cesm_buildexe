@@ -238,17 +238,22 @@ endif
 cd $CCSMROOT
 
 if (-d $CCSMROOT/.git) then
-  git describe > $EXEROOT/GIT_DESCRIBE.$LID
-  chmod 664 $EXEROOT/GIT_DESCRIBE.$LID
-  /bin/cp -p $EXEROOT/GIT_DESCRIBE.$LID $EXEROOT/GIT_DESCRIBE
-
-  if (-f $CCSMROOT/.git/logs/HEAD) then
-    /bin/cp $CCSMROOT/.git/logs/HEAD $EXEROOT/GIT_LOGS_HEAD.$LID
-    chmod 664 $EXEROOT/GIT_LOGS_HEAD.$LID
-    /bin/cp -p $EXEROOT/GIT_LOGS_HEAD.$LID $EXEROOT/GIT_LOGS_HEAD
+  set status_gitcmd = `git describe 2>&1`
+  if ($? != 0 ) then
+    echo "'git describe' failed because it could not find associated tag"
   else
-    /bin/rm -f $EXEROOT/GIT_LOGS_HEAD
-    touch $EXEROOT/GIT_LOGS_HEAD
+    git describe > $EXEROOT/GIT_DESCRIBE.$LID
+    chmod 664 $EXEROOT/GIT_DESCRIBE.$LID
+    /bin/cp -p $EXEROOT/GIT_DESCRIBE.$LID $EXEROOT/GIT_DESCRIBE
+
+    if (-f $CCSMROOT/.git/logs/HEAD) then
+      /bin/cp $CCSMROOT/.git/logs/HEAD $EXEROOT/GIT_LOGS_HEAD.$LID
+      chmod 664 $EXEROOT/GIT_LOGS_HEAD.$LID
+      /bin/cp -p $EXEROOT/GIT_LOGS_HEAD.$LID $EXEROOT/GIT_LOGS_HEAD
+    else
+      /bin/rm -f $EXEROOT/GIT_LOGS_HEAD
+      touch $EXEROOT/GIT_LOGS_HEAD
+    endif
   endif
 endif
 
