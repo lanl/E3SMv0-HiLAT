@@ -30,6 +30,7 @@
 <ndtd hgrid="tx0.3v2"   > 3 </ndtd>
 <ndtd hgrid="ar9v3"     > 1 </ndtd>
 <ndtd hgrid="ar9v4"     > 1 </ndtd>
+
 <pointer_file>'./rpointer.ice'</pointer_file>
 
 
@@ -319,6 +320,7 @@
 
 <distribution_type                       >'cartesian' </distribution_type>
 <distribution_type hgrid="tx0.1v2"       >'spacecurve'</distribution_type>
+<distribution_type hgrid="tx0.3v2"       >'cartesian'</distribution_type>
 <distribution_type cice_mode="prescribed">'roundrobin'</distribution_type>
 
 <distribution_wght                    >'block'     </distribution_wght>
