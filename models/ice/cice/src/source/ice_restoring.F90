@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_restoring.F90 744 2013-09-27 22:53:24Z eclare $
+!  SVN:$Id: ice_restoring.F90 914 2015-02-06 22:22:03Z akt $
 !=======================================================================
 !
 ! Reads and interpolates forcing data for atmosphere and ocean quantities.
@@ -11,8 +11,9 @@
       use ice_blocks, only: nx_block, ny_block
       use ice_domain_size, only: ncat, max_blocks, max_ntrcr
       use ice_forcing, only: trestore, trest
-      use ice_state, only: aicen, vicen, vsnon, trcrn, ntrcr, bound_state, &
-                           aice_init, aice0, aice, vice, vsno, trcr, trcr_depend
+      use ice_state, only: aicen, vicen, vsnon, trcrn, bound_state, &
+          aice_init, aice0, aice, vice, vsno, trcr, trcr_depend
+      use ice_colpkg_tracers, only: ntrcr
       use ice_timers, only: ice_timer_start, ice_timer_stop, timer_bound
 
       implicit none
@@ -55,7 +56,6 @@
       use ice_fileunits, only: nu_diag
       use ice_grid, only: tmask
       use ice_flux, only: sst, Tf, Tair, salinz, Tmltz
-      use ice_itd, only: aggregate
       use ice_restart_shared, only: restart_ext
 
    integer (int_kind) :: &
@@ -267,14 +267,14 @@
 
 ! authors: E. C. Hunke, LANL
 
+      use ice_arrays_column, only: hin_max
       use ice_blocks, only: nblocks_x, nblocks_y
+      use ice_colpkg, only: colpkg_init_trcr
       use ice_constants, only: c0, c1, c2, p2, p5, rhoi, rhos, Lfresh, &
            cp_ice, cp_ocn, Tsmelt, Tffresh
       use ice_domain_size, only: nilyr, nslyr, ncat
-      use ice_state, only: nt_Tsfc, nt_qice, nt_qsno, nt_sice, nt_fbri, tr_brine
-      use ice_itd, only: hin_max
-      use ice_therm_mushy, only: enthalpy_mush
-      use ice_therm_shared, only: ktherm
+      use ice_colpkg_tracers, only: nt_Tsfc, nt_qice, nt_qsno, nt_sice, &
+          nt_fbri, tr_brine
 
       integer (kind=int_kind), intent(in) :: &
          nx_block, ny_block, & ! block dimensions
@@ -327,10 +327,17 @@
          indxi, indxj    ! compressed indices for cells with restoring
 
       real (kind=dbl_kind) :: &
-         slope, Ti, hbar, &
-         ainit(ncat), &  ! initial ice concentration
-         hinit(ncat), &  ! initial ice thickness
+         Tsfc, hbar, &
          hsno_init       ! initial snow thickness
+
+      real (kind=dbl_kind), dimension(ncat) :: &
+         ainit, hinit    ! initial area, thickness
+
+      real (kind=dbl_kind), dimension(nilyr) :: &
+         qin             ! ice enthalpy (J/m3)
+
+      real (kind=dbl_kind), dimension(nslyr) :: &
+         qsn             ! snow enthalpy (J/m3)
 
       indxi(:) = 0
       indxj(:) = 0
@@ -455,7 +462,6 @@
 
          do n = 1, ncat
 
-            ! ice volume, snow volume
 !DIR$ CONCURRENT !Cray
 !cdir nodep      !NEC
 !ocl novrec      !Fujitsu
@@ -463,56 +469,30 @@
                i = indxi(ij)
                j = indxj(ij)
 
+               ! ice volume, snow volume
                aicen(i,j,n) = ainit(n)
                vicen(i,j,n) = hinit(n) * ainit(n) ! m
                vsnon(i,j,n) = min(aicen(i,j,n)*hsno_init,p2*vicen(i,j,n))
-            enddo               ! ij
+
+               call colpkg_init_trcr(Tair(i,j),     Tf(i,j),      &
+                                     salinz(i,j,:), Tmltz(i,j,:), &
+                                     Tsfc,                        &
+                                     nilyr,         nslyr,        &
+                                     qin(:),        qsn(:))
 
                ! surface temperature
-               do ij = 1, icells
-                  i = indxi(ij)
-                  j = indxj(ij)
-                  trcrn(i,j,nt_Tsfc,n) = min(Tsmelt, Tair(i,j) - Tffresh) !deg C
-               enddo
-
+               trcrn(i,j,nt_Tsfc,n) = Tsfc ! deg C
                ! ice enthalpy, salinity 
                do k = 1, nilyr
-                  do ij = 1, icells
-                     i = indxi(ij)
-                     j = indxj(ij)
-
-                     ! assume linear temp profile and compute enthalpy
-                     slope = Tf(i,j) - trcrn(i,j,nt_Tsfc,n)
-                     Ti = trcrn(i,j,nt_Tsfc,n) &
-                        + slope*(real(k,kind=dbl_kind)-p5) &
-                                /real(nilyr,kind=dbl_kind)
-
-                     if (ktherm == 2) then
-                        ! enthalpy
-                        trcrn(i,j,nt_qice+k-1,n) = &
-                             enthalpy_mush(Ti, salinz(i,j,k))
-                     else
-                        trcrn(i,j,nt_qice+k-1,n) = &
-                            -(rhoi * (cp_ice*(Tmltz(i,j,k)-Ti) &
-                            + Lfresh*(c1-Tmltz(i,j,k)/Ti) - cp_ocn*Tmltz(i,j,k)))
-                     endif
-
-                     ! salinity
-                     trcrn(i,j,nt_sice+k-1,n) = salinz(i,j,k)
-                  enddo            ! ij
-               enddo               ! nilyr
-
+                  trcrn(i,j,nt_qice+k-1,n) = qin(k)
+                  trcrn(i,j,nt_sice+k-1,n) = salinz(i,j,k)
+               enddo
                ! snow enthalpy
                do k = 1, nslyr
-                  do ij = 1, icells
-                     i = indxi(ij)
-                     j = indxj(ij)
-                     Ti = min(c0, trcrn(i,j,nt_Tsfc,n))
-                     trcrn(i,j,nt_qsno+k-1,n) = -rhos*(Lfresh - cp_ice*Ti)
-                     
-                  enddo            ! ij
+                  trcrn(i,j,nt_qsno+k-1,n) = qsn(k)
                enddo               ! nslyr
 
+            enddo               ! ij
          enddo                  ! ncat
 
    end subroutine set_restore_var

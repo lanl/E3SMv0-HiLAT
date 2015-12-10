@@ -142,7 +142,16 @@ GetOptions(
     "trfy=s"                    => \$opts{'trfy'},
     "trbri=s"                   => \$opts{'trbri'},
     "trbgcs=s"                  => \$opts{'trbgcs'},
+    "trbgcz=s"                  => \$opts{'trbgcz'},
     "nbgclyr=s"                 => \$opts{'nbgclyr'},
+    "trzs=s"                    => \$opts{'trzs'},
+    "trzaero=s"                 => \$opts{'trzaero'},
+    "tralg=s"                   => \$opts{'tralg'},
+    "trdoc=s"                   => \$opts{'trdoc'},
+    "trdic=s"                   => \$opts{'trdic'},
+    "trdon=s"                   => \$opts{'trdon'},
+    "trfep=s"                   => \$opts{'trfep'},
+    "trfed=s"                   => \$opts{'trfed'},
     "ntasks=s"                  => \$opts{'ntasks'},
     "nthreads=s"                => \$opts{'nthreads'},
     "nodecomp!"	                => \$opts{'nodecomp'},
@@ -366,6 +375,60 @@ if (defined $opts{'trbgcs'}) {
     $cfg_ref->set('trbgcs', 0);
 }
 
+if (defined $opts{'trbgcz'}) {
+    $cfg_ref->set('trbgcz', $opts{'trbgcz'});
+} else {
+    $cfg_ref->set('trbgcz', 0);
+}
+
+if (defined $opts{'trzs'}) {
+    $cfg_ref->set('trzs', $opts{'trzs'});
+} else {
+    $cfg_ref->set('trzs', 0);
+}
+
+if (defined $opts{'trzaero'}) {
+    $cfg_ref->set('trzaero', $opts{'trzaero'});
+} else {
+    $cfg_ref->set('trzaero', 0);
+}
+
+if (defined $opts{'tralg'}) {
+    $cfg_ref->set('tralg', $opts{'tralg'});
+} else {
+    $cfg_ref->set('tralg', 0);
+}
+
+if (defined $opts{'trdoc'}) {
+    $cfg_ref->set('trdoc', $opts{'trdoc'});
+} else {
+    $cfg_ref->set('trdoc', 0);
+}
+
+if (defined $opts{'trdic'}) {
+    $cfg_ref->set('trdic', $opts{'trdic'});
+} else {
+    $cfg_ref->set('trdic', 0);
+}
+
+if (defined $opts{'trdon'}) {
+    $cfg_ref->set('trdon', $opts{'trdon'});
+} else {
+    $cfg_ref->set('trdon', 0);
+}
+
+if (defined $opts{'trfep'}) {
+    $cfg_ref->set('trfep', $opts{'trfep'});
+} else {
+    $cfg_ref->set('trfep', 0);
+}
+
+if (defined $opts{'trfed'}) {
+    $cfg_ref->set('trfed', $opts{'trfed'});
+} else {
+    $cfg_ref->set('trfed', 0);
+}
+
 #-----------------------------------------------------------------------------------------------
 # Horizontal grid parameters
 
@@ -434,8 +497,17 @@ my $trlvl   = $cfg_ref->get('trlvl');
 my $trpnd   = $cfg_ref->get('trpnd');
 my $trbri   = $cfg_ref->get('trbri');
 my $trbgcs  = $cfg_ref->get('trbgcs');
+my $trbgcz  = $cfg_ref->get('trbgcz');
+my $trzs    = $cfg_ref->get('trzs');
+my $trzaero = $cfg_ref->get('trzaero');
+my $tralg   = $cfg_ref->get('tralg');
+my $trdoc   = $cfg_ref->get('trdoc');
+my $trdic   = $cfg_ref->get('trdic');
+my $trdon   = $cfg_ref->get('trdon');
+my $trfep   = $cfg_ref->get('trfep');
+my $trfed   = $cfg_ref->get('trfed');
 
-my $cice_cppdefs = " -DCCSMCOUPLED -Dncdf -DNUMIN=11 -DNUMAX=99 -DNICECAT=$ncat -DNXGLOB=$nlon -DNYGLOB=$nlat -DNTRAERO=$ntr_aero -DNBGCLYR=$nbgclyr -DNICELYR=$nicelyr -DNSNWLYR=$nsnwlyr -DTRAGE=$trage -DTRFY=$trfy -DTRLVL=$trlvl -DTRPND=$trpnd -DTRBRI=$trbri -DTRBGCS=$trbgcs";
+my $cice_cppdefs = " -DCCSMCOUPLED -Dncdf -DNUMIN=11 -DNUMAX=99 -DNICECAT=$ncat -DNXGLOB=$nlon -DNYGLOB=$nlat -DNTRAERO=$ntr_aero -DNBGCLYR=$nbgclyr -DNICELYR=$nicelyr -DNSNWLYR=$nsnwlyr -DTRAGE=$trage -DTRFY=$trfy -DTRLVL=$trlvl -DTRPND=$trpnd -DTRBRI=$trbri -DTRBGCS=$trbgcs  -DTRBGCZ=$trbgcz -DTRZS=$trzs -DTRZAERO=$trzaero -DTRALG=$tralg -DTRDOC=$trdoc -DTRDIC=$trdic -DTRDON=$trdon -DTRFEP=$trfep -DTRFED=$trfed";
 
 # Trigger RASM options with ar9v grid, otherwise set CESM options
 if ($hgrid =~ m/ar9v.*/ ) {
@@ -648,6 +720,8 @@ sub write_filepath
     print $fh "$CODEROOT/ice/cice/src/io_pio\n";
 #    print $fh "$CODEROOT/ice/cice/src/io_netcdf\n";
     print $fh "$CODEROOT/ice/cice/src/mpi\n";
+    print $fh "$CODEROOT/ice/cice/src/source_colpkg/constants/cesm\n";
+    print $fh "$CODEROOT/ice/cice/src/source_colpkg\n";
     print $fh "$CODEROOT/ice/cice/src/source\n";
 
     $fh->close;

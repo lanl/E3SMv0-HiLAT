@@ -8,7 +8,7 @@ module ice_spacecurve
 !  create space-filling curves.   
 !
 ! !REVISION HISTORY:
-!  SVN:$Id: $
+!  SVN:$Id: ice_spacecurve.F90 834 2014-09-09 18:01:09Z eclare $
 !
 ! author: John Dennis, NCAR
 

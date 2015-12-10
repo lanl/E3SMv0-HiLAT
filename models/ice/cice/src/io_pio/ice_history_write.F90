@@ -40,6 +40,7 @@
       subroutine ice_write_hist (ns)
 
 #ifdef ncdf
+      use ice_arrays_column, only: hin_max
       use ice_blocks, only: nx_block, ny_block
       use ice_broadcast, only: broadcast_scalar
       use ice_calendar, only: time, sec, idate, idate0, write_ic, &
@@ -55,7 +56,6 @@
           dxu, dxt, dyu, dyt, HTN, HTE, ANGLE, ANGLET, tmask, &
           lont_bounds, latt_bounds, lonu_bounds, latu_bounds
       use ice_history_shared
-      use ice_itd, only: hin_max
       use ice_restart_shared, only: runid
       use netcdf
 #endif
@@ -68,14 +68,14 @@
 
 #ifdef ncdf
       integer (kind=int_kind) :: i,j,k,ic,n,nn, &
-         ncid,status,imtid,jmtid,kmtidi,kmtids,kmtidb, cmtid,timid, &
+         ncid,status,imtid,jmtid,kmtidi,kmtids,kmtidb,kmtida, cmtid,timid, &
          length,nvertexid,ivertex
       integer (kind=int_kind), dimension(2) :: dimid2
       integer (kind=int_kind), dimension(3) :: dimid3
       integer (kind=int_kind), dimension(4) :: dimidz
       integer (kind=int_kind), dimension(5) :: dimidcz
       integer (kind=int_kind), dimension(3) :: dimid_nverts
-      integer (kind=int_kind), dimension(4) :: dimidex
+      integer (kind=int_kind), dimension(5) :: dimidex
       real (kind=real_kind) :: ltime
       character (char_len) :: title
       character (char_len) :: time_period_freq
@@ -91,6 +91,7 @@
       type(file_desc_t)     :: File
       type(io_desc_t)       :: iodesc2d, &
                                iodesc3dc, iodesc3dv, iodesc3di, iodesc3db, &
+                               iodesc3da, &
                                iodesc4di, iodesc4ds
       type(var_desc_t)      :: varid
 
@@ -159,6 +160,7 @@
       call ice_pio_initdecomp(ndim3=ncat_hist, iodesc=iodesc3dc)
       call ice_pio_initdecomp(ndim3=nzilyr,     iodesc=iodesc3di)
       call ice_pio_initdecomp(ndim3=nzlyrb,    iodesc=iodesc3db)
+      call ice_pio_initdecomp(ndim3=nzalyr,    iodesc=iodesc3da)
       call ice_pio_initdecomp(ndim3=nverts, inner_dim=.true., iodesc=iodesc3dv)
       call ice_pio_initdecomp(ndim3=nzilyr,  ndim4=ncat_hist,  iodesc=iodesc4di)
       call ice_pio_initdecomp(ndim3=nzslyr,  ndim4=ncat_hist,  iodesc=iodesc4ds)
@@ -180,6 +182,7 @@
         status = pio_def_dim(File,'nkice',nzilyr,kmtidi)
         status = pio_def_dim(File,'nksnow',nzslyr,kmtids)
         status = pio_def_dim(File,'nkbio',nzblyr,kmtidb)
+        status = pio_def_dim(File,'nkaer',nzalyr,kmtida)
         status = pio_def_dim(File,'time',PIO_UNLIMITED,timid)
         status = pio_def_dim(File,'nvertices',nverts,nvertexid)
 
@@ -248,6 +251,7 @@
       var_nz(2) = coord_attributes('VGRDi', 'vertical ice levels', '1')
       var_nz(3) = coord_attributes('VGRDs', 'vertical snow levels', '1')
       var_nz(4) = coord_attributes('VGRDb', 'vertical ice-bio levels', '1')
+      var_nz(5) = coord_attributes('VGRDa', 'vertical snow-ice-bio levels', '1')
 
       !-----------------------------------------------------------------
       ! define information for optional time-invariant variables
@@ -329,11 +333,12 @@
           endif          
         enddo
 
-        ! Extra dimensions (NCAT, NZILYR, NZSLYR, NZBLYR)
+        ! Extra dimensions (NCAT, NZILYR, NZSLYR, NZBLYR, NZBLYR+3)
           dimidex(1)=cmtid
           dimidex(2)=kmtidi
           dimidex(3)=kmtids
           dimidex(4)=kmtidb
+          dimidex(5)=kmtida
 
 	do i = 1, nvarz
            if (igrdz(i)) then
@@ -551,6 +556,43 @@
         enddo  ! num_avail_hist_fields_3Db
 
       !-----------------------------------------------------------------
+      ! 3D (bio+snow layers)
+      !-----------------------------------------------------------------
+
+        dimidz(1) = imtid
+        dimidz(2) = jmtid
+        dimidz(3) = kmtida
+        dimidz(4) = timid
+
+        do n = n3Dbcum + 1, n3Dacum
+          if (avail_hist_fields(n)%vhistfreq == histfreq(ns) .or. write_ic) then
+            status  = pio_def_var(File, trim(avail_hist_fields(n)%vname), &
+                         pio_real, dimidz, varid)
+            status = pio_put_att(File,varid,'units', &
+                        trim(avail_hist_fields(n)%vunit))
+            status = pio_put_att(File,varid, 'long_name', &
+                        trim(avail_hist_fields(n)%vdesc))
+            status = pio_put_att(File,varid,'coordinates', &
+                        trim(avail_hist_fields(n)%vcoord))
+            status = pio_put_att(File,varid,'cell_measures', &
+                        trim(avail_hist_fields(n)%vcellmeas))
+            status = pio_put_att(File,varid,'missing_value',spval)
+            status = pio_put_att(File,varid,'_FillValue',spval)
+
+            ! Add cell_methods attribute to variables if averaged
+            if (hist_avg .and. histfreq(ns) /= '1') then
+                status = pio_put_att(File,varid,'cell_methods','time: mean')
+            endif
+
+            if (histfreq(ns) == '1' .or. .not. hist_avg) then
+               status = pio_put_att(File,varid,'time_rep','instantaneous')
+            else
+               status = pio_put_att(File,varid,'time_rep','averaged')
+            endif
+          endif
+        enddo  ! num_avail_hist_fields_3Da
+
+      !-----------------------------------------------------------------
       ! define attributes for 4D variables
       ! time coordinate is dropped
       !-----------------------------------------------------------------
@@ -565,7 +607,7 @@
         dimidcz(4) = cmtid
         dimidcz(5) = timid
 
-        do n = n3Dbcum + 1, n4Dicum
+        do n = n3Dacum + 1, n4Dicum
           if (avail_hist_fields(n)%vhistfreq == histfreq(ns) .or. write_ic) then
             status  = pio_def_var(File, trim(avail_hist_fields(n)%vname), &
                              pio_real, dimidcz, varid)
@@ -630,44 +672,6 @@
             endif
           endif
         enddo  ! num_avail_hist_fields_4Ds
-
-      !-----------------------------------------------------------------
-      ! 4D (ice categories and biology layers)
-      !-----------------------------------------------------------------
-
-        dimidcz(1) = imtid
-        dimidcz(2) = jmtid
-        dimidcz(3) = kmtidb
-        dimidcz(4) = cmtid
-        dimidcz(5) = timid
-
-        do n = n4Dscum + 1, n4Dbcum
-          if (avail_hist_fields(n)%vhistfreq == histfreq(ns) .or. write_ic) then
-            status  = pio_def_var(File, trim(avail_hist_fields(n)%vname), &
-                             pio_real, dimidcz, varid)
-            status = pio_put_att(File,varid,'units', &
-                        trim(avail_hist_fields(n)%vunit))
-            status = pio_put_att(File,varid, 'long_name', &
-                        trim(avail_hist_fields(n)%vdesc))
-            status = pio_put_att(File,varid,'coordinates', &
-                        trim(avail_hist_fields(n)%vcoord))
-            status = pio_put_att(File,varid,'cell_measures', &
-                        trim(avail_hist_fields(n)%vcellmeas))
-            status = pio_put_att(File,varid,'missing_value',spval)
-            status = pio_put_att(File,varid,'_FillValue',spval)
-
-            ! Add cell_methods attribute to variables if averaged
-            if (hist_avg .and. histfreq(ns) /= '1') then
-                status = pio_put_att(File,varid,'cell_methods','time: mean')
-            endif
-
-            if (histfreq(ns) == '1' .or. .not. hist_avg) then
-               status = pio_put_att(File,varid,'time_rep','instantaneous')
-            else
-               status = pio_put_att(File,varid,'time_rep','averaged')
-            endif
-          endif
-        enddo  ! num_avail_hist_fields_4Db
 
       !-----------------------------------------------------------------
       ! global attributes
@@ -795,6 +799,8 @@
                 status = pio_put_var(File, varid, (/(k, k=1,nzslyr)/))
               CASE ('VGRDb')
                 status = pio_put_var(File, varid, (/(k, k=1,nzblyr)/))
+              CASE ('VGRDa')
+                status = pio_put_var(File, varid, (/(k, k=1,nzalyr)/))
              END SELECT
            endif
         enddo
@@ -962,10 +968,31 @@
       enddo ! num_avail_hist_fields_3Db
       deallocate(workr3)
 
-      allocate(workr4(nx_block,ny_block,nblocks,ncat_hist,nzilyr))
-      ! 4D (categories, vertical ice)
-      do n = n3Dbcum+1, n4Dicum
+      ! 3D (vertical ice+snow biology)
+      allocate(workr3(nx_block,ny_block,nblocks,nzalyr))
+      do n = n3Dbcum+1, n3Dacum
          nn = n - n3Dbcum
+         if (avail_hist_fields(n)%vhistfreq == histfreq(ns) .or. write_ic) then
+            status  = pio_inq_varid(File,avail_hist_fields(n)%vname,varid)
+            if (status /= pio_noerr) call abort_ice( &
+               'ice: Error getting varid for '//avail_hist_fields(n)%vname)
+            do j = 1, nblocks
+            do i = 1, nzalyr
+               workr3(:,:,j,i) = a3Da(:,:,i,nn,j)
+            enddo
+            enddo
+            call pio_setframe(varid, int(1,kind=PIO_OFFSET))
+            call pio_write_darray(File, varid, iodesc3da,&
+                                  workr3, status, fillval=spval_dbl)
+         endif
+      enddo ! num_avail_hist_fields_3Da
+      deallocate(workr3)
+
+      allocate(workr4(nx_block,ny_block,nblocks,ncat_hist,nzilyr))
+
+      ! 4D (categories, vertical ice)
+      do n = n3Dacum+1, n4Dicum
+         nn = n - n3Dacum
          if (avail_hist_fields(n)%vhistfreq == histfreq(ns) .or. write_ic) then
             status  = pio_inq_varid(File,avail_hist_fields(n)%vname,varid)
             if (status /= pio_noerr) call abort_ice( &
@@ -1018,6 +1045,7 @@
       call pio_freedecomp(File,iodesc3dc)
       call pio_freedecomp(File,iodesc3di)
       call pio_freedecomp(File,iodesc3db)
+      call pio_freedecomp(File,iodesc3da)
       call pio_freedecomp(File,iodesc4di)
 
       !-----------------------------------------------------------------

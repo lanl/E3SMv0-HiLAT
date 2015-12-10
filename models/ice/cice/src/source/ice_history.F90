@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history.F90 915 2015-02-08 02:50:33Z tcraig $
+!  SVN:$Id: ice_history.F90 1084 2015-11-20 19:52:06Z eclare $
 !=======================================================================
 
 ! Driver for core history output
@@ -54,7 +54,7 @@
 
       subroutine init_hist (dt)
 
-      use ice_atmo, only: formdrag
+      use ice_colpkg_shared, only: formdrag
       use ice_blocks, only: nx_block, ny_block
       use ice_broadcast, only: broadcast_scalar, broadcast_array
       use ice_communicate, only: my_task, master_task
@@ -71,12 +71,12 @@
       use ice_history_shared ! everything
       use ice_history_mechred, only: init_hist_mechred_2D, init_hist_mechred_3Dc
       use ice_history_pond, only: init_hist_pond_2D, init_hist_pond_3Dc
-      use ice_history_bgc, only: init_hist_bgc_2D, init_hist_bgc_3Dc, &
-          init_hist_bgc_4Db
+      use ice_history_bgc, only:init_hist_bgc_2D, init_hist_bgc_3Dc, &
+          init_hist_bgc_3Db, init_hist_bgc_3Da
       use ice_history_drag, only: init_hist_drag_2D
       use ice_restart_shared, only: restart
-      use ice_state, only: tr_iage, tr_FY, tr_lvl, tr_pond, tr_aero, tr_brine
-      use ice_zbgc_shared, only: skl_bgc
+      use ice_colpkg_tracers, only: tr_iage, tr_FY, tr_lvl, tr_pond, tr_aero, tr_brine
+      use ice_colpkg_shared, only: skl_bgc, solve_zsal, solve_zbgc, z_tracers
 
       real (kind=dbl_kind), intent(in) :: &
          dt      ! time step
@@ -145,7 +145,6 @@
          f_dagedtd = 'x'
       endif
       if (.not. tr_FY)   f_FY   = 'x'
-
       if (kdyn /= 2) then
            f_a11       = 'x'
            f_a12       = 'x'
@@ -199,6 +198,7 @@
       call broadcast_scalar (f_VGRDi, master_task)
       call broadcast_scalar (f_VGRDs, master_task)
       call broadcast_scalar (f_VGRDb, master_task)
+      call broadcast_scalar (f_VGRDa, master_task)
 
 !     call broadcast_scalar (f_example, master_task)
       call broadcast_scalar (f_hi, master_task)
@@ -212,8 +212,8 @@
       call broadcast_scalar (f_uatm, master_task)
       call broadcast_scalar (f_vatm, master_task)
       call broadcast_scalar (f_sice, master_task)
-      call broadcast_scalar (f_fswdn, master_task)
       call broadcast_scalar (f_fswup, master_task)
+      call broadcast_scalar (f_fswdn, master_task)
       call broadcast_scalar (f_flwdn, master_task)
       call broadcast_scalar (f_snow, master_task)
       call broadcast_scalar (f_snow_ai, master_task)
@@ -389,15 +389,15 @@
              "none", c1, c0,                                      &
              ns1, f_sice)
       
-         call define_hist_field(n_fswdn,"fswdn","W/m^2",tstr2D, tcstr, &
-             "down solar flux",                                      &
-             "positive downward", c1, c0,                            &
-             ns1, f_fswdn)
-      
          call define_hist_field(n_fswup,"fswup","W/m^2",tstr2D, tcstr, &
              "upward solar flux",                                      &
              "positive upward", c1, c0,                            &
              ns1, f_fswup)
+      
+         call define_hist_field(n_fswdn,"fswdn","W/m^2",tstr2D, tcstr, &
+             "down solar flux",                                      &
+             "positive downward", c1, c0,                            &
+             ns1, f_fswdn)
       
          call define_hist_field(n_flwdn,"flwdn","W/m^2",tstr2D, tcstr, &
              "down longwave flux",                                   &
@@ -902,7 +902,8 @@
       if (tr_pond) call init_hist_pond_2D
 
       ! biogeochemistry
-      if (tr_aero .or. tr_brine .or. skl_bgc) call init_hist_bgc_2D
+      if (tr_aero .or. tr_brine .or. solve_zsal .or. skl_bgc) &
+         call init_hist_bgc_2D
 
       if (formdrag) call init_hist_drag_2D
 
@@ -921,7 +922,7 @@
               ns1, f_vicen)
 
            call define_hist_field(n_vsnon,"vsnon","m",tstr3Dc, tcstr, &
-              "snow depth on ice, categories","volume per unit area of snow", c1, c0, &           
+              "snow depth on ice, categories","volume per unit area of snow", c1, c0, &
               ns1, f_vsnon)
 
            call define_hist_field(n_snowfracn,"snowfracn","1",tstr3Dc, tcstr, &
@@ -930,7 +931,7 @@
               ns1, f_snowfracn)
 
            call define_hist_field(n_fsurfn_ai,"fsurfn_ai","W/m^2",tstr3Dc, tcstr, & 
-              "net surface heat flux, categories","weighted by ice area", c1, c0, &            
+              "net surface heat flux, categories","weighted by ice area", c1, c0, &
               ns1, f_fsurfn_ai)
    
            call define_hist_field(n_fcondtopn_ai,"fcondtopn_ai","W/m^2",tstr3Dc, tcstr, &
@@ -983,6 +984,9 @@
 !      endif ! if (histfreq(ns1) /= 'x') then
 !      enddo ! ns1 
 
+      if (z_tracers .or. solve_zsal) call init_hist_bgc_3Db  
+      if (z_tracers) call init_hist_bgc_3Da
+
       !-----------------------------------------------------------------
       ! 4D (categories, vertical) variables must be looped separately
       !-----------------------------------------------------------------
@@ -1026,11 +1030,10 @@
             if (allocated(Tsnz4d)) deallocate(Tsnz4d)
             allocate(Tsnz4d(nx_block,ny_block,nzslyr,ncat_hist))
        endif
-
-      ! other 4D history variables
-
-      ! biogeochemistry
-      if (tr_brine) call init_hist_bgc_4Db
+       if (f_Sinz   (1:1) /= 'x') then
+            if (allocated(Sinz4d)) deallocate(Sinz4d)
+            allocate(Sinz4d(nx_block,ny_block,nzilyr,ncat_hist))
+       endif
 
       !-----------------------------------------------------------------
       ! fill igrd array with namelist values
@@ -1056,6 +1059,7 @@
       igrdz(n_VGRDi    ) = f_VGRDi
       igrdz(n_VGRDs    ) = f_VGRDs
       igrdz(n_VGRDb    ) = f_VGRDb
+      igrdz(n_VGRDa    ) = f_VGRDa
 
       !-----------------------------------------------------------------
       ! diagnostic output
@@ -1108,6 +1112,9 @@
       if (allocated(a3Db)) deallocate(a3Db)
       if (num_avail_hist_fields_3Db > 0) &
       allocate(a3Db(nx_block,ny_block,nzlyrb,num_avail_hist_fields_3Db,max_blocks))
+      if (allocated(a3Da)) deallocate(a3Da)
+      if (num_avail_hist_fields_3Da > 0) &
+      allocate(a3Da(nx_block,ny_block,nzalyr,num_avail_hist_fields_3Da,max_blocks))
 
       if (allocated(a4Di)) deallocate(a4Di)
       if (num_avail_hist_fields_4Di > 0) &
@@ -1115,17 +1122,14 @@
       if (allocated(a4Ds)) deallocate(a4Ds)
       if (num_avail_hist_fields_4Ds > 0) &
       allocate(a4Ds(nx_block,ny_block,nzslyr,ncat_hist,num_avail_hist_fields_4Ds,max_blocks))
-      if (allocated(a4Db)) deallocate(a4Db)
-      if (num_avail_hist_fields_4Db > 0) &
-      allocate(a4Db(nx_block,ny_block,nzblyr,ncat_hist,num_avail_hist_fields_4Db,max_blocks))
 
       if (allocated(a2D))  a2D (:,:,:,:)     = c0
       if (allocated(a3Dc)) a3Dc(:,:,:,:,:)   = c0
       if (allocated(a3Dz)) a3Dz(:,:,:,:,:)   = c0
       if (allocated(a3Db)) a3Db(:,:,:,:,:)   = c0
+      if (allocated(a3Da)) a3Da(:,:,:,:,:)   = c0
       if (allocated(a4Di)) a4Di(:,:,:,:,:,:) = c0
       if (allocated(a4Ds)) a4Ds(:,:,:,:,:,:) = c0
-      if (allocated(a4Db)) a4Db(:,:,:,:,:,:) = c0
       avgct(:) = c0
       albcnt(:,:,:,:) = c0
 
@@ -1149,9 +1153,9 @@
       subroutine accum_hist (dt)
 
       use ice_blocks, only: block, get_block, nx_block, ny_block
-      use ice_fileunits, only: nu_diag
+      use ice_colpkg, only: colpkg_snow_temperature, colpkg_ice_temperature
       use ice_constants, only: c0, c1, p25, puny, secday, depressT, &
-          awtvdr, awtidr, awtvdf, awtidf, Lfresh, rhos, cp_ice, spval, hs_min
+          awtvdr, awtidr, awtvdf, awtidf, Lfresh, rhos, cp_ice, spval
       use ice_domain, only: blocks_ice, nblocks
       use ice_grid, only: tmask, lmask_n, lmask_s
       use ice_calendar, only: new_year, write_history, &
@@ -1175,8 +1179,8 @@
           stressp_4, stressm_4, stress12_4, sig1, sig2, &
           mlt_onset, frz_onset, dagedtt, dagedtd, fswint_ai, keffn_top, &
           snowfrac, alvdr_ai, alvdf_ai, alidr_ai, alidf_ai
-      use ice_atmo, only: formdrag
-      use ice_meltpond_cesm, only: hs0
+      use ice_arrays_column, only: snowfracn
+      use ice_colpkg_shared, only: formdrag, skl_bgc
       use ice_history_shared ! almost everything
       use ice_history_write, only: ice_write_hist
       use ice_history_bgc, only: accum_hist_bgc
@@ -1184,11 +1188,9 @@
       use ice_history_pond, only: accum_hist_pond
       use ice_history_drag, only: accum_hist_drag
       use ice_state ! almost everything
-      use ice_shortwave, only: snowfracn
-      use ice_therm_shared, only: calculate_Tin_from_qin, Tmlt, ktherm
-      use ice_therm_mushy, only: temperature_mush, temperature_snow
+      use ice_colpkg_tracers, only: nt_sice, nt_qice, nt_qsno, tr_pond, tr_aero, &
+          tr_brine, nt_iage, nt_FY, nt_Tsfc
       use ice_timers, only: ice_timer_start, ice_timer_stop, timer_readwrite
-      use ice_zbgc_shared, only: skl_bgc
 
       real (kind=dbl_kind), intent(in) :: &
          dt      ! time step
@@ -1207,8 +1209,9 @@
 
       real (kind=dbl_kind) :: & 
            qn                , & ! temporary variable for enthalpy
-           hs                , & ! temporary variable for snow depth
-           Tmlts                 !  temporary variable for melting temperature
+           sn                , & ! temporary variable for salinity
+           Tmlts             , & !  temporary variable for melting temperature
+           Tn                    !  temporary variable for ice temperature
 
       real (kind=dbl_kind), dimension (nx_block,ny_block) :: &
          worka, workb
@@ -1224,9 +1227,9 @@
       n3Dccum = n2D     + num_avail_hist_fields_3Dc
       n3Dzcum = n3Dccum + num_avail_hist_fields_3Dz
       n3Dbcum = n3Dzcum + num_avail_hist_fields_3Db
+      n3Dacum = n3Dbcum + num_avail_hist_fields_3Da
       n4Dicum = n3Dbcum + num_avail_hist_fields_4Di
-      n4Dscum = n4Dicum + num_avail_hist_fields_4Ds 
-      n4Dbcum = n4Dscum + num_avail_hist_fields_4Db ! should equal num_avail_hist_fields_tot
+      n4Dscum = n4Dicum + num_avail_hist_fields_4Ds ! should equal num_avail_hist_fields_tot
 
       do ns = 1,nstreams
          if (.not. hist_avg .or. histfreq(ns) == '1') then  ! write snapshots
@@ -1249,8 +1252,13 @@
               if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) &
                   a3Db(:,:,:,nn,:) = c0
            enddo
-           do n = n3Dbcum + 1, n4Dicum
+           do n = n3Dbcum + 1, n3Dacum
               nn = n - n3Dbcum
+              if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) &
+                  a3Da(:,:,:,nn,:) = c0
+           enddo
+           do n = n3Dacum + 1, n4Dicum
+              nn = n - n3Dacum
               if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) &
                   a4Di(:,:,:,:,nn,:) = c0
            enddo
@@ -1258,11 +1266,6 @@
               nn = n - n4Dicum
               if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) &
                   a4Ds(:,:,:,:,nn,:) = c0
-           enddo
-           do n = n4Dscum + 1, n4Dbcum
-              nn = n - n4Dscum
-              if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) &
-                  a4Db(:,:,:,:,nn,:) = c0
            enddo
            avgct(ns) = c1
          else                      ! write averages over time histfreq
@@ -1280,13 +1283,15 @@
       !---------------------------------------------------------------
 
       !$OMP PARALLEL DO PRIVATE(iblk,i,j,ilo,ihi,jlo,jhi,this_block, &
-      !$OMP             k,n,qn,ns,hs,worka,workb,Tinz4d,Sinz4d,Tsnz4d)
+      !$OMP             k,n,qn,ns,worka,workb,Tinz4d,Sinz4d,Tsnz4d)
       do iblk = 1, nblocks
          this_block = get_block(blocks_ice(iblk),iblk)         
          ilo = this_block%ilo
          ihi = this_block%ihi
          jlo = this_block%jlo
          jhi = this_block%jhi
+
+         workb(:,:) = aice_init(:,:,iblk)
 
 !        if (f_example(1:1) /= 'x') &
 !            call accum_hist_field(n_example,iblk, vice(:,:,iblk), a2D)
@@ -1322,14 +1327,11 @@
              call accum_hist_field(n_sice,   iblk, worka(:,:), a2D)
          endif
 
-         if (f_fswdn  (1:1) /= 'x') &
-             call accum_hist_field(n_fswdn,  iblk, fsw(:,:,iblk), a2D)
-
-         workb(:,:) = aice_init(:,:,iblk)
-
          if (f_fswup(1:1) /= 'x') &
             call accum_hist_field(n_fswup, iblk, &
                  (fsw(:,:,iblk)-fswabs(:,:,iblk)*workb(:,:)), a2D)
+         if (f_fswdn  (1:1) /= 'x') &
+             call accum_hist_field(n_fswdn,  iblk, fsw(:,:,iblk), a2D)
          if (f_flwdn  (1:1) /= 'x') &
              call accum_hist_field(n_flwdn,  iblk, flw(:,:,iblk), a2D)
          if (f_snow   (1:1) /= 'x') &
@@ -1533,6 +1535,9 @@
          if (f_snowfracn(1:1) /= 'x') &
              call accum_hist_field(n_snowfracn-n2D, iblk, ncat_hist, &
                                    snowfracn(:,:,1:ncat_hist,iblk), a3Dc)
+         if (f_snowfracn(1:1) /= 'x') &
+             call accum_hist_field(n_snowfracn-n2D, iblk, ncat_hist, &
+                                   snowfracn(:,:,1:ncat_hist,iblk), a3Dc)
          if (f_keffn_top (1:1) /= 'x') &
              call accum_hist_field(n_keffn_top-n2D, iblk, ncat_hist, &
                                    keffn_top(:,:,1:ncat_hist,iblk), a3Dc)
@@ -1563,32 +1568,18 @@
          ! 4D category fields
          if (f_Tinz   (1:1) /= 'x') then
             Tinz4d(:,:,:,:) = c0
-            if (ktherm == 2) then
-               do n = 1, ncat_hist
-                  do j = jlo, jhi
-                  do i = ilo, ihi
-                     do k = 1, nzilyr
-                        Tinz4d(i,j,k,n) = temperature_mush( &
-                             trcrn(i,j,nt_qice+k-1,n,iblk), trcrn(i,j,nt_sice+k-1,n,iblk))
-                     enddo
-                  enddo
+            do n = 1, ncat_hist
+               do j = jlo, jhi
+               do i = ilo, ihi
+                  do k = 1, nzilyr
+                     qn = trcrn(i,j,nt_qice+k-1,n,iblk)
+                     sn = trcrn(i,j,nt_sice+k-1,n,iblk)
+                     Tinz4d(i,j,k,n) = colpkg_ice_temperature(qn,sn)
                   enddo
                enddo
-            else
-               do n = 1, ncat_hist
-                  do j = jlo, jhi
-                  do i = ilo, ihi
-                     do k = 1, nzilyr
-                        qn = trcrn(i,j,nt_qice+k-1,n,iblk)
-!                       Tinz4d(i,j,k,n) = calculate_Tin_from_qin(qn,Tmlt(k))
-                        Tmlts = -trcrn(i,j,nt_sice+k-1,n,iblk)*depressT
-                        Tinz4d(i,j,k,n) =  calculate_Tin_from_qin(qn,Tmlts)
-                     enddo
-                  enddo
-                  enddo
                enddo
-            endif
-            call accum_hist_field(n_Tinz-n3Dbcum, iblk, nzilyr, ncat_hist, &
+            enddo
+            call accum_hist_field(n_Tinz-n3Dacum, iblk, nzilyr, ncat_hist, &
                                   Tinz4d(:,:,1:nzilyr,1:ncat_hist), a4Di)
          endif
          if (f_Sinz   (1:1) /= 'x') then
@@ -1602,35 +1593,22 @@
                enddo
                enddo
             enddo
-            call accum_hist_field(n_Sinz-n3Dbcum, iblk, nzilyr, ncat_hist, &
+            call accum_hist_field(n_Sinz-n3Dacum, iblk, nzilyr, ncat_hist, &
                                   Sinz4d(:,:,1:nzilyr,1:ncat_hist), a4Di)
          endif
          
          if (f_Tsnz   (1:1) /= 'x') then
             Tsnz4d(:,:,:,:) = c0
-            if (ktherm == 2) then
-               do n = 1, ncat_hist
-                  do j = jlo, jhi
-                  do i = ilo, ihi
-                     do k = 1, nzslyr
-                        qn = trcrn(i,j,nt_qsno+k-1,n,iblk)
-                        Tsnz4d(i,j,k,n) = temperature_snow(qn)
-                     enddo
-                  enddo
+            do n = 1, ncat_hist
+               do j = jlo, jhi
+               do i = ilo, ihi
+                  do k = 1, nzslyr
+                     qn = trcrn(i,j,nt_qsno+k-1,n,iblk)
+                     Tsnz4d(i,j,k,n) = colpkg_snow_temperature(qn)
                   enddo
                enddo
-            else
-               do n = 1, ncat_hist
-                  do j = jlo, jhi
-                  do i = ilo, ihi
-                     do k = 1, nzslyr
-                        qn = trcrn(i,j,nt_qsno+k-1,n,iblk)
-                        Tsnz4d(i,j,k,n) = (Lfresh + qn/rhos)/cp_ice
-                     enddo
-                  enddo
-                  enddo
                enddo
-            endif
+            enddo
             call accum_hist_field(n_Tsnz-n4Dicum, iblk, nzslyr, ncat_hist, &
                                   Tsnz4d(:,:,1:nzslyr,1:ncat_hist), a4Ds)
          endif
@@ -1717,7 +1695,6 @@
               do i = ilo, ihi
                  if (tmask(i,j,iblk)) then 
                     ravgctz = c0
-                    write(nu_diag,*) 'albcnt',albcnt(i,j,iblk,ns)
                     if (albcnt(i,j,iblk,ns) > puny) &
                         ravgctz = c1/albcnt(i,j,iblk,ns)
                     if (f_albice (1:1) /= 'x' .and. n_albice(ns) /= 0) &
@@ -1827,8 +1804,26 @@
               endif
            enddo                ! n
 
-           do n = 1, num_avail_hist_fields_4Di
+           do n = 1, num_avail_hist_fields_3Da
               nn = n3Dbcum + n
+              if (avail_hist_fields(nn)%vhistfreq == histfreq(ns)) then 
+              do k = 1, nzalyr
+              do j = jlo, jhi
+              do i = ilo, ihi
+                 if (.not. tmask(i,j,iblk)) then ! mask out land points
+                    a3Da(i,j,k,n,iblk) = spval
+                 else                            ! convert units
+                    a3Da(i,j,k,n,iblk) = avail_hist_fields(nn)%cona*a3Da(i,j,k,n,iblk) &
+                                   * ravgct + avail_hist_fields(nn)%conb
+                 endif
+              enddo             ! i
+              enddo             ! j
+              enddo             ! k
+              endif
+           enddo                ! n
+
+           do n = 1, num_avail_hist_fields_4Di
+              nn = n3Dacum + n
               if (avail_hist_fields(nn)%vhistfreq == histfreq(ns)) then 
               do k = 1, nzilyr
               do ic = 1, ncat_hist
@@ -1858,25 +1853,6 @@
                     a4Ds(i,j,k,ic,n,iblk) = spval
                  else                            ! convert units
                     a4Ds(i,j,k,ic,n,iblk) = avail_hist_fields(nn)%cona*a4Ds(i,j,k,ic,n,iblk) &
-                                   * ravgct + avail_hist_fields(nn)%conb
-                 endif
-              enddo             ! i
-              enddo             ! j
-              enddo             ! ic
-              enddo             ! k
-              endif
-           enddo                ! n
-           do n = 1, num_avail_hist_fields_4Db
-              nn = n4Dscum + n
-              if (avail_hist_fields(nn)%vhistfreq == histfreq(ns)) then 
-              do k = 1, nzblyr
-              do ic = 1, ncat_hist
-              do j = jlo, jhi
-              do i = ilo, ihi
-                 if (.not. tmask(i,j,iblk)) then ! mask out land points
-                    a4Db(i,j,k,ic,n,iblk) = spval
-                 else                            ! convert units
-                    a4Db(i,j,k,ic,n,iblk) = avail_hist_fields(nn)%cona*a4Db(i,j,k,ic,n,iblk) &
                                    * ravgct + avail_hist_fields(nn)%conb
                  endif
               enddo             ! i
@@ -2008,9 +1984,9 @@
            if (allocated(a3Dc)) a3Dc(:,:,:,:,:)   = c0
            if (allocated(a3Dz)) a3Dz(:,:,:,:,:)   = c0
            if (allocated(a3Db)) a3Db(:,:,:,:,:)   = c0
+           if (allocated(a3Da)) a3Da(:,:,:,:,:)   = c0
            if (allocated(a4Di)) a4Di(:,:,:,:,:,:) = c0
            if (allocated(a4Ds)) a4Ds(:,:,:,:,:,:) = c0
-           if (allocated(a4Db)) a4Db(:,:,:,:,:,:) = c0
            avgct(:) = c0
            albcnt(:,:,:,:) = c0
            write_ic = .false.        ! write initial condition once at most
@@ -2035,17 +2011,17 @@
            nn = n - n3Dzcum
            if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) a3Db(:,:,:,nn,:) = c0
         enddo
-        do n = n3Dbcum + 1, n4Dicum
+        do n = n3Dbcum + 1, n3Dacum
            nn = n - n3Dbcum
+           if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) a3Da(:,:,:,nn,:) = c0
+        enddo
+        do n = n3Dacum + 1, n4Dicum
+           nn = n - n3Dacum
            if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) a4Di(:,:,:,:,nn,:) = c0
         enddo
         do n = n4Dicum + 1, n4Dscum
            nn = n - n4Dicum
            if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) a4Ds(:,:,:,:,nn,:) = c0
-        enddo
-        do n = n4Dscum + 1, n4Dbcum
-           nn = n - n4Dscum
-           if (avail_hist_fields(n)%vhistfreq == histfreq(ns)) a4Db(:,:,:,:,nn,:) = c0
         enddo
 
       endif  ! write_history or write_ic

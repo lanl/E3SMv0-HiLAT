@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_read_write.F90 861 2014-10-21 16:44:30Z tcraig $
+!  SVN:$Id: ice_read_write.F90 960 2015-04-01 23:11:41Z eclare $
 !=======================================================================
 
 ! Routines for opening, reading and writing external files

@@ -7,7 +7,8 @@ setenv SITE LANL.conejo   # also works for mustang
 #setenv SITE LANL.bigsuze
 
 ### SYSTEM_USERDIR is predefined on ORNL machines
-setenv SYSTEM_USERDIR /scratch/eclare/CICE.v5.1  # conejo
+setenv SYSTEM_USERDIR /net/scratch1/njeffery/col_pkg/zbgc_colpkg
+#setenv SYSTEM_USERDIR /net/scratch1/eclare/CICE.v5.1  # conejo
 #setenv SYSTEM_USERDIR /Users/akt/Work/MPAS-CICE/Column_Package/cice_package/run_dirs
 
 ### Grid resolution
@@ -55,14 +56,31 @@ setenv TRPND   1          # set to 1 for melt pond tracers
 setenv NTRAERO 0          # number of aerosol tracers 
                           # (up to max_aero in ice_domain_size.F90) 
                           # CESM uses 3 aerosol tracers
-setenv TRBRI   0          # set to 1 for brine height tracer
+setenv TRBRI   1          # set to 1 for brine height tracer
+setenv TRZS    0          # set to 1 for zsalinity tracer
+                          # (needs TRBRI = 1)
+setenv TRBGCS  0          # set to 1 for skeletal layer tracers  
+                          # (needs TRBGCZ = 0) 
+setenv TRBGCZ  1          # set to 1 for zbgc tracers
+                          # (needs TRBGCS = 0 and TRBRI = 1)         
 setenv NBGCLYR 7          # number of zbgc layers
-setenv TRBGCS  0          # number of skeletal layer bgc tracers 
-                          # TRBGCS=0 or 2<=TRBGCS<=9)
+setenv TRZAERO 3          # number of z aerosol tracers 
+                          # (up to max_aero = 6)
+setenv TRALG   3          # number of algal tracers
+                          # (up to max_algae = 3)
+setenv TRDOC   2          # number of dissolve organic carbon 
+                          # (up to max_doc = 3)
+setenv TRDIC   0          # number of dissolve inorganic carbon 
+                          # (up to max_dic = 1)
+setenv TRDON   1          # number of dissolve organic nitrogen
+                          # (up to max_don = 1)
+setenv TRFEP   1          # number of particulate iron tracers 
+                          # (up to max_fe  = 2) 
+setenv TRFED   1          # number of dissolved iron tracers 
+                          # (up to max_fe  = 2)
 
 ### Specialty code
 setenv CAM_ICE  no        # set to yes for CAM runs (single column) 
-setenv SHRDIR   csm_share # location of CCSM shared code
 setenv IO_TYPE  netcdf    # set to none if netcdf library is unavailable
                           # set to pio for parallel netcdf
 setenv DITTO    no        # reproducible diagnostics
@@ -76,12 +94,12 @@ setenv NUMIN 11           # minimum file unit number
 setenv NUMAX 99           # maximum file unit number
 
 ### Set SRCDIR and EXEDIR to your own paths!
-setenv SRCDIR /usr/projects/climate/eclare/CICE.v5.1/cice  # conejo
+setenv SRCDIR /usr/projects/climate/njeffery/col_pkg/zbgc_colpkg  # conejo
 #setenv SRCDIR /Users/akt/Work/MPAS-CICE/Column_Package/cice_package/cice
 
-setenv EXEDIR $SYSTEM_USERDIR/rundir
+setenv EXEDIR $SYSTEM_USERDIR/gx3_zbgc
                                           if !(-d $EXEDIR) mkdir -p $EXEDIR
-setenv CBLD   $SRCDIR/bld
+setenv CBLD   $SRCDIR/bld  
 setenv OBJDIR $EXEDIR/compile           ; if !(-d $OBJDIR) mkdir -p $OBJDIR
 setenv RSTDIR $EXEDIR/restart           ; if !(-d $RSTDIR) mkdir -p $RSTDIR
 setenv HSTDIR $EXEDIR/history           ; if !(-d $HSTDIR) mkdir -p $HSTDIR
@@ -133,10 +151,11 @@ endif
 ### List of source code directories (in order of importance).
 cat >! Filepath << EOF
 $SRCDIR/drivers/$DRVDIR
+$SRCDIR/source_colpkg/constants/$DRVDIR
+$SRCDIR/source_colpkg
 $SRCDIR/source
 $SRCDIR/$COMMDIR
 $SRCDIR/$IODIR
-$SRCDIR/$SHRDIR
 EOF
 
 cc -o makdep $CBLD/makdep.c                         || exit 2
@@ -160,6 +179,16 @@ echo $TRPND   = TRPND,   melt pond tracers
 echo $NTRAERO = NTRAERO, number of aerosol tracers
 echo $TRBRI   = TRBRI,   brine height tracer
 echo $NBGCLYR = NBGCLYR, number of bio grid layers
-echo $TRBGCS  = TRBGCS,  number of BGC tracers
+echo $TRZS    = TRZS,    zsalinity tracer
+echo $TRBGCS  = TRBGCS,  number of skl BGC tracers
+echo $TRBGCZ  = TRBGCZ,  number of z BGC tracers
+echo $TRALG   = TRALG,   number of autotrophs
+echo $TRDOC   = TRDOC,   number of DOC pools
+echo $TRDIC   = TRDIC,   number of DIC pools
+echo $TRDON   = TRDON,   number of DON pools
+echo $TRFED   = TRFED,   number of dFe pools
+echo $TRFEP   = TRFEP,   number of pFe pools
+echo $TRZAERO = TRZEARO, number of z aerosol tracers
+
 
 

@@ -26,6 +26,7 @@
 
 <ndtd                   > 1 </ndtd>
 <ndtd hgrid="tx0.1v2"   > 3 </ndtd>
+<ndtd hgrid="tx0.3v2"   > 3 </ndtd>
 <ndtd hgrid="ar9v3"     > 1 </ndtd>
 <ndtd hgrid="ar9v4"     > 1 </ndtd>
 <pointer_file>'./rpointer.ice'</pointer_file>
@@ -113,19 +114,19 @@
 <dT_mlt hgrid='gx3v7'> 2.00 </dT_mlt>
 <dT_mlt hgrid="ar9v3"> 1.00 </dT_mlt>
 <dT_mlt hgrid="ar9v4"> 1.00 </dT_mlt>
-<dT_mlt cam4='.true.'> 1.50 </dT_mlt>
+<dT_mlt cam5='.true.'> 1.00 </dT_mlt>
 
 <rsnw_mlt              > 1000. </rsnw_mlt>
 <rsnw_mlt hgrid='gx3v7'> 2000. </rsnw_mlt>
 <rsnw_mlt hgrid="ar9v3"> 1000. </rsnw_mlt>
 <rsnw_mlt hgrid="ar9v4"> 1000. </rsnw_mlt>
-<rsnw_mlt cam4='.true.'> 1500. </rsnw_mlt>
+<rsnw_mlt cam5='.true.'> 1000. </rsnw_mlt>
 
 <R_snw              >  1.75 </R_snw>
 <R_snw hgrid='gx3v7'> -2.00 </R_snw>
 <R_snw hgrid="ar9v3"> -1.00 </R_snw>
 <R_snw hgrid="ar9v4"> -1.00 </R_snw>
-<R_snw cam4='.true.'>  1.50 </R_snw>
+<R_snw cam5='.true.'>  1.75 </R_snw>
 
 <R_ice              >  0.0 </R_ice>
 <R_pnd              >  0.0 </R_pnd>
@@ -218,22 +219,41 @@
 <!--------------------------->
 
 <tr_brine> .false. </tr_brine>
-<bgc_data_dir> 'unknown_bgc_data_dir' </bgc_data_dir>
-<sil_data_type> 'unknown' </sil_data_type>
-<nit_data_type> 'unknown' </nit_data_type>
-<restore_bgc> .false. </restore_bgc>
-<skl_bgc> .false. </skl_bgc>
-<tr_bgc_C_sk> .false. </tr_bgc_C_sk>
-<tr_bgc_chl_sk> .false. </tr_bgc_chl_sk>
-<tr_bgc_Am_sk> .false. </tr_bgc_Am_sk>
-<tr_bgc_Sil_sk> .false. </tr_bgc_Sil_sk>
-<tr_bgc_DMSPp_sk> .false. </tr_bgc_DMSPp_sk>
-<tr_bgc_DMSPd_sk> .false. </tr_bgc_DMSPd_sk>
-<tr_bgc_DMS_sk> .false. </tr_bgc_DMS_sk>
-<restart_bgc> .false. </restart_bgc>
 <restart_hbrine> .false. </restart_hbrine>
-<phi_snow> 0.5 </phi_snow>
+<tr_zaero> .false. </tr_zaero>
+<modal_aero> .false. </modal_aero>
+<skl_bgc> .false. </skl_bgc>
+<z_tracers> .false. </z_tracers>
+<dEdd_algae> .false. </dEdd_algae>
+<solve_zbgc> .false. </solve_zbgc>
 <bgc_flux_type> 'Jin2006' </bgc_flux_type>
+<restore_bgc> .false. </restore_bgc>
+<restart_bgc> .false. </restart_bgc>
+<scale_bgc> .false. </scale_bgc>
+<solve_zsal> .false. </solve_zsal>
+<restart_zsal> .false. </restart_zsal>
+<bgc_data_dir> 'unknown_bgc_data_dir' </bgc_data_dir>
+<sil_data_type> 'default' </sil_data_type>
+<nit_data_type> 'default' </nit_data_type>
+<fe_data_type> 'default' </fe_data_type>
+<tr_bgc_Nit> .false. </tr_bgc_Nit>
+<tr_bgc_C> .false. </tr_bgc_C>
+<tr_bgc_chl> .false. </tr_bgc_chl>
+<tr_bgc_Am> .false. </tr_bgc_Am>
+<tr_bgc_Sil> .false. </tr_bgc_Sil>
+<tr_bgc_DMS> .false. </tr_bgc_DMS>
+<tr_bgc_PON> .false. </tr_bgc_PON>
+<tr_bgc_hum> .false. </tr_bgc_hum>
+<tr_bgc_DON> .false. </tr_bgc_DON>
+<tr_bgc_Fe> .false. </tr_bgc_Fe>
+<grid_o> 0.006 </grid_o>
+<grid_o_t> 0.006 </grid_o_t>
+<l_sk> 0.024 </l_sk>
+<grid_oS> 0.0 </grid_oS>
+<l_skS> 0.028 </l_skS>
+<phi_snow> -0.3 </phi_snow>
+<initbio_frac> 0.8 </initbio_frac>
+<frazil_scav> 0.8 </frazil_scav>
 
 <!--------------------------->
 <!----- Tracer namelist ----->
@@ -365,6 +385,17 @@
 <!-- Output history fields -->
 <!--------------------------->
 
+<f_TLAT                       >.true.</f_TLAT>
+<f_TLAT cice_mode='prescribed'>.false.</f_TLAT>
+
+<f_TLON                       >.true.</f_TLON>
+<f_TLON cice_mode='prescribed'>.false.</f_TLON>
+
+<f_ULAT                       >.true.</f_ULAT>
+<f_ULAT cice_mode='prescribed'>.false.</f_ULAT>
+
+<f_ULON                       >.true.</f_ULON>
+<f_ULON cice_mode='prescribed'>.false.</f_ULON>
 
 <f_tmask                       >.true.</f_tmask>
 <f_blkmask                     >.true.</f_blkmask>
@@ -401,21 +432,6 @@
 <f_ANGLET                       >.true.</f_ANGLET>
 <f_ANGLET cice_mode='prescribed'>.false.</f_ANGLET>
 
-<f_TLAT                       >.true.</f_TLAT>
-<f_TLAT cice_mode='prescribed'>.false.</f_TLAT>
-
-<f_TLON                       >.true.</f_TLON>
-<f_TLON cice_mode='prescribed'>.false.</f_TLON>
-
-<f_ULAT                       >.true.</f_ULAT>
-<f_ULAT cice_mode='prescribed'>.false.</f_ULAT>
-
-<f_ULON                       >.true.</f_ULON>
-<f_ULON cice_mode='prescribed'>.false.</f_ULON>
-
-<f_bounds                       >.false.</f_bounds>
-<f_bounds cice_mode='prescribed'>.false.</f_bounds>
-
 <f_NCAT                       >.true.</f_NCAT>
 <f_NCAT hgrid="ar9v3"         >.true.</f_NCAT>
 <f_NCAT hgrid="ar9v4"         >.true.</f_NCAT>
@@ -430,6 +446,16 @@
 <f_VGRDb                       >.true.</f_VGRDb>
 <f_VGRDb cice_mode='prescribed'>.false.</f_VGRDb>
 
+<f_VGRDa                       >.true.</f_VGRDa>
+<f_VGRDa cice_mode='prescribed'>.false.</f_VGRDa>
+
+<f_bounds                       >.false.</f_bounds>
+<f_bounds cice_mode='prescribed'>.false.</f_bounds>
+
+<f_aice                       >'mxxxx'</f_aice>
+<f_aice hgrid="ar9v4"         >'mdhxx'</f_aice>
+<f_aice cice_mode='prescribed'>'xxxxx'</f_aice>
+
 <f_hi                       >'mxxxx'</f_hi>
 <f_hi hgrid="ar9v4"         >'mdhxx'</f_hi>
 <f_hi cice_mode='prescribed'>'xxxxx'</f_hi>
@@ -438,15 +464,13 @@
 <f_hs hgrid="ar9v4"         >'mdhxx'</f_hs>
 <f_hs cice_mode='prescribed'>'xxxxx'</f_hs>
 
-<f_snowfrac                 >'mxxxx'</f_snowfrac>
-
 <f_Tsfc                       >'mxxxx'</f_Tsfc>
 <f_Tsfc hgrid="ar9v4"         >'mdhxx'</f_Tsfc>
 <f_Tsfc cice_mode='prescribed'>'xxxxx'</f_Tsfc>
 
-<f_aice                       >'mxxxx'</f_aice>
-<f_aice hgrid="ar9v4"         >'mdhxx'</f_aice>
-<f_aice cice_mode='prescribed'>'xxxxx'</f_aice>
+<f_sice                       >'xxxxx'</f_sice>
+<f_sice hgrid="ar9v4"         >'mdhxx'</f_sice>
+<f_sice cice_mode='prescribed'>'xxxxx'</f_sice>
 
 <f_uvel                       >'mxxxx'</f_uvel>
 <f_uvel cice_mode='prescribed'>'xxxxx'</f_uvel>
@@ -472,10 +496,11 @@
 <f_fswdn hgrid="ar9v4"         >'mdhxx'</f_fswdn>
 <f_fswdn cice_mode='prescribed'>'xxxxx'</f_fswdn>
 
-<f_fswup                       >'mxxxx'</f_fswup>
 <f_flwdn                       >'mxxxx'</f_flwdn>
 <f_flwdn hgrid="ar9v4"         >'mdhxx'</f_flwdn>
 <f_flwdn cice_mode='prescribed'>'xxxxx'</f_flwdn>
+
+<f_snowfrac                 >'mxxxx'</f_snowfrac>
 
 <f_snow                       >'mxxxx'</f_snow>
 <f_snow hgrid="ar9v4"         >'mdhxx'</f_snow>
@@ -513,10 +538,6 @@
 <f_vocn hgrid="ar9v3"         >'mdhxx'</f_vocn>
 <f_vocn hgrid="ar9v4"         >'mdhxx'</f_vocn>
 
-<f_sice                       >'xxxxx'</f_sice>
-<f_sice hgrid="ar9v4"         >'mdhxx'</f_sice>
-<f_sice cice_mode='prescribed'>'xxxxx'</f_sice>
-
 <f_frzmlt                       >'xxxxx'</f_frzmlt>
 <f_frzmlt cice_mode='prescribed'>'xxxxx'</f_frzmlt>
 <f_frzmlt hgrid="ar9v3"         >'mdhxx'</f_frzmlt>
@@ -526,15 +547,15 @@
 <f_fswfac hgrid="ar9v4"         >'mdhxx'</f_fswfac>
 <f_fswfac cice_mode='prescribed'>'xxxxx'</f_fswfac>
 
+<f_fswint_ai                       >'xxxxx'</f_fswint_ai>
+<f_fswint_ai hgrid="ar9v4"         >'mdhxx'</f_fswint_ai>
+<f_fswint_ai cice_mode='prescribed'>'xxxxx'</f_fswint_ai>
+
 <f_fswabs                       >'mxxxx'</f_fswabs>
 <f_fswabs hgrid="ar9v4"         >'mdhxx'</f_fswabs>
 <f_fswabs cice_mode='prescribed'>'xxxxx'</f_fswabs>
 
 <f_fswabs_ai                       >'xxxxx'</f_fswabs_ai>
-<f_fswabs_ai hgrid="ar9v4"         >'mdhxx'</f_fswabs_ai>
-<f_fswabs_ai cice_mode='prescribed'>'xxxxx'</f_fswabs_ai>
-
-<f_fswint_ai                       >'xxxxx'</f_fswint_ai>
 <f_fswabs_ai hgrid="ar9v4"         >'mdhxx'</f_fswabs_ai>
 <f_fswabs_ai cice_mode='prescribed'>'xxxxx'</f_fswabs_ai>
 
@@ -606,6 +627,8 @@
 <f_fsens_ai hgrid="ar9v4"         >'mdhxx'</f_fsens_ai>
 <f_fsens_ai cice_mode='prescribed'>'xxxxx'</f_fsens_ai>
 
+<f_fswup                       >'mxxxx'</f_fswup>
+
 <f_flwup                       >'mxxxx'</f_flwup>
 <f_flwup hgrid="ar9v4"         >'mdhxx'</f_flwup>
 <f_flwup cice_mode='prescribed'>'xxxxx'</f_flwup>
@@ -652,14 +675,14 @@
 <f_dsnow hgrid="ar9v4"         >'mdhxx'</f_dsnow>
 <f_dsnow cice_mode='prescribed'>'xxxxx'</f_dsnow>
 
+<f_melts                       >'mxxxx'</f_melts>
+<f_melts hgrid="ar9v4"         >'mdhxx'</f_melts>
+<f_melts cice_mode='prescribed'>'xxxxx'</f_melts>
+
 <f_meltt                       >'mxxxx'</f_meltt>
 <f_meltt cice_mode='prescribed'>'xxxxx'</f_meltt>
 <f_meltt hgrid="ar9v3"         >'mxxxx'</f_meltt>
 <f_meltt hgrid="ar9v4"         >'mdhxx'</f_meltt>
-
-<f_melts                       >'mxxxx'</f_melts>
-<f_melts hgrid="ar9v4"         >'mdhxx'</f_melts>
-<f_melts cice_mode='prescribed'>'xxxxx'</f_melts>
 
 <f_meltb                       >'mxxxx'</f_meltb>
 <f_meltb cice_mode='prescribed'>'xxxxx'</f_meltb>
@@ -708,6 +731,17 @@
 <f_fswthru_ai                       >'xxxxx'</f_fswthru_ai>
 <f_fswthru_ai hgrid="ar9v4"         >'mdhxx'</f_fswthru_ai>
 <f_fswthru_ai cice_mode='prescribed'>'xxxxx'</f_fswthru_ai>
+<f_fsurf_ai                       >'xxxxx'</f_fsurf_ai>
+<f_fsurf_ai hgrid="ar9v4"         >'mdhxx'</f_fsurf_ai>
+<f_fsurf_ai cice_mode='prescribed'>'xxxxx'</f_fsurf_ai>
+
+<f_fcondtop_ai                       >'xxxxx'</f_fcondtop_ai>
+<f_fcondtop_ai hgrid="ar9v4"         >'mdhxx'</f_fcondtop_ai>
+<f_fcondtop_ai cice_mode='prescribed'>'xxxxx'</f_fcondtop_ai>
+
+<f_fmeltt_ai                       >'xxxxx'</f_fmeltt_ai>
+<f_fmeltt_ai hgrid="ar9v4"         >'mdhxx'</f_fmeltt_ai>
+<f_fmeltt_ai cice_mode='prescribed'>'xxxxx'</f_fmeltt_ai>
 
 <f_strairx                       >'mxxxx'</f_strairx>
 <f_strairx cice_mode='prescribed'>'xxxxx'</f_strairx>
@@ -804,6 +838,16 @@
 <f_daidtd hgrid="ar9v3"         >'mxxxx'</f_daidtd>
 <f_daidtd hgrid="ar9v4"         >'mdhxx'</f_daidtd>
 
+<f_dagedtt                       >'mxxxx'</f_dagedtt>
+<f_dagedtt cice_mode='prescribed'>'xxxxx'</f_dagedtt>
+<f_dagedtt hgrid="ar9v3"         >'mxxxx'</f_dagedtt>
+<f_dagedtt hgrid="ar9v4"         >'mdhxx'</f_dagedtt>
+
+<f_dagedtd                       >'mxxxx'</f_dagedtd>
+<f_dagedtd cice_mode='prescribed'>'xxxxx'</f_dagedtd>
+<f_dagedtd hgrid="ar9v3"         >'mxxxx'</f_dagedtd>
+<f_dagedtd hgrid="ar9v4"         >'mdhxx'</f_dagedtd>
+
 <f_mlt_onset                       >'xxxxx'</f_mlt_onset>
 <f_mlt_onset cice_mode='prescribed'>'xxxxx'</f_mlt_onset>
 <f_mlt_onset hgrid="ar9v3"         >'mxxxx'</f_mlt_onset>
@@ -814,14 +858,6 @@
 <f_frz_onset hgrid="ar9v3"         >'mxxxx'</f_frz_onset>
 <f_frz_onset hgrid="ar9v4"         >'mdhxx'</f_frz_onset>
 
-<f_iage                       >'xxxxx'</f_iage>
-<f_iage hgrid="ar9v4"         >'mdhxx'</f_iage>
-<f_iage cice_mode='prescribed'>'xxxxx'</f_iage>
-
-<f_FY                       >'xxxxx'</f_FY>
-<f_FY hgrid="ar9v4"         >'mdhxx'</f_FY>
-<f_FY cice_mode='prescribed'>'xxxxx'</f_FY>
-
 <f_hisnap                       >'xxxxx'</f_hisnap>
 <f_hisnap hgrid="ar9v4"         >'mdhxx'</f_hisnap>
 <f_hisnap cice_mode='prescribed'>'xxxxx'</f_hisnap>
@@ -829,6 +865,23 @@
 <f_aisnap                       >'xxxxx'</f_aisnap>
 <f_aisnap hgrid="ar9v4"         >'mdhxx'</f_aisnap>
 <f_aisnap cice_mode='prescribed'>'xxxxx'</f_aisnap>
+
+<f_trsig                       >'xxxxx'</f_trsig>
+<f_trsig hgrid="ar9v4"         >'mdhxx'</f_trsig>
+<f_trsig cice_mode='prescribed'>'xxxxx'</f_trsig>
+
+<f_icepresent                       >'mxxxx'</f_icepresent>
+<f_icepresent cice_mode='prescribed'>'xxxxx'</f_icepresent>
+<f_icepresent hgrid="ar9v3"         >'mxxxx'</f_icepresent>
+<f_icepresent hgrid="ar9v4"         >'mdhxx'</f_icepresent>
+
+<f_iage                       >'xxxxx'</f_iage>
+<f_iage hgrid="ar9v4"         >'mdhxx'</f_iage>
+<f_iage cice_mode='prescribed'>'xxxxx'</f_iage>
+
+<f_FY                       >'xxxxx'</f_FY>
+<f_FY hgrid="ar9v4"         >'mdhxx'</f_FY>
+<f_FY cice_mode='prescribed'>'xxxxx'</f_FY>
 
 <f_aicen                       >'mxxxx'</f_aicen>
 <f_aicen cice_mode='prescribed'>'xxxxx'</f_aicen>
@@ -850,26 +903,17 @@
 <f_snowfracn hgrid="ar9v3"         >'mxxxx'</f_snowfracn>
 <f_snowfracn hgrid="ar9v4"         >'mdhxx'</f_snowfracn>
 
-<f_trsig                       >'xxxxx'</f_trsig>
-<f_trsig hgrid="ar9v4"         >'mdhxx'</f_trsig>
-<f_trsig cice_mode='prescribed'>'xxxxx'</f_trsig>
+<f_keffn_Top                       >'xxxxx'</f_keffn_Top>
+<f_keffn_Top cice_mode='prescribed'>'xxxxx'</f_keffn_Top>
 
-<f_icepresent                       >'mxxxx'</f_icepresent>
-<f_icepresent cice_mode='prescribed'>'xxxxx'</f_icepresent>
-<f_icepresent hgrid="ar9v3"         >'mxxxx'</f_icepresent>
-<f_icepresent hgrid="ar9v4"         >'mdhxx'</f_icepresent>
+<f_Tinz                       >'xxxxx'</f_Tinz>
+<f_Tinz cice_mode='prescribed'>'xxxxx'</f_Tinz>
 
-<f_fsurf_ai                       >'xxxxx'</f_fsurf_ai>
-<f_fsurf_ai hgrid="ar9v4"         >'mdhxx'</f_fsurf_ai>
-<f_fsurf_ai cice_mode='prescribed'>'xxxxx'</f_fsurf_ai>
+<f_Sinz                       >'xxxxx'</f_Sinz>
+<f_Sinz cice_mode='prescribed'>'xxxxx'</f_Sinz>
 
-<f_fcondtop_ai                       >'xxxxx'</f_fcondtop_ai>
-<f_fcondtop_ai hgrid="ar9v4"         >'mdhxx'</f_fcondtop_ai>
-<f_fcondtop_ai cice_mode='prescribed'>'xxxxx'</f_fcondtop_ai>
-
-<f_fmeltt_ai                       >'xxxxx'</f_fmeltt_ai>
-<f_fmeltt_ai hgrid="ar9v4"         >'mdhxx'</f_fmeltt_ai>
-<f_fmeltt_ai cice_mode='prescribed'>'xxxxx'</f_fmeltt_ai>
+<f_Tsnz                       >'xxxxx'</f_Tsnz>
+<f_Tsnz cice_mode='prescribed'>'xxxxx'</f_Tsnz>
 
 <f_fsurfn_ai                       >'xxxxx'</f_fsurfn_ai>
 <f_fsurfn_ai hgrid="ar9v4"         >'mdhxx'</f_fsurfn_ai>
@@ -890,18 +934,6 @@
 <f_fsensn_ai                       >'xxxxx'</f_fsensn_ai>
 <f_fsensn_ai hgrid="ar9v4"         >'mdhxx'</f_fsensn_ai>
 <f_fsensn_ai cice_mode='prescribed'>'xxxxx'</f_fsensn_ai>
-
-<f_keffn_Top                       >'xxxxx'</f_keffn_Top>
-<f_keffn_Top cice_mode='prescribed'>'xxxxx'</f_keffn_Top>
-
-<f_Tinz                       >'xxxxx'</f_Tinz>
-<f_Tinz cice_mode='prescribed'>'xxxxx'</f_Tinz>
-
-<f_Sinz                       >'xxxxx'</f_Sinz>
-<f_Sinz cice_mode='prescribed'>'xxxxx'</f_Sinz>
-
-<f_Tsnz                       >'xxxxx'</f_Tsnz>
-<f_Tsnz cice_mode='prescribed'>'xxxxx'</f_Tsnz>
 
 <f_a11                       >'xxxxx'</f_a11>
 <f_a11 cice_mode='prescribed'>'xxxxx'</f_a11>
@@ -1079,95 +1111,41 @@
 <f_aero hgrid="ar9v3"         >'mxxxx'</f_aero>
 <f_aero hgrid="ar9v4"         >'mxxxx'</f_aero>
 
-<f_aeron                       >'xxxxx'</f_aeron>
-<f_aeron cice_mode='prescribed'>'xxxxx'</f_aeron>
+<f_fbio                       >'xxxxx'</f_fbio>
+<f_fbio cice_mode='prescribed'>'xxxxx'</f_fbio>
 
-<f_fNO                       >'xxxxx'</f_fNO>
-<f_fNO cice_mode='prescribed'>'xxxxx'</f_fNO>
+<f_fbio_ai                       >'xxxxx'</f_fbio_ai>
+<f_fbio_ai cice_mode='prescribed'>'xxxxx'</f_fbio_ai>
 
-<f_fNO_ai                       >'xxxxx'</f_fNO_ai>
-<f_fNO_ai cice_mode='prescribed'>'xxxxx'</f_fNO_ai>
+<f_zaero                       >'xxxxx'</f_zaero>
+<f_zaero cice_mode='prescribed'>'xxxxx'</f_zaero>
 
-<f_fNH                       >'xxxxx'</f_fNH>
-<f_fNH cice_mode='prescribed'>'xxxxx'</f_fNH>
-
-<f_fNH_ai                       >'xxxxx'</f_fNH_ai>
-<f_fNH_ai cice_mode='prescribed'>'xxxxx'</f_fNH_ai>
-
-<f_fN                       >'xxxxx'</f_fN>
-<f_fN cice_mode='prescribed'>'xxxxx'</f_fN>
-
-<f_fN_ai                       >'xxxxx'</f_fN_ai>
-<f_fN_ai cice_mode='prescribed'>'xxxxx'</f_fN_ai>
-
-<f_fSil                       >'xxxxx'</f_fSil>
-<f_fSil cice_mode='prescribed'>'xxxxx'</f_fSil>
-
-<f_fSil_ai                       >'xxxxx'</f_fSil_ai>
-<f_fSil_ai cice_mode='prescribed'>'xxxxx'</f_fSil_ai>
-
-<f_bgc_N_sk                       >'xxxxx'</f_bgc_N_sk>
-<f_bgc_N_sk cice_mode='prescribed'>'xxxxx'</f_bgc_N_sk>
-
-<f_bgc_C_sk                       >'xxxxx'</f_bgc_C_sk>
-<f_bgc_C_sk cice_mode='prescribed'>'xxxxx'</f_bgc_C_sk>
-
-<f_bgc_chl_sk                       >'xxxxx'</f_bgc_chl_sk>
-<f_bgc_chl_sk cice_mode='prescribed'>'xxxxx'</f_bgc_chl_sk>
-
-<f_bgc_Nit_sk                       >'xxxxx'</f_bgc_Nit_sk>
-<f_bgc_Nit_sk cice_mode='prescribed'>'xxxxx'</f_bgc_Nit_sk>
-
-<f_bgc_Am_sk                       >'xxxxx'</f_bgc_Am_sk>
-<f_bgc_Am_sk cice_mode='prescribed'>'xxxxx'</f_bgc_Am_sk>
-
-<f_bgc_Sil_sk                       >'xxxxx'</f_bgc_Sil_sk>
-<f_bgc_Sil_sk cice_mode='prescribed'>'xxxxx'</f_bgc_Sil_sk>
-
-<f_bgc_DMSPp_sk                       >'xxxxx'</f_bgc_DMSPp_sk>
-<f_bgc_DMSPp_sk cice_mode='prescribed'>'xxxxx'</f_bgc_DMSPp_sk>
-
-<f_bgc_DMSPd_sk                       >'xxxxx'</f_bgc_DMSPd_sk>
-<f_bgc_DMSPd_sk cice_mode='prescribed'>'xxxxx'</f_bgc_DMSPd_sk>
-
-<f_bgc_DMS_sk                       >'xxxxx'</f_bgc_DMS_sk>
-<f_bgc_DMS_sk cice_mode='prescribed'>'xxxxx'</f_bgc_DMS_sk>
-
-<f_bgc_Sil_ml                       >'xxxxx'</f_bgc_Sil_ml>
-<f_bgc_Sil_ml cice_mode='prescribed'>'xxxxx'</f_bgc_Sil_ml>
-
-<f_bgc_Nit_ml                       >'xxxxx'</f_bgc_Nit_ml>
-<f_bgc_Nit_ml cice_mode='prescribed'>'xxxxx'</f_bgc_Nit_ml>
-
-<f_bgc_Am_ml                       >'xxxxx'</f_bgc_Am_ml>
-<f_bgc_Am_ml cice_mode='prescribed'>'xxxxx'</f_bgc_Am_ml>
-
-<f_bgc_DMSP_ml                       >'xxxxx'</f_bgc_DMSP_ml>
-<f_bgc_DMSP_ml cice_mode='prescribed'>'xxxxx'</f_bgc_DMSP_ml>
-
-<f_bgc_DMS_ml                       >'xxxxx'</f_bgc_DMS_ml>
-<f_bgc_DMS_ml cice_mode='prescribed'>'xxxxx'</f_bgc_DMS_ml>
-
-<f_bTin                       >'xxxxx'</f_bTin>
-<f_bTin cice_mode='prescribed'>'xxxxx'</f_bTin>
-
-<f_bphi                       >'xxxxx'</f_bphi>
-<f_bphi cice_mode='prescribed'>'xxxxx'</f_bphi>
-
-<f_bgc_NO                       >'xxxxx'</f_bgc_NO>
-<f_bgc_NO cice_mode='prescribed'>'xxxxx'</f_bgc_NO>
+<f_bgc_S                       >'xxxxx'</f_bgc_S>
+<f_bgc_S cice_mode='prescribed'>'xxxxx'</f_bgc_S>
 
 <f_bgc_N                       >'xxxxx'</f_bgc_N>
 <f_bgc_N cice_mode='prescribed'>'xxxxx'</f_bgc_N>
 
-<f_bgc_NH                       >'xxxxx'</f_bgc_NH>
-<f_bgc_NH cice_mode='prescribed'>'xxxxx'</f_bgc_NH>
-
 <f_bgc_C                       >'xxxxx'</f_bgc_C>
 <f_bgc_C cice_mode='prescribed'>'xxxxx'</f_bgc_C>
 
+<f_bgc_DOC                       >'xxxxx'</f_bgc_DOC>
+<f_bgc_DOC cice_mode='prescribed'>'xxxxx'</f_bgc_DOC>
+
+<f_bgc_DIC                       >'xxxxx'</f_bgc_DIC>
+<f_bgc_DIC cice_mode='prescribed'>'xxxxx'</f_bgc_DIC>
+
 <f_bgc_chl                       >'xxxxx'</f_bgc_chl>
 <f_bgc_chl cice_mode='prescribed'>'xxxxx'</f_bgc_chl>
+
+<f_bgc_Nit                       >'xxxxx'</f_bgc_Nit>
+<f_bgc_Nit cice_mode='prescribed'>'xxxxx'</f_bgc_Nit>
+
+<f_bgc_Am                       >'xxxxx'</f_bgc_Am>
+<f_bgc_Am cice_mode='prescribed'>'xxxxx'</f_bgc_Am>
+
+<f_bgc_Sil                       >'xxxxx'</f_bgc_Sil>
+<f_bgc_Sil cice_mode='prescribed'>'xxxxx'</f_bgc_Sil>
 
 <f_bgc_DMSPp                       >'xxxxx'</f_bgc_DMSPp>
 <f_bgc_DMSPp cice_mode='prescribed'>'xxxxx'</f_bgc_DMSPp>
@@ -1178,11 +1156,38 @@
 <f_bgc_DMS                       >'xxxxx'</f_bgc_DMS>
 <f_bgc_DMS cice_mode='prescribed'>'xxxxx'</f_bgc_DMS>
 
-<f_bgc_Sil                       >'xxxxx'</f_bgc_Sil>
-<f_bgc_Sil cice_mode='prescribed'>'xxxxx'</f_bgc_Sil>
+<f_bgc_DON                       >'xxxxx'</f_bgc_DON>
+<f_bgc_DON cice_mode='prescribed'>'xxxxx'</f_bgc_DON>
 
-<f_bgc_S                       >'xxxxx'</f_bgc_S>
-<f_bgc_S cice_mode='prescribed'>'xxxxx'</f_bgc_S>
+<f_bgc_Fe                       >'xxxxx'</f_bgc_Fe>
+<f_bgc_Fe cice_mode='prescribed'>'xxxxx'</f_bgc_Fe>
+
+<f_bgc_hum                       >'xxxxx'</f_bgc_hum>
+<f_bgc_hum cice_mode='prescribed'>'xxxxx'</f_bgc_hum>
+
+<f_bgc_PON                       >'xxxxx'</f_bgc_PON>
+<f_bgc_PON cice_mode='prescribed'>'xxxxx'</f_bgc_PON>
+
+<f_bgc_ml                       >'xxxxx'</f_bgc_ml>
+<f_bgc_ml cice_mode='prescribed'>'xxxxx'</f_bgc_ml>
+
+<f_upNO                       >'xxxxx'</f_upNO>
+<f_upNO cice_mode='prescribed'>'xxxxx'</f_upNO>
+
+<f_upNH                       >'xxxxx'</f_upNH>
+<f_upNH cice_mode='prescribed'>'xxxxx'</f_upNH>
+
+<f_bTin                       >'xxxxx'</f_bTin>
+<f_bTin cice_mode='prescribed'>'xxxxx'</f_bTin>
+
+<f_bphi                       >'xxxxx'</f_bphi>
+<f_bphi cice_mode='prescribed'>'xxxxx'</f_bphi>
+
+<f_iDi                       >'xxxxx'</f_iDi>
+<f_iDi cice_mode='prescribed'>'xxxxx'</f_iDi>
+
+<f_iki                       >'xxxxx'</f_iki>
+<f_iki cice_mode='prescribed'>'xxxxx'</f_iki>
 
 <f_fbri                       >'xxxxx'</f_fbri>
 <f_fbri cice_mode='prescribed'>'xxxxx'</f_fbri>
@@ -1190,12 +1195,25 @@
 <f_hbri                       >'xxxxx'</f_hbri>
 <f_hbri cice_mode='prescribed'>'xxxxx'</f_hbri>
 
+<f_zfswin                       >'xxxxx'</f_zfswin>
+<f_zfswin cice_mode='prescribed'>'xxxxx'</f_zfswin>
+
+<f_bionet                       >'xxxxx'</f_bionet>
+<f_bionet cice_mode='prescribed'>'xxxxx'</f_bionet>
+
+<f_biosnow                       >'xxxxx'</f_biosnow>
+<f_biosnow cice_mode='prescribed'>'xxxxx'</f_biosnow>
+
 <f_grownet                       >'xxxxx'</f_grownet>
 <f_grownet cice_mode='prescribed'>'xxxxx'</f_grownet>
 
 <f_PPnet                       >'xxxxx'</f_PPnet>
 <f_PPnet cice_mode='prescribed'>'xxxxx'</f_PPnet>
 
+<f_algalpeak                       >'xxxxx'</f_algalpeak>
+<f_algalpeak cice_mode='prescribed'>'xxxxx'</f_algalpeak>
 
+<f_zbgc_frac                       >'xxxxx'</f_zbgc_frac>
+<f_zbgc_frac cice_mode='prescribed'>'xxxxx'</f_zbgc_frac>
 
 </namelist_defaults>

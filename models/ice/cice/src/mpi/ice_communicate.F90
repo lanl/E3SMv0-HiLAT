@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_communicate.F90 821 2014-08-26 19:58:10Z tcraig $
+!  SVN:$Id: ice_communicate.F90 929 2015-03-10 00:35:22Z eclare $
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  module ice_communicate

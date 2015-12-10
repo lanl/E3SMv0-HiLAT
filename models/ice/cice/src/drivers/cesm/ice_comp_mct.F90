@@ -49,7 +49,7 @@ module ice_comp_mct
 		              sec, dt, dt_dyn, calendar,                 &
                               calendar_type, nextsw_cday, days_per_year, &
                               nyr, new_year, time2sec, year_init
-  use ice_orbital,     only : eccen, obliqr, lambm0, mvelpp
+  use ice_constants_colpkg, only : eccen, obliqr, lambm0, mvelpp
   use ice_timers
 
   use ice_kinds_mod,   only : int_kind, dbl_kind, char_len_long, log_kind
@@ -291,8 +291,8 @@ contains
                trim(subname),' resetting idate to match sync clock'
        end if
 
-       idate0 = curr_ymd
-       idate = curr_ymd
+       idate0 = curr_ymd - (year_init*10000)
+       idate = curr_ymd - (year_init*10000)
 
        if (idate < 0) then
           write(nu_diag,*) trim(subname),' ERROR curr_ymd,year_init =',curr_ymd,year_init
@@ -444,8 +444,8 @@ contains
     use ice_history
     use ice_restart
     use ice_diagnostics
-    use ice_restoring , only : restore_ice, ice_HaloRestore
-    use ice_shortwave , only : init_shortwave
+    use ice_restoring,   only : restore_ice, ice_HaloRestore
+    use ice_init_column, only : init_shortwave
 
 ! !ARGUMENTS:
     type(ESMF_Clock),intent(inout) :: EClock

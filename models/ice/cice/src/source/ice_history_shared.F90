@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_shared.F90 915 2015-02-08 02:50:33Z tcraig $
+!  SVN:$Id: ice_history_shared.F90 1084 2015-11-20 19:52:06Z eclare $
 !=======================================================================
 !
 ! Output files: netCDF or binary data, Fortran unformatted dumps
@@ -83,27 +83,28 @@
          num_avail_hist_fields_3Dz  = 0, & ! Number of 3D fields (vertical)
          num_avail_hist_fields_3Dc  = 0, & ! Number of 3D fields (categories)
          num_avail_hist_fields_3Db  = 0, & ! Number of 3D fields (vertical biology)
+         num_avail_hist_fields_3Da  = 0, & ! Number of 3D fields (vertical), snow-biology
          num_avail_hist_fields_4Di  = 0, & ! Number of 4D fields (categories,vertical), ice
-         num_avail_hist_fields_4Ds  = 0, & ! Number of 4D fields (categories,vertical), snow
-         num_avail_hist_fields_4Db  = 0    ! Number of 4D fields (categories,vertical), ice-biology
+         num_avail_hist_fields_4Ds  = 0    ! Number of 4D fields (categories,vertical), snow
 
       integer (kind=int_kind), public :: &        ! cumulative counts
          n2D     , & ! num_avail_hist_fields_2D
          n3Dccum , & ! n2D     + num_avail_hist_fields_3Dc
          n3Dzcum , & ! n3Dccum + num_avail_hist_fields_3Dz
          n3Dbcum , & ! n3Dzcum + num_avail_hist_fields_3Db
+         n3Dacum , & ! n3Dbcum + num_avail_hist_fields_3Da
          n4Dicum , & ! n3Dbcum + num_avail_hist_fields_4Di
          n4Dscum , & ! n4Dicum + num_avail_hist_fields_4Ds
-         n4Dbcum , & ! n4Dscum + num_avail_hist_fields_4Db
          nzlyr   , & ! vertical dimension (temp variable)
          nzlyrb      ! vertical dimension of biology grid (temp variable)
 
       ! for now, ice and snow have same dimensions in netcdf
       ! could set nzilyr = nilyr + nslyr and write Tin+Tsn together into Tinz
       integer (kind=int_kind), parameter, public :: &
-         nzilyr = nilyr, & ! vertical dimension (allows alternative grids)
-         nzslyr = nslyr, &
-         nzblyr = nblyr+2
+         nzilyr = nilyr,   & ! vertical dimension (allows alternative grids)
+         nzslyr = nslyr,   & ! snow
+         nzblyr = nblyr+2, & ! bio grid
+         nzalyr = nblyr+4    ! aerosols (2 snow & nblyr+2 bio)
 
       type (ice_hist_field), dimension(max_avail_hist_fields), public :: &
          avail_hist_fields
@@ -111,7 +112,7 @@
       integer (kind=int_kind), parameter, public :: &
          nvar = 12              , & ! number of grid fields that can be written
                                     !   excluding grid vertices
-         nvarz = 4              , & ! number of category/vertical grid fields written
+         nvarz = 5              , & ! number of category/vertical grid fields written
          ncat_hist = ncat           ! number of ice categories written <= ncat
 
       real (kind=real_kind), public :: time_beg(max_nstrm), & ! bounds for averaging
@@ -123,9 +124,9 @@
          a3Dz(:,:,:,:,:)  , & ! field accumulations/averages, 3D vertical
          a3Db(:,:,:,:,:)  , & ! field accumulations/averages, 3D vertical biology
          a3Dc(:,:,:,:,:)  , & ! field accumulations/averages, 3D categories
+         a3Da(:,:,:,:,:)  , & ! field accumulations/averages, 3D snow+bio
          a4Di(:,:,:,:,:,:), & ! field accumulations/averages, 4D categories,vertical, ice
-         a4Ds(:,:,:,:,:,:), & ! field accumulations/averages, 4D categories,vertical, snow
-         a4Db(:,:,:,:,:,:)    ! field accumulations/averages, 4D categories,vertical, bio
+         a4Ds(:,:,:,:,:,:)    ! field accumulations/averages, 4D categories,vertical, snow
          
       real (kind=dbl_kind), allocatable, public :: &
          Tinz4d (:,:,:,:)    , & ! array for Tin
@@ -144,20 +145,20 @@
          ucstr = 'area: uarea'          , & ! vcellmeas for U cell quantities
          tstr2D  = 'TLON TLAT time'     , & ! vcoord for T cell quantities, 2D
          ustr2D  = 'ULON ULAT time'     , & ! vcoord for U cell quantities, 2D
-         tstr3Dz = 'TLON TLAT VGRD time', & ! vcoord for T cell quantities, 3D
-         ustr3Dz = 'ULON ULAT VGRD time', & ! vcoord for U cell quantities, 3D
-         tstr3Dc = 'TLON TLAT NCAT time', & ! vcoord for T cell quantities, 3D
-         ustr3Dc = 'ULON ULAT NCAT time', & ! vcoord for U cell quantities, 3D
-         tstr3Db = 'TLON TLAT VGRDb time', & ! vcoord for T cell quantities, 3D
-         ustr3Db = 'ULON ULAT VGRDb time', & ! vcoord for U cell quantities, 3D
+         tstr3Dz = 'TLON TLAT VGRDi time',& ! vcoord for T cell quantities, 3D
+         ustr3Dz = 'ULON ULAT VGRDi time',& ! vcoord for U cell quantities, 3D
+         tstr3Dc = 'TLON TLAT NCAT  time',& ! vcoord for T cell quantities, 3D
+         ustr3Dc = 'ULON ULAT NCAT  time',& ! vcoord for U cell quantities, 3D
+         tstr3Db = 'TLON TLAT VGRDb time',& ! vcoord for T cell quantities, 3D
+         ustr3Db = 'ULON ULAT VGRDb time',& ! vcoord for U cell quantities, 3D
+         tstr3Da = 'TLON TLAT VGRDa time',& ! vcoord for T cell quantities, 3D
+         ustr3Da = 'ULON ULAT VGRDa time',& ! vcoord for U cell quantities, 3D
 
 !ferret
          tstr4Di = 'TLON TLAT VGRDi NCAT', & ! vcoord for T cell, 4D, ice
          ustr4Di = 'ULON ULAT VGRDi NCAT', & ! vcoord for U cell, 4D, ice
          tstr4Ds = 'TLON TLAT VGRDs NCAT', & ! vcoord for T cell, 4D, snow
-         ustr4Ds = 'ULON ULAT VGRDs NCAT', & ! vcoord for U cell, 4D, snow
-         tstr4Db = 'TLON TLAT VGRDb NCAT', & ! vcoord for T cell, 4D, bio
-         ustr4Db = 'ULON ULAT VGRDb NCAT'    ! vcoord for U cell, 4D, bio
+         ustr4Ds = 'ULON ULAT VGRDs NCAT'    ! vcoord for U cell, 4D, snow
 !ferret
 !         tstr4Di  = 'TLON TLAT VGRDi NCAT time', & ! ferret can not handle time 
 !         ustr4Di  = 'ULON ULAT VGRDi NCAT time', & ! index on 4D variables.
@@ -179,7 +180,7 @@
            f_ANGLE     = .true., f_ANGLET     = .true., &
            f_bounds    = .true., f_NCAT       = .true., &
            f_VGRDi     = .true., f_VGRDs      = .true., &
-           f_VGRDb     = .true.
+           f_VGRDb     = .true., f_VGRDa      = .true.
 
       character (len=max_nstrm), public :: &
 !          f_example   = 'md', &
@@ -188,8 +189,8 @@
            f_Tsfc      = 'm', f_aice       = 'm', &
            f_uvel      = 'm', f_vvel       = 'm', &
            f_uatm      = 'm', f_vatm       = 'm', &
-           f_fswdn     = 'm', f_flwdn      = 'm', &
            f_fswup     = 'm', &
+           f_fswdn     = 'm', f_flwdn      = 'm', &
            f_snow      = 'm', f_snow_ai    = 'm', &
            f_rain      = 'm', f_rain_ai    = 'm', &
            f_sst       = 'm', f_sss        = 'm', &
@@ -197,7 +198,7 @@
            f_sice      = 'm', f_frzmlt     = 'm', &
            f_fswfac    = 'm', f_fswint_ai  = 'x', &
            f_fswabs    = 'm', f_fswabs_ai  = 'm', &
-           f_albsni  = 'm', &
+           f_albsni    = 'm', &
            f_alvdr     = 'x', f_alidr      = 'x', &
            f_alvdf     = 'x', f_alidf      = 'x', &
            f_alvdr_ai  = 'm', f_alidr_ai   = 'm', &
@@ -233,25 +234,25 @@
            f_iage      = 'm', f_FY         = 'm', &
            f_hisnap    = 'm', f_aisnap     = 'm', &
            f_aicen     = 'x', f_vicen      = 'x', &
-           f_vsnon     = 'x',                     &
+           f_vsnon     = 'x', &
            f_trsig     = 'm', f_icepresent = 'm', &
            f_fsurf_ai  = 'm', f_fcondtop_ai= 'm', &
            f_fmeltt_ai = 'm',                     &
            f_fsurfn_ai = 'x' ,f_fcondtopn_ai='x', &
            f_fmelttn_ai= 'x', f_flatn_ai   = 'x', &
-           f_fsensn_ai = 'x',                     &
-!          f_field3dz  = 'x',                     &
+           f_fsensn_ai = 'x', &
+!          f_field3dz  = 'x', &
            f_keffn_top = 'x', &
            f_Tinz      = 'x', f_Sinz       = 'x', &
            f_Tsnz      = 'x', &
            f_a11       = 'x', f_a12        = 'x', & 
            f_e11       = 'x', f_e12        = 'x', & 
-           f_e22       = 'x',			  & 
+           f_e22       = 'x', &
            f_s11       = 'x', f_s12        = 'x', & 
-           f_s22       = 'x',		          & 
-           f_yieldstress11       = 'x', 	  & 
-           f_yieldstress12       = 'x',           & 
-           f_yieldstress22       = 'x'
+           f_s22       = 'x', &
+           f_yieldstress11  = 'x', &
+           f_yieldstress12  = 'x', &
+           f_yieldstress22  = 'x'
 
       !---------------------------------------------------------------
       ! namelist variables
@@ -266,15 +267,15 @@
            f_ANGLE    , f_ANGLET   , &
            f_bounds   , f_NCAT     , &
            f_VGRDi    , f_VGRDs    , &
-           f_VGRDb    , &
+           f_VGRDb    , f_VGRDa    , &
 !          f_example  , &
            f_hi,        f_hs       , &
            f_snowfrac,  f_snowfracn, &
            f_Tsfc,      f_aice     , &
            f_uvel,      f_vvel     , &
            f_uatm,      f_vatm     , &
+           f_fswup,     &
            f_fswdn,     f_flwdn    , &
-           f_fswup, &
            f_snow,      f_snow_ai  , &     
            f_rain,      f_rain_ai  , &
            f_sst,       f_sss      , &
@@ -282,7 +283,7 @@
            f_sice,      f_frzmlt   , &
            f_fswfac,    f_fswint_ai, &
            f_fswabs,    f_fswabs_ai, &
-           f_albsni, &
+           f_albsni,    &
            f_alvdr,     f_alidr    , &
            f_alvdf,     f_alidf    , &
            f_alvdr_ai,  f_alidr_ai , &
@@ -293,7 +294,7 @@
            f_fsens,     f_fsens_ai , &
            f_flwup,     f_flwup_ai , &
            f_evap,      f_evap_ai  , &
-           f_Tair                  , &
+           f_Tair,      &
            f_Tref,      f_Qref     , &
            f_congel,    f_frazil   , &
            f_snoice,    f_dsnow    , &
@@ -318,24 +319,24 @@
            f_iage,      f_FY       , &
            f_hisnap,    f_aisnap   , &
            f_aicen,     f_vicen    , &
-           f_vsnon,                  &
+           f_vsnon,     &
            f_trsig,     f_icepresent,&
            f_fsurf_ai,  f_fcondtop_ai,&
            f_fmeltt_ai, &
            f_fsurfn_ai,f_fcondtopn_ai,&
            f_fmelttn_ai,f_flatn_ai,  &
-           f_fsensn_ai,              &
+           f_fsensn_ai, &
 !          f_field3dz,  &
            f_keffn_top, &
            f_Tinz,      f_Sinz,      &
-           f_Tsnz,  &
-           f_a11, 	f_a12 	   , &
-           f_e11, 	f_e12	   , &
-           f_e22                   , &
-           f_s11, 	f_s12	   , &
-           f_s22                   , &
-           f_yieldstress11         , &	
-           f_yieldstress12	   , &
+           f_Tsnz,      &
+           f_a11,       f_a12,       &
+           f_e11,       f_e12,       &
+           f_e22,       &
+           f_s11,       f_s12,       &
+           f_s22,       &
+           f_yieldstress11, &	
+           f_yieldstress12, &
            f_yieldstress22
 
       !---------------------------------------------------------------
@@ -360,6 +361,7 @@
            n_VGRDi      = 2, &
            n_VGRDs      = 3, &
            n_VGRDb      = 4, &
+           n_VGRDa      = 5, &
 
            n_lont_bnds  = 1, &
            n_latt_bnds  = 2, &
@@ -369,21 +371,21 @@
       integer (kind=int_kind), dimension(max_nstrm), public :: &
 !          n_example    , &
            n_hi         , n_hs         , &
-           n_snowfrac,    n_snowfracn,   &
+           n_snowfrac   , n_snowfracn  , &
            n_Tsfc       , n_aice       , &
            n_uvel       , n_vvel       , &
            n_uatm       , n_vatm       , &
            n_sice       , &
+           n_fswup      , &
            n_fswdn      , n_flwdn      , &
-           n_fswup, &
            n_snow       , n_snow_ai    , &
            n_rain       , n_rain_ai    , &
            n_sst        , n_sss        , &
            n_uocn       , n_vocn       , &
            n_frzmlt     , n_fswfac     , &
-           n_fswint_ai,                  &
+           n_fswint_ai  , &
            n_fswabs     , n_fswabs_ai  , &
-           n_albsni  , &
+           n_albsni     , &
            n_alvdr      , n_alidr      , &
            n_alvdf      , n_alidf      , &
            n_alvdr_ai   , n_alidr_ai   , &
@@ -402,7 +404,7 @@
            n_meltb      , n_meltl      , &
            n_fresh      , n_fresh_ai   , &
            n_fsalt      , n_fsalt_ai   , &
-           n_vsnon,                        &
+           n_vsnon      , &
            n_fhocn      , n_fhocn_ai   , &
            n_fswthru    , n_fswthru_ai , &
            n_strairx    , n_strairy    , &
@@ -431,13 +433,13 @@
 !          n_field3dz    , &
            n_keffn_top   , &
            n_Tinz        , n_Sinz      , &
-           n_Tsnz, &
-	   n_a11	 , n_a12	, &
-	   n_e11	 , n_e12 	, &
-	   n_e22	 , &
-	   n_s11	 , n_s12	, &
-	   n_s22	 , &
-	   n_yieldstress11, n_yieldstress12,  &
+           n_Tsnz        , &
+	   n_a11         , n_a12       , &
+	   n_e11         , n_e12       , &
+	   n_e22         , &
+	   n_s11         , n_s12       , &
+	   n_s22         , &
+	   n_yieldstress11, n_yieldstress12, &
 	   n_yieldstress22
 
       interface accum_hist_field ! generic interface
@@ -498,7 +500,9 @@
          endif
 
          cstream = ''
-         if (ns > 1) write(cstream,'(i1.1)') ns-1
+!echmod ! this was implemented for CESM but it breaks post-processing software
+!echmod ! of other groups (including RASM which uses CCSMCOUPLED)
+!echmod         if (ns > 1) write(cstream,'(i1.1)') ns-1
 
          if (histfreq(ns) == '1') then ! instantaneous, write every dt
            write(ncfile,'(a,a,i4.4,a,i2.2,a,i2.2,a,i5.5,a,a)')  &
@@ -591,18 +595,18 @@
 
             if (vcoord(11:14) == 'time') then
                num_avail_hist_fields_2D  = num_avail_hist_fields_2D + 1
-            elseif (vcoord(11:14) == 'NCAT' .and. vcoord(16:19) == 'time') then
+            elseif (vcoord(11:14) == 'NCAT' .and. vcoord(17:20) == 'time') then
                num_avail_hist_fields_3Dc = num_avail_hist_fields_3Dc + 1
             elseif (vcoord(11:15) == 'VGRDi' .and. vcoord(17:20) == 'time') then
                num_avail_hist_fields_3Dz = num_avail_hist_fields_3Dz + 1
             elseif (vcoord(11:15) == 'VGRDb' .and. vcoord(17:20) == 'time') then
                num_avail_hist_fields_3Db = num_avail_hist_fields_3Db + 1
+            elseif (vcoord(11:15) == 'VGRDa' .and. vcoord(17:20) == 'time') then
+               num_avail_hist_fields_3Da = num_avail_hist_fields_3Da + 1
             elseif (vcoord(11:15) == 'VGRDi' .and. vcoord(17:20) == 'NCAT') then
                num_avail_hist_fields_4Di = num_avail_hist_fields_4Di + 1
             elseif (vcoord(11:15) == 'VGRDs' .and. vcoord(17:20) == 'NCAT') then
                num_avail_hist_fields_4Ds = num_avail_hist_fields_4Ds + 1
-            elseif (vcoord(11:15) == 'VGRDb' .and. vcoord(17:20) == 'NCAT') then
-               num_avail_hist_fields_4Db = num_avail_hist_fields_4Db + 1
             endif
 
             if (num_avail_hist_fields_tot > max_avail_hist_fields) &
@@ -613,9 +617,9 @@
                 num_avail_hist_fields_3Dc + &
                 num_avail_hist_fields_3Dz + &
                 num_avail_hist_fields_3Db + &
+                num_avail_hist_fields_3Da + &
                 num_avail_hist_fields_4Di + &
-                num_avail_hist_fields_4Ds + &
-                num_avail_hist_fields_4Db)  &
+                num_avail_hist_fields_4Ds)  &
                call abort_ice("num_avail_hist_fields error")
 
             id(ns) = num_avail_hist_fields_tot

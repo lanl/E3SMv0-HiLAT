@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_state.F90 704 2013-08-20 23:43:58Z eclare $
+!  SVN:$Id: ice_state.F90 1084 2015-11-20 19:52:06Z eclare $
 !=======================================================================
 !
 ! Primary state variables in various configurations
@@ -80,7 +80,7 @@
                    ! 1: surface temperature of ice/snow (C)
 
       !-----------------------------------------------------------------
-      ! indices and flags for tracers
+      ! tracers infrastructure arrays
       !-----------------------------------------------------------------
 
       integer (kind=int_kind), dimension (max_ntrcr), public :: &
@@ -88,51 +88,15 @@
                        ! = 1 for ice volume tracers
                        ! = 2 for snow volume tracers
 
-      integer (kind=int_kind), public :: &
-         ntrcr     ! number of tracers in use
+      integer (kind=int_kind), dimension (max_ntrcr), public :: &
+         n_trcr_strata ! number of underlying tracer layers
 
-      integer (kind=int_kind), public :: &
-         nbtrcr    ! number of bgc tracers in use
-      
-      integer (kind=int_kind), public :: &
-         nt_Tsfc  , & ! ice/snow temperature
-         nt_qice  , & ! volume-weighted ice enthalpy (in layers)
-         nt_qsno  , & ! volume-weighted snow enthalpy (in layers)
-         nt_sice  , & ! volume-weighted ice bulk salinity (CICE grid layers)
-         nt_fbri  , & ! volume fraction of ice with dynamic salt (hinS/vicen*aicen)
-         nt_iage  , & ! volume-weighted ice age
-         nt_FY    , & ! area-weighted first-year ice area
-         nt_alvl  , & ! level ice area fraction
-         nt_vlvl  , & ! level ice volume fraction
-         nt_apnd  , & ! melt pond area fraction
-         nt_hpnd  , & ! melt pond depth
-         nt_ipnd  , & ! melt pond refrozen lid thickness
-         nt_aero  , & ! starting index for aerosols in ice
-         nt_bgc_N_sk,   & ! algae (skeletal layer)
-         nt_bgc_C_sk,   & ! 
-         nt_bgc_chl_sk, & ! 
-         nt_bgc_Nit_sk, & ! nutrients (skeletal layer) 
-         nt_bgc_Am_sk,  & ! 
-         nt_bgc_Sil_sk, & !
-         nt_bgc_DMSPp_sk, & ! trace gases (skeletal layer)
-         nt_bgc_DMSPd_sk, & ! 
-         nt_bgc_DMS_sk, & ! 
-         nt_bgc_Nit_ml, & ! nutrients (ocean mixed layer) 
-         nt_bgc_Am_ml,  & ! 
-         nt_bgc_Sil_ml, & !
-         nt_bgc_DMSP_ml, & ! trace gases (ocean mixed layer)
-         nt_bgc_DMS_ml
+      integer (kind=int_kind), dimension (max_ntrcr,2), public :: &
+         nt_strata     ! indices of underlying tracer layers
 
-      logical (kind=log_kind), public :: &
-         tr_iage,   & ! if .true., use age tracer
-         tr_FY,     & ! if .true., use first-year area tracer
-         tr_lvl,    & ! if .true., use level ice tracer
-         tr_pond,   & ! if .true., use melt pond tracer
-         tr_pond_cesm,& ! if .true., use cesm pond tracer
-         tr_pond_lvl, & ! if .true., use level-ice pond tracer
-         tr_pond_topo,& ! if .true., use explicit topography-based ponds
-         tr_aero     ,& ! if .true., use aerosol tracers
-         tr_brine       ! if .true., brine height differs from ice thickness
+      real (kind=dbl_kind), dimension (max_ntrcr,3), public :: &
+         trcr_base     ! = 0 or 1 depending on tracer dependency
+                       ! argument 2:  (1) aice, (2) vice, (3) vsno
 
       !-----------------------------------------------------------------
       ! dynamic variables closely related to the state of the ice
@@ -157,7 +121,8 @@
       real (kind=dbl_kind), &
          dimension(nx_block,ny_block,ncat,max_blocks), public :: &
          aicen_init  , & ! initial ice concentration, for linear ITD
-         vicen_init      ! initial ice volume (m), for linear ITD
+         vicen_init  , & ! initial ice volume (m), for linear ITD
+         vsnon_init      ! initial snow volume (m), for aerosol 
 
 !=======================================================================
 
@@ -170,13 +135,17 @@
 !
 ! author: William H. Lipscomb, LANL
 
-      subroutine bound_state (aicen, trcrn, &
-                              vicen, vsnon)
+      subroutine bound_state (aicen,        &
+                              vicen, vsnon, &
+                              ntrcr, trcrn)
 
       use ice_boundary, only: ice_halo, ice_HaloMask, ice_HaloUpdate, &
           ice_HaloDestroy
       use ice_domain, only: halo_info, maskhalo_bound, nblocks
       use ice_constants, only: field_loc_center, field_type_scalar, c0
+
+      integer (kind=int_kind), intent(in) :: &
+         ntrcr     ! number of tracers in use
 
       real (kind=dbl_kind), &
          dimension(nx_block,ny_block,ncat,max_blocks), intent(inout) :: &

@@ -1,4 +1,4 @@
-! $Id: ice_calendar.F90 732 2013-09-19 18:19:31Z eclare $
+! $Id: ice_calendar.F90 1078 2015-11-12 00:56:52Z eclare $
 !=======================================================================
 
 ! Calendar routines for managing time
@@ -106,7 +106,9 @@
          histfreq(max_nstrm), & ! history output frequency, 'y','m','d','h','1'
          dumpfreq               ! restart frequency, 'y','m','d'
 
-      character (len=char_len),public :: calendar_type
+      character (len=char_len), public :: &
+         calendar_type       ! differentiates Gregorian from other calendars
+                             ! default = ' '
 
 !=======================================================================
 
@@ -123,6 +125,8 @@
       subroutine init_calendar
 
       use ice_fileunits, only: nu_diag
+
+      calendar_type = ' ' ! can be 'Gregorian' for use in ice_orbital.F90
 
       istep = 0         ! local timestep number
       time=istep0*dt    ! s

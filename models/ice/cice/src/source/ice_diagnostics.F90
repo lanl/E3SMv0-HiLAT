@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_diagnostics.F90 732 2013-09-19 18:19:31Z eclare $
+!  SVN:$Id: ice_diagnostics.F90 1078 2015-11-12 00:56:52Z eclare $
 !=======================================================================
 
 ! Diagnostic information output during run
@@ -15,12 +15,13 @@
       use ice_communicate, only: my_task, master_task
       use ice_constants, only: c0
       use ice_calendar, only: diagfreq, istep1, istep
-      use ice_domain_size, only: max_aero
+      use ice_colpkg_shared, only: max_aero
       use ice_fileunits, only: nu_diag
 
       implicit none
       private
-      public :: runtime_diags, init_mass_diags, init_diags, print_state, print_points_state
+      public :: runtime_diags, init_mass_diags, init_diags, &
+                print_state, print_points_state, diagnostic_abort
 
       save
 
@@ -104,6 +105,7 @@
 
       use ice_blocks, only: nx_block, ny_block
       use ice_broadcast, only: broadcast_scalar
+      use ice_colpkg_shared, only: calc_Tsfc
       use ice_constants, only: c1, c1000, c2, p001, p5, puny, rhoi, rhos, rhow, &
           rhofresh, Tffresh, Lfresh, Lvap, ice_ref_salinity, field_loc_center, &
           m2_to_km2, awtvdr, awtidr, awtvdf, awtidf
@@ -112,14 +114,14 @@
       use ice_fileunits, only: flush_fileunit
       use ice_flux, only: alvdr, alidr, alvdf, alidf, evap, fsnow, frazil, &
           fswabs, fswthru, flw, flwout, fsens, fsurf, flat, frzmlt_init, frain, fpond, &
-          coszen, faero_atm, faero_ocn, fhocn_ai, fsalt_ai, fresh_ai, &
+          coszen, fhocn_ai, fsalt_ai, fresh_ai, &
           update_ocn_f, Tair, Qa, fsw, fcondtop, meltt, meltb, meltl, snoice, &
           dsnow, congel, sst, sss, Tf, fhocn
+      use ice_flux_bgc, only: faero_atm, faero_ocn
       use ice_global_reductions, only: global_sum, global_sum_prod, global_maxval
       use ice_grid, only: lmask_n, lmask_s, tarean, tareas, grid_type
-      use ice_state ! everything
-      use ice_therm_shared, only: calc_Tsfc
-      use ice_zbgc_shared, only: rhosi
+      use ice_state   ! everything
+      use ice_colpkg_tracers ! everything
 #ifdef CCSMCOUPLED
       use ice_prescribed_mod, only: prescribed_ice
 #endif
@@ -686,7 +688,7 @@
                   hsavg(n) = vsno(i,j,iblk)/paice(n)
                   if (tr_brine) hbravg(n) = trcr(i,j,nt_fbri,iblk)* hiavg(n)
                endif
-               psalt(n) = work2(i,j,iblk)
+               if (vice(i,j,iblk) /= c0) psalt(n) = work2(i,j,iblk)/vice(i,j,iblk)
                pTsfc(n) = trcr(i,j,nt_Tsfc,iblk)   ! ice/snow sfc temperature
                pevap(n) = evap(i,j,iblk)*dt/rhoi   ! sublimation/condensation
                pfswabs(n) = fswabs(i,j,iblk)       ! absorbed solar flux
@@ -936,8 +938,9 @@
       use ice_domain_size, only: n_aero, ncat, max_blocks
       use ice_global_reductions, only: global_sum
       use ice_grid, only: tareas, tarean
-      use ice_state, only: aicen, vice, vsno, trcrn, trcr, &
-          tr_aero, nt_aero, tr_pond_topo, nt_apnd, nt_hpnd
+      use ice_state, only: aicen, vice, vsno, trcrn, trcr
+      use ice_colpkg_tracers, only: tr_aero, nt_aero, tr_pond_topo, &
+          nt_apnd, nt_hpnd
 
       integer (kind=int_kind) :: n, i, j, iblk
 
@@ -1041,7 +1044,8 @@
       use ice_domain, only: nblocks
       use ice_domain_size, only: ncat, nilyr, nslyr, max_blocks
       use ice_grid, only: tmask
-      use ice_state, only: vicen, vsnon, trcrn, nt_qice, nt_qsno
+      use ice_state, only: vicen, vsnon, trcrn
+      use ice_colpkg_tracers, only: nt_qice, nt_qsno
 
       real (kind=dbl_kind), dimension (nx_block,ny_block,max_blocks),  &
          intent(out) :: &
@@ -1127,7 +1131,8 @@
       use ice_domain, only: nblocks
       use ice_domain_size, only: ncat, nilyr, nslyr, max_blocks
       use ice_grid, only: tmask
-      use ice_state, only: vicen, trcrn, nt_sice
+      use ice_state, only: vicen, trcrn
+      use ice_colpkg_tracers, only: nt_sice
 
       real (kind=dbl_kind), dimension (nx_block,ny_block,max_blocks),  &
          intent(out) :: &
@@ -1334,8 +1339,8 @@
       use ice_constants, only: puny, rhoi, rhos, Lfresh, cp_ice
       use ice_domain, only: blocks_ice
       use ice_domain_size, only: ncat, nilyr, nslyr
-      use ice_state, only: aice0, aicen, vicen, vsnon, uvel, vvel, &
-          trcrn,  nt_Tsfc, nt_qice, nt_qsno
+      use ice_state, only: aice0, aicen, vicen, vsnon, uvel, vvel, trcrn
+      use ice_colpkg_tracers, only: nt_Tsfc, nt_qice, nt_qsno
       use ice_flux, only: uatm, vatm, potT, Tair, Qa, flw, frain, fsnow, &
           fsens, flat, evap, flwout, swvdr, swvdf, swidr, swidf, rhoa, &
           frzmlt, sst, sss, Tf, Tref, Qref, Uref, uocn, vocn, strtltx, strtlty
@@ -1455,7 +1460,6 @@
       end subroutine print_state
 
 !=======================================================================
-!=======================================================================
 
 ! This routine is useful for debugging.
 ! Calls can be inserted anywhere and it will print info on print_points points
@@ -1469,8 +1473,8 @@
       use ice_constants, only: puny, rhoi, rhos, Lfresh, cp_ice
       use ice_domain, only: blocks_ice
       use ice_domain_size, only: ncat, nilyr, nslyr
-      use ice_state, only: aice0, aicen, vicen, vsnon, uvel, vvel, &
-          trcrn,  nt_Tsfc, nt_qice, nt_qsno
+      use ice_state, only: aice0, aicen, vicen, vsnon, uvel, vvel, trcrn
+      use ice_colpkg_tracers, only: nt_Tsfc, nt_qice, nt_qsno
       use ice_flux, only: uatm, vatm, potT, Tair, Qa, flw, frain, fsnow, &
           fsens, flat, evap, flwout, swvdr, swvdf, swidr, swidf, rhoa, &
           frzmlt, sst, sss, Tf, Tref, Qref, Uref, uocn, vocn, strtltx, strtlty
@@ -1593,6 +1597,51 @@
       enddo   ! ncnt
 
       end subroutine print_points_state
+
+!=======================================================================
+
+! prints error information prior to aborting
+
+      subroutine diagnostic_abort(istop, jstop, iblk, istep1, stop_label)
+
+      use ice_blocks, only: block, get_block
+      use ice_communicate, only: my_task
+      use ice_constants, only: rad_to_deg
+      use ice_domain, only: blocks_ice
+      use ice_exit, only: abort_ice
+      use ice_fileunits, only: nu_diag
+      use ice_grid, only: TLAT, TLON
+      use ice_state, only: aice
+
+      integer (kind=int_kind), intent(in) :: &
+         istop, jstop, & ! indices of grid cell where model aborts
+         iblk        , & ! block index
+         istep1          ! time step number
+
+      character (char_len), intent(in) :: stop_label
+
+      ! local variables
+
+      type (block) :: &
+         this_block      ! block information for current block
+
+      this_block = get_block(blocks_ice(iblk),iblk)         
+
+      write (nu_diag,*) 'istep1, my_task, iblk =', &
+                         istep1, my_task, iblk
+      write (nu_diag,*) 'Global block:', this_block%block_id
+      if (istop > 0 .and. jstop > 0) &
+      write (nu_diag,*) 'Global i and j:', &
+                          this_block%i_glob(istop), &
+                          this_block%j_glob(jstop) 
+      write (nu_diag,*) 'Lat, Lon:', &
+                         TLAT(istop,jstop,iblk)*rad_to_deg, &
+                         TLON(istop,jstop,iblk)*rad_to_deg
+      write (nu_diag,*) 'aice:', &
+                         aice(istop,jstop,iblk)
+      call abort_ice (stop_label)
+
+      end subroutine diagnostic_abort
 
 !=======================================================================
 

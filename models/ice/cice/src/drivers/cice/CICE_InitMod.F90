@@ -1,4 +1,4 @@
-!  SVN:$Id: CICE_InitMod.F90 978 2015-05-07 00:00:44Z tcraig $
+!  SVN:$Id: CICE_InitMod.F90 1084 2015-11-20 19:52:06Z eclare $
 !=======================================================================
 !
 !  This module contains the CICE initialization routine that sets model
@@ -51,34 +51,35 @@
 
       subroutine cice_init
 
-      use ice_aerosol, only: faero_default
-      use ice_algae, only: get_forcing_bgc
+      use ice_arrays_column, only: hin_max, c_hi_range, zfswin, trcrn_sw, &
+          ocean_bio_all, ice_bio_net, snow_bio_net
       use ice_calendar, only: dt, dt_dyn, time, istep, istep1, write_ic, &
           init_calendar, calendar
-      use ice_communicate, only: init_communicate
+      use ice_colpkg, only: colpkg_init_itd, colpkg_init_itd_hist
+      use ice_communicate, only: init_communicate, my_task, master_task
       use ice_diagnostics, only: init_diags
       use ice_domain, only: init_domain_blocks
+      use ice_domain_size, only: ncat
       use ice_dyn_eap, only: init_eap
       use ice_dyn_shared, only: kdyn, init_evp
-      use ice_fileunits, only: init_fileunits
+      use ice_fileunits, only: init_fileunits, nu_diag
       use ice_flux, only: init_coupler_flux, init_history_therm, &
           init_history_dyn, init_flux_atm, init_flux_ocn
       use ice_forcing, only: init_forcing_ocn, init_forcing_atmo, &
           get_forcing_atmo, get_forcing_ocn
+      use ice_forcing_bgc, only: get_forcing_bgc, get_atm_bgc, &
+          faero_data, faero_default, faero_optics
       use ice_grid, only: init_grid1, init_grid2
       use ice_history, only: init_hist, accum_hist
       use ice_restart_shared, only: restart, runid, runtype
       use ice_init, only: input_data, init_state
-      use ice_itd, only: init_itd
+      use ice_init_column, only: init_thermo_vertical, init_shortwave, init_zbgc
       use ice_kinds_mod
       use ice_restoring, only: ice_HaloRestore_init
-      use ice_shortwave, only: init_shortwave
-      use ice_state, only: tr_aero
-      use ice_therm_vertical, only: init_thermo_vertical
+      use ice_colpkg_tracers, only: tr_aero, tr_zaero
       use ice_timers, only: timer_total, init_ice_timers, ice_timer_start
       use ice_transport_driver, only: init_transport
-      use ice_zbgc, only: init_zbgc
-      use ice_zbgc_shared, only: skl_bgc
+      use ice_colpkg_shared, only: skl_bgc, z_tracers
 #ifdef popcice
       use drv_forcing, only: sst_sss
 #endif
@@ -109,7 +110,9 @@
       call sst_sss              ! POP data for CICE initialization
 #endif 
       call init_thermo_vertical ! initialize vertical thermodynamics
-      call init_itd             ! initialize ice thickness distribution
+      call colpkg_init_itd(ncat, hin_max, nu_diag) ! ice thickness distribution
+      if (my_task == master_task) &
+         call colpkg_init_itd_hist(ncat, hin_max, nu_diag, c_hi_range) ! output
       call calendar(time)       ! determine the initial date
 
       call init_forcing_ocn(dt) ! initialize sss and sst from data
@@ -139,13 +142,17 @@
    !--------------------------------------------------------------------
 
       call init_forcing_atmo    ! initialize atmospheric forcing (standalone)
+      if (tr_aero .or. tr_zaero) call faero_optics !initialize aerosol optical 
+                                                   !property tables
 
 #ifndef coupled
       call get_forcing_atmo     ! atmospheric forcing from data
       call get_forcing_ocn(dt)  ! ocean forcing from data
 !      if (tr_aero) call faero_data          ! aerosols
       if (tr_aero) call faero_default ! aerosols
-      if (skl_bgc) call get_forcing_bgc
+     ! if (skl_bgc .or. z_tracers) call get_forcing_bgc
+      if (z_tracers) call get_atm_bgc 
+     ! if (tr_zaero) call fzaero_data ! zaerosols
 #endif
 
       if (runtype == 'initial' .and. .not. restart) &
@@ -162,34 +169,39 @@
 
       subroutine init_restart
 
-      use ice_aerosol, only: init_aerosol
-      use ice_age, only: init_age, restart_age, read_restart_age
+      use ice_arrays_column, only: dhsn
       use ice_blocks, only: nx_block, ny_block
-      use ice_brine, only: init_hbrine
       use ice_calendar, only: time, calendar
+      use ice_colpkg, only: colpkg_aggregate
       use ice_domain, only: nblocks
-      use ice_domain_size, only: ncat, max_ntrcr
+      use ice_domain_size, only: ncat, max_ntrcr, n_aero
       use ice_dyn_eap, only: read_restart_eap
       use ice_dyn_shared, only: kdyn
-      use ice_firstyear, only: init_fy, restart_FY, read_restart_FY
       use ice_flux, only: sss
       use ice_grid, only: tmask
       use ice_init, only: ice_ic
-      use ice_itd, only: aggregate
-      use ice_lvl, only: init_lvl, restart_lvl, read_restart_lvl
-      use ice_meltpond_cesm, only: init_meltponds_cesm, &
-          restart_pond_cesm, read_restart_pond_cesm
-      use ice_meltpond_lvl, only: init_meltponds_lvl, &
-          restart_pond_lvl, read_restart_pond_lvl, dhsn
-      use ice_meltpond_topo, only: init_meltponds_topo, &
-          restart_pond_topo, read_restart_pond_topo
-      use ice_restart_shared, only: runtype, restart
+      use ice_init_column, only: init_age, init_FY, init_lvl, &
+          init_meltponds_cesm,  init_meltponds_lvl, init_meltponds_topo, &
+          init_aerosol, init_hbrine, init_bgc
+      use ice_restart_column, only: restart_age, read_restart_age, &
+          restart_FY, read_restart_FY, restart_lvl, read_restart_lvl, &
+          restart_pond_cesm, read_restart_pond_cesm, &
+          restart_pond_lvl, read_restart_pond_lvl, &
+          restart_pond_topo, read_restart_pond_topo, &
+          restart_aero, read_restart_aero, &
+          restart_hbrine, read_restart_hbrine, &
+          restart_zsal
       use ice_restart_driver, only: restartfile, restartfile_v4
+      use ice_restart_shared, only: runtype, restart
       use ice_state ! almost everything
-      use ice_zbgc, only: init_bgc
-      use ice_zbgc_shared, only: skl_bgc
+      use ice_colpkg_tracers, only: tr_iage, tr_FY, tr_lvl, nt_alvl, nt_vlvl, &
+          tr_pond_cesm, nt_apnd, nt_hpnd, tr_pond_lvl, nt_ipnd, &
+          tr_pond_topo, tr_aero, tr_brine, nt_iage, nt_FY, nt_aero
+      use ice_colpkg_shared, only: skl_bgc, z_tracers, solve_zsal
 
-      integer(kind=int_kind) :: iblk
+      integer(kind=int_kind) :: &
+         i, j        , & ! horizontal indices
+         iblk            ! block index
 
       if (trim(runtype) == 'continue') then 
          ! start from core restart file
@@ -213,7 +225,7 @@
             call read_restart_age
          else
             do iblk = 1, nblocks 
-               call init_age(nx_block, ny_block, ncat, trcrn(:,:,nt_iage,:,iblk))
+               call init_age(trcrn(:,:,nt_iage,:,iblk))
             enddo ! iblk
          endif
       endif
@@ -224,7 +236,7 @@
             call read_restart_FY
          else
             do iblk = 1, nblocks 
-               call init_FY(nx_block, ny_block, ncat, trcrn(:,:,nt_FY,:,iblk))
+               call init_FY(trcrn(:,:,nt_FY,:,iblk))
             enddo ! iblk
          endif
       endif
@@ -235,8 +247,8 @@
             call read_restart_lvl
          else
             do iblk = 1, nblocks 
-               call init_lvl(nx_block, ny_block, ncat, &
-                    trcrn(:,:,nt_alvl,:,iblk), trcrn(:,:,nt_vlvl,:,iblk))
+               call init_lvl(trcrn(:,:,nt_alvl,:,iblk), &
+                             trcrn(:,:,nt_vlvl,:,iblk))
             enddo ! iblk
          endif
       endif
@@ -248,8 +260,8 @@
             call read_restart_pond_cesm
          else
             do iblk = 1, nblocks 
-               call init_meltponds_cesm(nx_block, ny_block, ncat, &
-                    trcrn(:,:,nt_apnd,:,iblk), trcrn(:,:,nt_hpnd,:,iblk))
+               call init_meltponds_cesm(trcrn(:,:,nt_apnd,:,iblk), &
+                                        trcrn(:,:,nt_hpnd,:,iblk))
             enddo ! iblk
          endif
       endif
@@ -261,9 +273,10 @@
             call read_restart_pond_lvl
          else
             do iblk = 1, nblocks 
-               call init_meltponds_lvl(nx_block, ny_block, ncat, &
-                    trcrn(:,:,nt_apnd,:,iblk), trcrn(:,:,nt_hpnd,:,iblk), &
-                    trcrn(:,:,nt_ipnd,:,iblk), dhsn(:,:,:,iblk))
+               call init_meltponds_lvl(trcrn(:,:,nt_apnd,:,iblk), &
+                                       trcrn(:,:,nt_hpnd,:,iblk), &
+                                       trcrn(:,:,nt_ipnd,:,iblk), &
+                                       dhsn(:,:,:,iblk))
             enddo ! iblk
          endif
       endif
@@ -275,15 +288,29 @@
             call read_restart_pond_topo
          else
             do iblk = 1, nblocks 
-               call init_meltponds_topo(nx_block, ny_block, ncat, &
-                    trcrn(:,:,nt_apnd,:,iblk), trcrn(:,:,nt_hpnd,:,iblk), &
-                    trcrn(:,:,nt_ipnd,:,iblk))
+               call init_meltponds_topo(trcrn(:,:,nt_apnd,:,iblk), &
+                                        trcrn(:,:,nt_hpnd,:,iblk), &
+                                        trcrn(:,:,nt_ipnd,:,iblk))
             enddo ! iblk
-         endif ! .not restart_pond
+         endif ! .not. restart_pond
       endif
-      if (tr_aero)  call init_aerosol ! ice aerosol
-      if (tr_brine) call init_hbrine  ! brine height tracer
-      if (skl_bgc)  call init_bgc     ! biogeochemistry
+      if (tr_aero) then ! ice aerosol
+         if (trim(runtype) == 'continue') restart_aero = .true.
+         if (restart_aero) then
+            call read_restart_aero
+         else
+            do iblk = 1, nblocks 
+               call init_aerosol(trcrn(:,:,nt_aero:nt_aero+4*n_aero-1,:,iblk))
+            enddo ! iblk
+         endif ! .not. restart_aero
+      endif
+
+      if (tr_brine .or. skl_bgc) then ! brine height tracer
+         call init_hbrine
+         if (tr_brine .and. restart_hbrine) call read_restart_hbrine
+      endif
+
+      if (solve_zsal .or. skl_bgc .or. z_tracers) call init_bgc ! biogeochemistry
 
       !-----------------------------------------------------------------
       ! aggregate tracers
@@ -291,21 +318,26 @@
 
       !$OMP PARALLEL DO PRIVATE(iblk)
       do iblk = 1, nblocks
-
-         call aggregate (nx_block, ny_block, &
-                         aicen(:,:,:,iblk),  &
-                         trcrn(:,:,:,:,iblk),&
-                         vicen(:,:,:,iblk),  &
-                         vsnon(:,:,:,iblk),  &
-                         aice (:,:,  iblk),  &
-                         trcr (:,:,:,iblk),  &
-                         vice (:,:,  iblk),  &
-                         vsno (:,:,  iblk),  &
-                         aice0(:,:,  iblk),  &
-                         tmask(:,:,  iblk),  &
-                         max_ntrcr,          &
-                         trcr_depend)
-
+      do j = 1, ny_block
+      do i = 1, nx_block
+         if (tmask(i,j,iblk)) &
+         call colpkg_aggregate (ncat,               &
+                                aicen(i,j,:,iblk),  &
+                                trcrn(i,j,:,:,iblk),&
+                                vicen(i,j,:,iblk),  &
+                                vsnon(i,j,:,iblk),  &
+                                aice (i,j,  iblk),  &
+                                trcr (i,j,:,iblk),  &
+                                vice (i,j,  iblk),  &
+                                vsno (i,j,  iblk),  &
+                                aice0(i,j,  iblk),  &
+                                max_ntrcr,          &
+                                trcr_depend,        &
+                                trcr_base,          &
+                                n_trcr_strata,      &
+                                nt_strata)
+      enddo
+      enddo
       enddo
       !$OMP END PARALLEL DO
 

@@ -35,17 +35,17 @@ module ice_prescribed_mod
    use pio
 
    use ice_broadcast
-   use ice_communicate, only : my_task, master_task, MPI_COMM_ICE
+   use ice_communicate,   only : my_task, master_task, MPI_COMM_ICE
    use ice_kinds_mod
    use ice_fileunits
-   use ice_exit,        only : abort_ice
-   use ice_domain_size, only : nx_global, ny_global, ncat, nilyr, nslyr, max_blocks
+   use ice_exit,          only : abort_ice
+   use ice_domain_size,   only : nx_global, ny_global, ncat, nilyr, nslyr, max_blocks
    use ice_constants
-   use ice_blocks,     only : nx_block, ny_block, block, get_block
-   use ice_domain,     only : nblocks, distrb_info, blocks_ice
-   use ice_grid,       only : TLAT,TLON,hm,tmask
-   use ice_calendar,   only : idate, sec, calendar_type
-   use ice_itd,        only : hin_max
+   use ice_blocks,        only : nx_block, ny_block, block, get_block
+   use ice_domain,        only : nblocks, distrb_info, blocks_ice
+   use ice_grid,          only : TLAT,TLON,hm,tmask
+   use ice_calendar,      only : idate, sec, calendar_type
+   use ice_arrays_column, only : hin_max
    use ice_read_write
 
    implicit none
@@ -379,9 +379,10 @@ subroutine ice_prescribed_phys
 ! !USES:
  
    use ice_flux
-!  use ice_grid, only : bound
    use ice_state
-   use ice_itd, only  : aggregate
+   use ice_colpkg_tracers, only : nt_Tsfc, nt_sice, nt_qice, nt_qsno, ntrcr
+   use ice_arrays_column,  only : hin_max
+   use ice_colpkg,         only : colpkg_aggregate
    use ice_dyn_evp
 
    implicit none
@@ -519,22 +520,25 @@ subroutine ice_prescribed_phys
             trcrn(i,j,nt_qsno:nt_qsno+nslyr-1,:,iblk) = c0
          end if          ! ice_cov >= eps04
       end if             ! tmask
+
+      !--------------------------------------------------------------------
+      ! compute aggregate ice state and open water area
+      !--------------------------------------------------------------------
+      if (tmask(i,j,iblk)) &
+      call colpkg_aggregate (ncat,                                         &
+                             aicen(i,j,:,iblk), trcrn(i,j,1:ntrcr,:,iblk), &
+                             vicen(i,j,:,iblk), vsnon(i,j,  :,iblk),       &
+                             aice (i,j,  iblk), trcr (i,j,1:ntrcr,  iblk), &
+                             vice (i,j,  iblk), vsno (i,j,    iblk),       &
+                             aice0(i,j,  iblk),                            &
+                             ntrcr,                                        &
+                             trcr_depend(1:ntrcr),                         &
+                             trcr_base(1:ntrcr,:),                         &
+                             n_trcr_strata(1:ntrcr),                       &
+                             nt_strata(1:ntrcr,:))
+                              
    enddo                 ! i
    enddo                 ! j
-
-   !--------------------------------------------------------------------
-   ! compute aggregate ice state and open water area
-   !--------------------------------------------------------------------
-    call aggregate (nx_block,          ny_block,             &
-                    aicen(:,:,:,iblk),                       &
-                    trcrn(:,:,1:ntrcr,:,iblk),               &
-                    vicen(:,:,:,iblk), vsnon(:,:,  :,iblk),  &
-                    aice (:,:,  iblk),                       &
-                    trcr (:,:,1:ntrcr,  iblk),               &
-                    vice (:,:,  iblk), vsno (:,:,    iblk),  &
-                    aice0(:,:,  iblk), tmask(:,:,    iblk),  &
-                    ntrcr, trcr_depend(1:ntrcr))
-
    enddo                 ! iblk
 
    do iblk = 1, nblocks

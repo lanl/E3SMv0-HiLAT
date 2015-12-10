@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_grid.F90 907 2015-01-30 04:53:04Z tcraig $
+!  SVN:$Id: ice_grid.F90 929 2015-03-10 00:35:22Z eclare $
 !=======================================================================
 
 ! Spatial grids, masks, and boundary conditions
