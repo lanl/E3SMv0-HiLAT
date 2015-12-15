@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_flux.F90 1084 2015-11-20 19:52:06Z eclare $
+!  SVN:$Id: ice_flux.F90 1099 2015-12-12 18:12:30Z eclare $
 !=======================================================================
 
 ! Flux variable declarations; these include fields sent from the coupler
@@ -472,6 +472,7 @@
       ! derived or computed fields
       !-----------------------------------------------------------------
 
+      coszen  (:,:,:) = c0            ! Cosine of the zenith angle
       fsw     (:,:,:) = c0            ! shortwave radiation (W/m^2)
       scale_factor(:,:,:) = c1        ! shortwave scaling factor 
       wind    (:,:,:) = sqrt(uatm(:,:,:)**2 &

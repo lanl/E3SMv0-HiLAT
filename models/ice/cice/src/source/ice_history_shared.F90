@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_shared.F90 1084 2015-11-20 19:52:06Z eclare $
+!  SVN:$Id: ice_history_shared.F90 1099 2015-12-12 18:12:30Z eclare $
 !=======================================================================
 !
 ! Output files: netCDF or binary data, Fortran unformatted dumps
@@ -94,11 +94,8 @@
          n3Dbcum , & ! n3Dzcum + num_avail_hist_fields_3Db
          n3Dacum , & ! n3Dbcum + num_avail_hist_fields_3Da
          n4Dicum , & ! n3Dbcum + num_avail_hist_fields_4Di
-         n4Dscum , & ! n4Dicum + num_avail_hist_fields_4Ds
-         nzlyr   , & ! vertical dimension (temp variable)
-         nzlyrb      ! vertical dimension of biology grid (temp variable)
+         n4Dscum     ! n4Dicum + num_avail_hist_fields_4Ds
 
-      ! for now, ice and snow have same dimensions in netcdf
       ! could set nzilyr = nilyr + nslyr and write Tin+Tsn together into Tinz
       integer (kind=int_kind), parameter, public :: &
          nzilyr = nilyr,   & ! vertical dimension (allows alternative grids)
@@ -619,8 +616,9 @@
                 num_avail_hist_fields_3Db + &
                 num_avail_hist_fields_3Da + &
                 num_avail_hist_fields_4Di + &
-                num_avail_hist_fields_4Ds)  &
-               call abort_ice("num_avail_hist_fields error")
+                num_avail_hist_fields_4Ds) then 
+                call abort_ice("num_avail_hist_fields error")
+            endif
 
             id(ns) = num_avail_hist_fields_tot
 

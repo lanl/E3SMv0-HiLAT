@@ -1,4 +1,4 @@
-!  SVN:$Id: CICE_InitMod.F90 1084 2015-11-20 19:52:06Z eclare $
+!  SVN:$Id: CICE_InitMod.F90 1099 2015-12-12 18:12:30Z eclare $
 !=======================================================================
 !
 !  This module contains the CICE initialization routine that sets model
@@ -150,7 +150,7 @@
       call get_forcing_ocn(dt)  ! ocean forcing from data
 !      if (tr_aero) call faero_data          ! aerosols
       if (tr_aero) call faero_default ! aerosols
-     ! if (skl_bgc .or. z_tracers) call get_forcing_bgc
+      if (skl_bgc .or. z_tracers) call get_forcing_bgc
       if (z_tracers) call get_atm_bgc 
      ! if (tr_zaero) call fzaero_data ! zaerosols
 #endif

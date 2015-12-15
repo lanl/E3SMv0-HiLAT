@@ -1,4 +1,4 @@
-! $Id: ice_calendar.F90 1078 2015-11-12 00:56:52Z eclare $
+! $Id: ice_calendar.F90 1099 2015-12-12 18:12:30Z eclare $
 !=======================================================================
 
 ! Calendar routines for managing time
@@ -126,8 +126,6 @@
 
       use ice_fileunits, only: nu_diag
 
-      calendar_type = ' ' ! can be 'Gregorian' for use in ice_orbital.F90
-
       istep = 0         ! local timestep number
       time=istep0*dt    ! s
       yday=c0           ! absolute day number
@@ -149,6 +147,9 @@
          write(nu_diag,*) 'Warning: days_per_year has been set to 365', &
               ' because use_leap_years = .true.'
       end if
+
+      calendar_type = ' '
+      if (use_leap_years .and. days_per_year == 365) calendar_type = 'Gregorian'
       
       dayyr = real(days_per_year, kind=dbl_kind)
       if (days_per_year == 360) then

@@ -40,7 +40,7 @@
       subroutine init_restart_read(ice_ic)
 
       use ice_calendar, only: istep0, istep1, time, time_forc, nyr, month, &
-          mday, sec, npt
+                              mday, sec, npt
       use ice_communicate, only: my_task, master_task
       use ice_domain_size, only: ncat
       use ice_fileunits, only: nu_diag, nu_restart, nu_rst_pointer
@@ -128,13 +128,14 @@
       use ice_fileunits, only: nu_diag, nu_rst_pointer
       use ice_colpkg_shared, only: oceanmixed_ice, solve_zsal, skl_bgc, z_tracers
       use ice_colpkg_tracers, only: tr_iage, tr_FY, tr_lvl, tr_aero, tr_pond_cesm, &
-                             tr_pond_topo, tr_pond_lvl, tr_brine, nbtrcr,  &
+                             tr_pond_topo, tr_pond_lvl, tr_brine, nbtrcr, &
                              tr_bgc_N, tr_bgc_C, tr_bgc_Nit, &
-                             tr_bgc_Sil,  tr_bgc_DMS, &
+                             tr_bgc_Sil, tr_bgc_DMS, &
                              tr_bgc_chl,  tr_bgc_Am, &
-                             tr_bgc_PON,  tr_bgc_DON, &
+                             tr_bgc_PON, tr_bgc_DON, &
                              tr_zaero,    tr_bgc_Fe, &
                              tr_bgc_hum
+
 
       character(len=char_len_long), intent(in), optional :: filename_spec
 
@@ -151,7 +152,7 @@
       integer (kind=int_kind), allocatable :: dims(:)
 
       integer (kind=int_kind) :: &
-        k, n      , & ! loop index
+        k,    n,    & ! loop index
         status        ! status variable from netCDF routine
 
       character (len=3) :: nchar, ncharb
@@ -287,8 +288,8 @@
             if (tr_bgc_hum) &
             call define_rest_field(File,'hum'   ,dims)
             if (tr_bgc_DMS) then
-            call define_rest_field(File,'dmsp'  ,dims)
-            call define_rest_field(File,'dms'   ,dims)
+              call define_rest_field(File,'dmsp'  ,dims)
+              call define_rest_field(File,'dms'   ,dims)
             endif
             if (tr_bgc_DON) then
             do k=1,n_don
@@ -296,13 +297,12 @@
                call define_rest_field(File,'don'//trim(nchar),dims)
             enddo
             endif
-
             if (tr_bgc_Fe ) then
-            do k=1,n_fed 
+            do k=1,n_fed
                write(nchar,'(i3.3)') k
                call define_rest_field(File,'fed'//trim(nchar),dims)
             enddo
-            do k=1,n_fep 
+            do k=1,n_fep
                write(nchar,'(i3.3)') k
                call define_rest_field(File,'fep'//trim(nchar),dims)
             enddo
@@ -313,7 +313,7 @@
                call define_rest_field(File,'zaeros'//trim(nchar),dims)
             enddo
             endif
-         endif
+         endif  !nbtrcr
 
          if (solve_zsal) call define_rest_field(File,'sss',dims)
 
@@ -411,24 +411,24 @@
             if (tr_bgc_PON) &
             call define_rest_field(File,'bgc_PON'  ,dims)
             if (tr_bgc_DON) then
-              do k = 1, n_don  
+              do k = 1, n_don
                  write(nchar,'(i3.3)') k
                  call define_rest_field(File,'bgc_DON'//trim(nchar)    ,dims)
               enddo
             endif
-            if (tr_bgc_Fe) then
-              do k = 1, n_fed   
+            if (tr_bgc_Fe ) then
+              do k = 1, n_fed
                  write(nchar,'(i3.3)') k
-                 call define_rest_field(File,'bgc_fed'//trim(nchar)    ,dims)
+                 call define_rest_field(File,'bgc_Fed'//trim(nchar)    ,dims)
               enddo
-              do k = 1, n_fep   
+              do k = 1, n_fep
                  write(nchar,'(i3.3)') k
-                 call define_rest_field(File,'bgc_fep'//trim(nchar)    ,dims)
+                 call define_rest_field(File,'bgc_Fep'//trim(nchar)    ,dims)
               enddo
             endif
-         endif
+         endif   !skl_bgc
          if (solve_zsal) &
-            call define_rest_field(File,'Rayleigh'    ,dims)
+            call define_rest_field(File,'Rayleigh',dims)
 
       !-----------------------------------------------------------------
       ! 4D restart fields, written as layers of 3D
@@ -458,10 +458,9 @@
          if (solve_zsal) then
          do k = 1, nblyr
             write(nchar,'(i3.3)') k
-            call define_rest_field(File,'zSalinity'//nchar, dims)
+            call define_rest_field(File,'zSalinity'//trim(nchar),dims)
          enddo
          endif
- 
          if (z_tracers) then
             if (tr_zaero) then
              do n = 1, n_zaero
@@ -472,7 +471,6 @@
               enddo !k
              enddo  !n
             endif   !tr_zaero
-
             if (tr_bgc_Nit) then
               do k = 1, nblyr+3
                write(nchar,'(i3.3)') k
@@ -489,13 +487,14 @@
              enddo
             endif
             if (tr_bgc_C) then
-           !  do n = 1, n_algae
-           !   write(ncharb,'(i3.3)') n
-           !   do k = 1, nblyr+3
-           !      write(nchar,'(i3.3)') k
-           !      call define_rest_field(File,'bgc_C'//trim(ncharb)//trim(nchar),dims)
-           !   enddo
-           !  enddo
+            ! do n = 1, n_algae
+            !  write(ncharb,'(i3.3)') n
+            !  do k = 1, nblyr+3
+            !     write(nchar,'(i3.3)') k
+            !     call
+            !     define_rest_field(File,'bgc_C'//trim(ncharb)//trim(nchar),dims)
+            !  enddo
+            ! enddo
              do n = 1, n_doc
               write(ncharb,'(i3.3)') n
               do k = 1, nblyr+3
@@ -545,7 +544,7 @@
                  call define_rest_field(File,'bgc_DMSPd'//trim(nchar),dims)
                  call define_rest_field(File,'bgc_DMS'//trim(nchar),dims)
               enddo
-            endif   !DMS
+            endif
             if (tr_bgc_PON) then
               do k = 1, nblyr+3
                  write(nchar,'(i3.3)') k
@@ -562,14 +561,14 @@
              enddo
             endif
             if (tr_bgc_Fe ) then
-             do n = 1, n_fed 
+             do n = 1, n_fed
               write(ncharb,'(i3.3)') n
               do k = 1, nblyr+3
                  write(nchar,'(i3.3)') k
                  call define_rest_field(File,'bgc_Fed'//trim(ncharb)//trim(nchar),dims)
               enddo
              enddo
-             do n = 1, n_fep 
+             do n = 1, n_fep
               write(ncharb,'(i3.3)') n
               do k = 1, nblyr+3
                  write(nchar,'(i3.3)') k
@@ -577,12 +576,11 @@
               enddo
              enddo
             endif
-
-            do k=1,nbtrcr
+            do k = 1, nbtrcr
                write(nchar,'(i3.3)') k
                call define_rest_field(File,'zbgc_frac'//trim(nchar),dims)
             enddo
-         endif
+         endif   !z_tracers
 
          deallocate(dims)
          status = pio_enddef(File)

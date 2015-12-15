@@ -307,7 +307,8 @@
 
 #ifdef CCSMCOUPLED
       call read_restart_field(nu_restart,0,coszen,'ruf8', &
-           'coszen',1,diag, field_loc_center, field_type_scalar)
+!           'coszen',1,diag, field_loc_center, field_type_scalar)
+           'coszen',1,diag)
 #endif
       call read_restart_field(nu_restart,0,scale_factor,'ruf8', &
            'scale_factor',1,diag, field_loc_center, field_type_scalar)

@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history.F90 1084 2015-11-20 19:52:06Z eclare $
+!  SVN:$Id: ice_history.F90 1099 2015-12-12 18:12:30Z eclare $
 !=======================================================================
 
 ! Driver for core history output
@@ -1103,15 +1103,13 @@
       if (num_avail_hist_fields_3Dc > 0) &
       allocate(a3Dc(nx_block,ny_block,ncat_hist,num_avail_hist_fields_3Dc,max_blocks))
 
-      nzlyr = max(nzilyr, nzslyr)
       if (allocated(a3Dz)) deallocate(a3Dz)
       if (num_avail_hist_fields_3Dz > 0) &
-      allocate(a3Dz(nx_block,ny_block,nzlyr,num_avail_hist_fields_3Dz,max_blocks))
+      allocate(a3Dz(nx_block,ny_block,nzilyr,num_avail_hist_fields_3Dz,max_blocks))
 
-      nzlyrb = nzblyr
       if (allocated(a3Db)) deallocate(a3Db)
       if (num_avail_hist_fields_3Db > 0) &
-      allocate(a3Db(nx_block,ny_block,nzlyrb,num_avail_hist_fields_3Db,max_blocks))
+      allocate(a3Db(nx_block,ny_block,nzblyr,num_avail_hist_fields_3Db,max_blocks))
       if (allocated(a3Da)) deallocate(a3Da)
       if (num_avail_hist_fields_3Da > 0) &
       allocate(a3Da(nx_block,ny_block,nzalyr,num_avail_hist_fields_3Da,max_blocks))
@@ -1772,7 +1770,7 @@
            do n = 1, num_avail_hist_fields_3Dz
               nn = n3Dccum + n
               if (avail_hist_fields(nn)%vhistfreq == histfreq(ns)) then 
-              do k = 1, nzlyr
+              do k = 1, nzilyr
               do j = jlo, jhi
               do i = ilo, ihi
                  if (.not. tmask(i,j,iblk)) then ! mask out land points

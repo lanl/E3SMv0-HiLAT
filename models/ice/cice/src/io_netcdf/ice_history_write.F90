@@ -54,7 +54,7 @@
           dxu, dxt, dyu, dyt, HTN, HTE, ANGLE, ANGLET, &
           lont_bounds, latt_bounds, lonu_bounds, latu_bounds
       use ice_history_shared
-      use ice_restart_shared, only: runid
+      use ice_restart_shared, only: runid, lcdf64
       use netcdf
 #endif
 
@@ -71,13 +71,14 @@
 
       integer (kind=int_kind) :: i,k,ic,n,nn, &
          ncid,status,imtid,jmtid,kmtidi,kmtids,kmtidb, cmtid,timid,varid, &
-         nvertexid,ivertex,kmtida
+         nvertexid,ivertex,kmtida,iflag
       integer (kind=int_kind), dimension(3) :: dimid
       integer (kind=int_kind), dimension(4) :: dimidz
       integer (kind=int_kind), dimension(5) :: dimidcz
       integer (kind=int_kind), dimension(3) :: dimid_nverts
       integer (kind=int_kind), dimension(5) :: dimidex
       real (kind=real_kind) :: ltime
+      real (kind=dbl_kind)  :: ltime2
       character (char_len) :: title
       character (char_len_long) :: ncfile(max_nstrm)
 
@@ -116,6 +117,7 @@
       if (my_task == master_task) then
 
         ltime=time/int(secday)
+        ltime2=time/int(secday)
 
         call construct_filename(ncfile(ns),'nc',ns)
 
@@ -127,7 +129,9 @@
         endif
 
         ! create file
-        status = nf90_create(ncfile(ns), nf90_clobber, ncid)
+        iflag = nf90_clobber
+        if (lcdf64) iflag = ior(iflag,nf90_64bit_offset)
+        status = nf90_create(ncfile(ns), iflag, ncid)
         if (status /= nf90_noerr) call abort_ice( &
            'ice: Error creating history ncfile '//ncfile(ns))
 
@@ -181,7 +185,8 @@
       ! define coordinate variables
       !-----------------------------------------------------------------
 
-        status = nf90_def_var(ncid,'time',nf90_float,timid,varid)
+!sgl        status = nf90_def_var(ncid,'time',nf90_float,timid,varid)
+        status = nf90_def_var(ncid,'time',nf90_double,timid,varid)
         if (status /= nf90_noerr) call abort_ice( &
                       'ice: Error defining var time')
 
@@ -859,7 +864,8 @@
         status = nf90_inq_varid(ncid,'time',varid)
         if (status /= nf90_noerr) call abort_ice( &
                       'ice: Error getting time varid')
-        status = nf90_put_var(ncid,varid,ltime)
+!sgl        status = nf90_put_var(ncid,varid,ltime)
+        status = nf90_put_var(ncid,varid,ltime2)
         if (status /= nf90_noerr) call abort_ice( &
                       'ice: Error writing time variable')
 

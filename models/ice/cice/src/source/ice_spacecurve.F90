@@ -8,7 +8,7 @@ module ice_spacecurve
 !  create space-filling curves.   
 !
 ! !REVISION HISTORY:
-!  SVN:$Id: ice_spacecurve.F90 834 2014-09-09 18:01:09Z eclare $
+!  SVN:$Id: ice_spacecurve.F90 1099 2015-12-12 18:12:30Z eclare $
 !
 ! author: John Dennis, NCAR
 
@@ -1139,6 +1139,7 @@ contains
        integer (int_kind) :: i
 
        found = .false.
+       res = -1
        i=1
        do while (i<=fac%numfact .and. (.not. found))
           if(fac%used(i) == 0) then

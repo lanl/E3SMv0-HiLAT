@@ -25,8 +25,6 @@
       public :: ice_write_hist
       save
       
-      logical (kind=log_kind), public :: lcdf64
-
 !=======================================================================
 
       contains
@@ -40,7 +38,6 @@
       subroutine ice_write_hist (ns)
 
 #ifdef ncdf
-      use ice_arrays_column, only: hin_max
       use ice_blocks, only: nx_block, ny_block
       use ice_broadcast, only: broadcast_scalar
       use ice_calendar, only: time, sec, idate, idate0, write_ic, &
@@ -56,7 +53,8 @@
           dxu, dxt, dyu, dyt, HTN, HTE, ANGLE, ANGLET, tmask, &
           lont_bounds, latt_bounds, lonu_bounds, latu_bounds
       use ice_history_shared
-      use ice_restart_shared, only: runid
+      use ice_arrays_column, only: hin_max
+      use ice_restart_shared, only: runid, lcdf64
       use netcdf
 #endif
       use ice_pio	
@@ -68,8 +66,8 @@
 
 #ifdef ncdf
       integer (kind=int_kind) :: i,j,k,ic,n,nn, &
-         ncid,status,imtid,jmtid,kmtidi,kmtids,kmtidb,kmtida, cmtid,timid, &
-         length,nvertexid,ivertex
+         ncid,status,imtid,jmtid,kmtidi,kmtids,kmtidb, cmtid,timid, &
+         length,nvertexid,ivertex,kmtida
       integer (kind=int_kind), dimension(2) :: dimid2
       integer (kind=int_kind), dimension(3) :: dimid3
       integer (kind=int_kind), dimension(4) :: dimidz
@@ -77,6 +75,7 @@
       integer (kind=int_kind), dimension(3) :: dimid_nverts
       integer (kind=int_kind), dimension(5) :: dimidex
       real (kind=real_kind) :: ltime
+      real (kind= dbl_kind) :: ltime2
       character (char_len) :: title
       character (char_len) :: time_period_freq
       character (char_len_long) :: ncfile(max_nstrm)
@@ -90,8 +89,7 @@
 
       type(file_desc_t)     :: File
       type(io_desc_t)       :: iodesc2d, &
-                               iodesc3dc, iodesc3dv, iodesc3di, iodesc3db, &
-                               iodesc3da, &
+                               iodesc3dc, iodesc3dv, iodesc3di, iodesc3db, iodesc3da, &
                                iodesc4di, iodesc4ds
       type(var_desc_t)      :: varid
 
@@ -158,15 +156,15 @@
 
       call ice_pio_initdecomp(iodesc=iodesc2d)
       call ice_pio_initdecomp(ndim3=ncat_hist, iodesc=iodesc3dc)
-      call ice_pio_initdecomp(ndim3=nzilyr,     iodesc=iodesc3di)
-      call ice_pio_initdecomp(ndim3=nzlyrb,    iodesc=iodesc3db)
+      call ice_pio_initdecomp(ndim3=nzilyr,    iodesc=iodesc3di)
+      call ice_pio_initdecomp(ndim3=nzblyr,    iodesc=iodesc3db)
       call ice_pio_initdecomp(ndim3=nzalyr,    iodesc=iodesc3da)
       call ice_pio_initdecomp(ndim3=nverts, inner_dim=.true., iodesc=iodesc3dv)
-      call ice_pio_initdecomp(ndim3=nzilyr,  ndim4=ncat_hist,  iodesc=iodesc4di)
-      call ice_pio_initdecomp(ndim3=nzslyr,  ndim4=ncat_hist,  iodesc=iodesc4ds)
+      call ice_pio_initdecomp(ndim3=nzilyr,  ndim4=ncat_hist, iodesc=iodesc4di)
+      call ice_pio_initdecomp(ndim3=nzslyr,  ndim4=ncat_hist, iodesc=iodesc4ds)
 
-!      ltime = time/int(secday)
-      ltime = real(time/int(secday),kind=real_kind)
+      ltime2 = time/int(secday)
+      ltime  = real(time/int(secday),kind=real_kind)
 
       !-----------------------------------------------------------------
       ! define dimensions
@@ -190,7 +188,8 @@
       ! define coordinate variables:  time, time_bounds
       !-----------------------------------------------------------------
 
-        status = pio_def_var(File,'time',pio_real,(/timid/),varid)
+!sgl        status = pio_def_var(File,'time',pio_real,(/timid/),varid)
+        status = pio_def_var(File,'time',pio_double,(/timid/),varid)
         status = pio_put_att(File,varid,'long_name','model time')
 
         write(cdate,'(i8.8)') idate0
@@ -216,7 +215,8 @@
         if (hist_avg .and. histfreq(ns) /= '1') then
           dimid2(1) = boundid
           dimid2(2) = timid
-          status = pio_def_var(File,'time_bounds',pio_real,dimid2,varid)
+!sgl          status = pio_def_var(File,'time_bounds',pio_real,dimid2,varid)
+          status = pio_def_var(File,'time_bounds',pio_double,dimid2,varid)
           status = pio_put_att(File,varid,'long_name', &
                                 'boundaries for time-averaging interval')
           write(cdate,'(i8.8)') idate0
@@ -333,7 +333,7 @@
           endif          
         enddo
 
-        ! Extra dimensions (NCAT, NZILYR, NZSLYR, NZBLYR, NZBLYR+3)
+        ! Extra dimensions (NCAT, NZILYR, NZSLYR, NZBLYR, NZALYR)
           dimidex(1)=cmtid
           dimidex(2)=kmtidi
           dimidex(3)=kmtids
@@ -519,7 +519,7 @@
         enddo  ! num_avail_hist_fields_3Dz
         
       !-----------------------------------------------------------------
-      ! 3D (biology layers)
+      ! 3D (biology ice layers)
       !-----------------------------------------------------------------
 
         dimidz(1) = imtid
@@ -556,7 +556,7 @@
         enddo  ! num_avail_hist_fields_3Db
 
       !-----------------------------------------------------------------
-      ! 3D (bio+snow layers)
+      ! 3D (biology snow layers)
       !-----------------------------------------------------------------
 
         dimidz(1) = imtid
@@ -598,7 +598,7 @@
       !-----------------------------------------------------------------
 
       !-----------------------------------------------------------------
-      ! 4D (ice categories and layers)
+      ! 4D (ice categories)
       !-----------------------------------------------------------------
 
         dimidcz(1) = imtid
@@ -636,7 +636,7 @@
         enddo  ! num_avail_hist_fields_4Di
 
       !-----------------------------------------------------------------
-      ! 4D (ice categories and snow layers)
+      ! 4D (snow layers)
       !-----------------------------------------------------------------
 
         dimidcz(1) = imtid
@@ -722,11 +722,7 @@
         status =  &
              pio_put_att(File,pio_global,'conventions',trim(title))
 
-        if (my_task == master_task) then
-           call date_and_time(date=current_date, time=current_time)
-        endif
-        call broadcast_scalar(current_date, master_task)
-        call broadcast_scalar(current_time, master_task)
+        call date_and_time(date=current_date, time=current_time)
         write(start_time,1000) current_date(1:4), current_date(5:6), &
                                current_date(7:8), current_time(1:2), &
                                current_time(3:4)
@@ -747,7 +743,8 @@
       !-----------------------------------------------------------------
 
         status = pio_inq_varid(File,'time',varid)
-        status = pio_put_var(File,varid,(/1/),ltime)
+!sgl        status = pio_put_var(File,varid,(/1/),ltime)
+        status = pio_put_var(File,varid,(/1/),ltime2)
 
       !-----------------------------------------------------------------
       ! write time_bounds info
@@ -949,7 +946,7 @@
       deallocate(workr3)
 
       ! 3D (vertical ice biology)
-      allocate(workr3(nx_block,ny_block,nblocks,nzlyrb))
+      allocate(workr3(nx_block,ny_block,nblocks,nzblyr))
       do n = n3Dzcum+1, n3Dbcum
          nn = n - n3Dzcum
          if (avail_hist_fields(n)%vhistfreq == histfreq(ns) .or. write_ic) then
@@ -957,7 +954,7 @@
             if (status /= pio_noerr) call abort_ice( &
                'ice: Error getting varid for '//avail_hist_fields(n)%vname)
             do j = 1, nblocks
-            do i = 1, nzlyrb
+            do i = 1, nzblyr
                workr3(:,:,j,i) = a3Db(:,:,i,nn,j)
             enddo
             enddo
@@ -968,7 +965,7 @@
       enddo ! num_avail_hist_fields_3Db
       deallocate(workr3)
 
-      ! 3D (vertical ice+snow biology)
+      ! 3D (vertical snow biology)
       allocate(workr3(nx_block,ny_block,nblocks,nzalyr))
       do n = n3Dbcum+1, n3Dacum
          nn = n - n3Dbcum
@@ -982,14 +979,14 @@
             enddo
             enddo
             call pio_setframe(varid, int(1,kind=PIO_OFFSET))
+!            call pio_setframe(File, varid, int(1,kind=PIO_OFFSET_KIND))
             call pio_write_darray(File, varid, iodesc3da,&
                                   workr3, status, fillval=spval_dbl)
          endif
-      enddo ! num_avail_hist_fields_3Da
+      enddo ! num_avail_hist_fields_3Db
       deallocate(workr3)
 
       allocate(workr4(nx_block,ny_block,nblocks,ncat_hist,nzilyr))
-
       ! 4D (categories, vertical ice)
       do n = n3Dacum+1, n4Dicum
          nn = n - n3Dacum
@@ -1027,10 +1024,11 @@
             enddo ! i
             enddo ! j
             call pio_setframe(varid, int(1,kind=PIO_OFFSET))
+!            call pio_setframe(File, varid, int(1,kind=PIO_OFFSET_KIND))
             call pio_write_darray(File, varid, iodesc4ds,&
                                   workr4, status, fillval=spval_dbl)
          endif
-      enddo ! num_avail_hist_fields_4Ds
+      enddo ! num_avail_hist_fields_4Di
       deallocate(workr4)
 
 !     similarly for num_avail_hist_fields_4Db (define workr4b, iodesc4db)
@@ -1047,6 +1045,7 @@
       call pio_freedecomp(File,iodesc3db)
       call pio_freedecomp(File,iodesc3da)
       call pio_freedecomp(File,iodesc4di)
+      call pio_freedecomp(File,iodesc4ds)
 
       !-----------------------------------------------------------------
       ! close output dataset
