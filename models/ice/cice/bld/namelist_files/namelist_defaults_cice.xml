@@ -116,19 +116,19 @@
 <dT_mlt hgrid='gx3v7'> 2.00 </dT_mlt>
 <dT_mlt hgrid="ar9v3"> 1.00 </dT_mlt>
 <dT_mlt hgrid="ar9v4"> 1.00 </dT_mlt>
-<dT_mlt cam5='.true.'> 1.00 </dT_mlt>
+<dT_mlt cam4='.true.'> 1.50 </dT_mlt>
 
 <rsnw_mlt              > 1000. </rsnw_mlt>
 <rsnw_mlt hgrid='gx3v7'> 2000. </rsnw_mlt>
 <rsnw_mlt hgrid="ar9v3"> 1000. </rsnw_mlt>
 <rsnw_mlt hgrid="ar9v4"> 1000. </rsnw_mlt>
-<rsnw_mlt cam5='.true.'> 1000. </rsnw_mlt>
+<rsnw_mlt cam4='.true.'> 1500. </rsnw_mlt>
 
 <R_snw              >  1.75 </R_snw>
 <R_snw hgrid='gx3v7'> -2.00 </R_snw>
 <R_snw hgrid="ar9v3"> -1.00 </R_snw>
 <R_snw hgrid="ar9v4"> -1.00 </R_snw>
-<R_snw cam5='.true.'>  1.75 </R_snw>
+<R_snw cam4='.true.'>  1.50 </R_snw>
 
 <R_ice              >  0.0 </R_ice>
 <R_pnd              >  0.0 </R_pnd>
