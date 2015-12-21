@@ -187,8 +187,8 @@
 
       allocate(dof3d(nx_block*ny_block*nblocks*ndim3))
       lremap=.false.
-      if(present(remap)) lremap=remap
-      if(lremap) then
+      if (present(remap)) lremap=remap
+      if (lremap) then
          ! Reorder the ndim3 and nblocks loops to avoid a temporary array in restart read/write
          n=0
          do iblk = 1, nblocks

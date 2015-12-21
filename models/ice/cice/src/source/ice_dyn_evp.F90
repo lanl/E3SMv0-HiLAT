@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_dyn_evp.F90 700 2013-08-15 19:17:39Z eclare $
+!  SVN:$Id: ice_dyn_evp.F90 1030 2015-07-27 15:05:32Z eclare $
 !=======================================================================
 !
 ! Elastic-viscous-plastic sea ice dynamics model
@@ -35,7 +35,9 @@
       module ice_dyn_evp
 
       use ice_kinds_mod
-      use ice_dyn_shared ! everything
+      use ice_dyn_shared, only: stepu, evp_prep1, evp_prep2, evp_finish, &
+          ndte, yield_curve, ecci, denom1, arlx1i, fcor_blk, uvel_init,  &
+          vvel_init 
 
       implicit none
       private
@@ -62,14 +64,15 @@
 
       subroutine evp (dt)
 
-      use ice_atmo, only: Cdn_ocn
+      use ice_arrays_column, only: Cdn_ocn
       use ice_boundary, only: ice_halo, ice_HaloMask, ice_HaloUpdate, &
           ice_HaloDestroy, ice_HaloUpdate_stress
       use ice_blocks, only: block, get_block, nx_block, ny_block
+      use ice_colpkg, only: colpkg_ice_strength
       use ice_constants, only: field_loc_center, field_loc_NEcorner, &
           field_type_scalar, field_type_vector, c0
       use ice_domain, only: nblocks, blocks_ice, halo_info, maskhalo_dyn
-      use ice_domain_size, only: max_blocks
+      use ice_domain_size, only: max_blocks, ncat
       use ice_flux, only: rdg_conv, rdg_shear, prs_sig, strairxT, strairyT, &
           strairx, strairy, uocn, vocn, ss_tltx, ss_tlty, iceumask, fm, &
           strtltx, strtlty, strocnx, strocny, strintx, strinty, &
@@ -80,13 +83,12 @@
       use ice_grid, only: tmask, umask, dxt, dyt, dxhy, dyhx, cxp, cyp, cxm, cym, &
           tarear, uarear, tinyarea, to_ugrid, t2ugrid_vector, u2tgrid_vector, &
           grid_type
-      use ice_mechred, only: ice_strength
       use ice_state, only: aice, vice, vsno, uvel, vvel, divu, shear, &
           aice_init, aice0, aicen, vicen, strength
       use ice_timers, only: timer_dynamics, timer_bound, &
           ice_timer_start, ice_timer_stop
 #ifdef CICE_IN_NEMO
-      use ice_atmo, only: calc_strair
+      use ice_colpkg_shared, only: calc_strair
 #endif
 
       real (kind=dbl_kind), intent(in) :: &
@@ -98,7 +100,7 @@
          ksub           , & ! subcycle step
          iblk           , & ! block index
          ilo,ihi,jlo,jhi, & ! beginning and end of physical domain
-         i, j
+         i, j, ij
 
       integer (kind=int_kind), dimension(max_blocks) :: & 
          icellt   , & ! no. of cells where icetmask = 1
@@ -267,17 +269,18 @@
       ! ice strength
       !-----------------------------------------------------------------
 
-         call ice_strength (nx_block, ny_block,   & 
-                            ilo, ihi, jlo, jhi,   &
-                            icellt(iblk),         & 
-                            indxti      (:,iblk), & 
-                            indxtj      (:,iblk), & 
-                            aice    (:,:,  iblk), & 
-                            vice    (:,:,  iblk), & 
-                            aice0   (:,:,  iblk), & 
-                            aicen   (:,:,:,iblk), &  
-                            vicen   (:,:,:,iblk), & 
-                            strength(:,:,  iblk) )
+         strength(:,:,iblk) = c0  ! initialize
+         do ij = 1, icellt(iblk)
+            i = indxti(ij, iblk)
+            j = indxtj(ij, iblk)
+            call colpkg_ice_strength (ncat,                 &
+                                      aice    (i,j,  iblk), & 
+                                      vice    (i,j,  iblk), & 
+                                      aice0   (i,j,  iblk), & 
+                                      aicen   (i,j,:,iblk), &  
+                                      vicen   (i,j,:,iblk), & 
+                                      strength(i,j,  iblk) )
+         enddo  ! ij
 
          ! load velocity into array for boundary updates
          fld2(:,:,1,iblk) = uvel(:,:,iblk)

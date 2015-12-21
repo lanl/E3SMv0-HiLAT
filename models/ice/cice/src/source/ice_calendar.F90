@@ -1,4 +1,4 @@
-! $Id: ice_calendar.F90 732 2013-09-19 18:19:31Z eclare $
+! $Id: ice_calendar.F90 1099 2015-12-12 18:12:30Z eclare $
 !=======================================================================
 
 ! Calendar routines for managing time
@@ -106,7 +106,9 @@
          histfreq(max_nstrm), & ! history output frequency, 'y','m','d','h','1'
          dumpfreq               ! restart frequency, 'y','m','d'
 
-      character (len=char_len),public :: calendar_type
+      character (len=char_len), public :: &
+         calendar_type       ! differentiates Gregorian from other calendars
+                             ! default = ' '
 
 !=======================================================================
 
@@ -145,6 +147,9 @@
          write(nu_diag,*) 'Warning: days_per_year has been set to 365', &
               ' because use_leap_years = .true.'
       end if
+
+      calendar_type = ' '
+      if (use_leap_years .and. days_per_year == 365) calendar_type = 'Gregorian'
       
       dayyr = real(days_per_year, kind=dbl_kind)
       if (days_per_year == 360) then

@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_dyn_shared.F90 707 2013-08-22 21:21:05Z eclare $
+!  SVN:$Id: ice_dyn_shared.F90 1030 2015-07-27 15:05:32Z eclare $
 !=======================================================================
 
 ! Elastic-viscous-plastic sea ice dynamics model code shared with other

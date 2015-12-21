@@ -72,8 +72,44 @@ Brine tracer
 Skeletal layer BGC
 </entry>
 
-<entry id="nbgclyr" valid_values="0,1,2,3,4,5,6,7,8,9,10" value="0">
-Number of BGC tracers
+<entry id="trbgcz" valid_values="0,1" value="1">
+Vertically resolved BGC
+</entry>
+
+<entry id="nbgclyr" valid_values="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20" value="7">
+Number of layers in the vertical BGC grid
+</entry>
+
+<entry id="trzs" valid_values="0,1" value="0">
+z-Salinity tracer
+</entry>
+
+<entry id="trzaero" valid_values="0,1,2,3,4,5,6" value="3">
+Number of z-aerosol tracers
+</entry>
+
+<entry id="tralg" valid_values="0,1,2,3" value="0">
+Number of algal groups
+</entry>
+
+<entry id="trdoc" valid_values="0,1,2" value="0">
+Number of dissolved organic carbon types
+</entry>
+
+<entry id="trdic" valid_values="0,1" value="0">
+Number of dissolved inorganic carbon types
+</entry>
+
+<entry id="trdon" valid_values="0,1" value="0">
+Number of dissolved organic nitrogen types
+</entry>
+
+<entry id="trfep" valid_values="0,1" value="0">
+Number of particulate iron types
+</entry>
+
+<entry id="trfed" valid_values="0,1" value="0">
+Number of dissolved iron types
 </entry>
 
 <entry id="ntasks" value="">

@@ -47,6 +47,7 @@
       use ice_blocks, only: nx_block, ny_block
       use ice_calendar, only: sec, month, mday, nyr, istep1, &
                               time, time_forc, year_init
+      use ice_colpkg_shared, only: oceanmixed_ice
       use ice_communicate, only: my_task, master_task
       use ice_constants, only: c0, c1
       use ice_domain, only: nblocks
@@ -57,10 +58,9 @@
           stressp_1, stressp_2, stressp_3, stressp_4, &
           stressm_1, stressm_2, stressm_3, stressm_4, &
           stress12_1, stress12_2, stress12_3, stress12_4
-      use ice_ocean, only: oceanmixed_ice
       use ice_read_write, only: ice_open, ice_write
-      use ice_state, only: aicen, vicen, vsnon, trcrn, &
-          nt_Tsfc, nt_sice, nt_qice, nt_qsno, uvel, vvel
+      use ice_state, only: aicen, vicen, vsnon, trcrn, uvel, vvel
+      use ice_colpkg_tracers, only: nt_Tsfc, nt_sice, nt_qice, nt_qsno
 
       character(len=char_len_long), intent(in), optional :: filename_spec
 
@@ -194,6 +194,8 @@
       use ice_broadcast, only: broadcast_scalar
       use ice_blocks, only: nghost, nx_block, ny_block
       use ice_calendar, only: istep0, istep1, time, time_forc, calendar, npt
+      use ice_colpkg, only: colpkg_aggregate
+      use ice_colpkg_shared, only: oceanmixed_ice
       use ice_communicate, only: my_task, master_task
       use ice_constants, only: c0, p5, &
           field_loc_center, field_loc_NEcorner, &
@@ -209,12 +211,11 @@
           stress12_1, stress12_2, stress12_3, stress12_4
       use ice_gather_scatter, only: scatter_global_stress
       use ice_grid, only: tmask, grid_type
-      use ice_itd, only: aggregate
-      use ice_ocean, only: oceanmixed_ice
       use ice_read_write, only: ice_open, ice_read, ice_read_global
       use ice_state, only: trcr_depend, aice, vice, vsno, trcr, &
-          aice0, aicen, vicen, vsnon, trcrn, aice_init, &
-          nt_Tsfc, nt_sice, nt_qice, nt_qsno, uvel, vvel
+          aice0, aicen, vicen, vsnon, trcrn, aice_init, uvel, vvel, &
+          trcr_base, nt_strata, n_trcr_strata
+      use ice_colpkg_tracers, only: nt_Tsfc, nt_sice, nt_qice, nt_qsno
 
       character (*), optional :: ice_ic
 
@@ -306,7 +307,8 @@
 
 #ifdef CCSMCOUPLED
       call read_restart_field(nu_restart,0,coszen,'ruf8', &
-           'coszen',1,diag, field_loc_center, field_type_scalar)
+!           'coszen',1,diag, field_loc_center, field_type_scalar)
+           'coszen',1,diag)
 #endif
       call read_restart_field(nu_restart,0,scale_factor,'ruf8', &
            'scale_factor',1,diag, field_loc_center, field_type_scalar)
@@ -483,21 +485,28 @@
       !$OMP PARALLEL DO PRIVATE(iblk)
       do iblk = 1, nblocks
 
-         call aggregate (nx_block, ny_block, &
-                         aicen(:,:,:,iblk),  &
-                         trcrn(:,:,:,:,iblk),&
-                         vicen(:,:,:,iblk),  &
-                         vsnon(:,:,:,iblk),  &
-                         aice (:,:,  iblk),  &
-                         trcr (:,:,:,iblk),  &
-                         vice (:,:,  iblk),  &
-                         vsno (:,:,  iblk),  &
-                         aice0(:,:,  iblk),  &
-                         tmask(:,:,  iblk),  &
-                         max_ntrcr,          &
-                         trcr_depend)
+      do j = 1, ny_block
+      do i = 1, nx_block
+         if (tmask(i,j,iblk)) &
+         call colpkg_aggregate (ncat,               &
+                                aicen(i,j,:,iblk),  &
+                                trcrn(i,j,:,:,iblk),&
+                                vicen(i,j,:,iblk),  &
+                                vsnon(i,j,:,iblk),  &
+                                aice (i,j,  iblk),  &
+                                trcr (i,j,:,iblk),  &
+                                vice (i,j,  iblk),  &
+                                vsno (i,j,  iblk),  &
+                                aice0(i,j,  iblk),  &
+                                max_ntrcr,          &
+                                trcr_depend,        &
+                                trcr_base,          &
+                                n_trcr_strata,      &
+                                nt_strata)
 
-         aice_init(:,:,iblk) = aice(:,:,iblk)
+         aice_init(i,j,iblk) = aice(i,j,iblk)
+      enddo
+      enddo
 
       enddo
       !$OMP END PARALLEL DO
@@ -519,6 +528,8 @@
       use ice_broadcast, only: broadcast_scalar
       use ice_blocks, only: nghost, nx_block, ny_block
       use ice_calendar, only: istep0, istep1, time, time_forc, calendar, npt
+      use ice_colpkg, only: colpkg_aggregate
+      use ice_colpkg_shared, only: oceanmixed_ice
       use ice_communicate, only: my_task, master_task
       use ice_constants, only: c0, p5, &
           field_loc_center, field_loc_NEcorner, &
@@ -534,12 +545,11 @@
           stress12_1, stress12_2, stress12_3, stress12_4
       use ice_gather_scatter, only: scatter_global_stress
       use ice_grid, only: tmask
-      use ice_itd, only: aggregate
-      use ice_ocean, only: oceanmixed_ice
       use ice_read_write, only: ice_open, ice_read, ice_read_global
       use ice_state, only: trcr_depend, aice, vice, vsno, trcr, &
-          aice0, aicen, vicen, vsnon, trcrn, aice_init, &
-          nt_Tsfc, nt_sice, nt_qice, nt_qsno, uvel, vvel
+          aice0, aicen, vicen, vsnon, trcrn, aice_init, uvel, vvel, &
+          trcr_base, nt_strata, n_trcr_strata
+      use ice_colpkg_tracers, only: nt_Tsfc, nt_sice, nt_qice, nt_qsno
 
       character (*), optional :: ice_ic
 
@@ -826,21 +836,28 @@
       !$OMP PARALLEL DO PRIVATE(iblk,i,j)
       do iblk = 1, nblocks
 
-         call aggregate (nx_block, ny_block, &
-                         aicen(:,:,:,iblk),  &
-                         trcrn(:,:,:,:,iblk),&
-                         vicen(:,:,:,iblk),  &
-                         vsnon(:,:,:,iblk),  &
-                         aice (:,:,  iblk),  &
-                         trcr (:,:,:,iblk),  &
-                         vice (:,:,  iblk),  &
-                         vsno (:,:,  iblk),  &
-                         aice0(:,:,  iblk),  &
-                         tmask(:,:,  iblk),  &
-                         max_ntrcr,          &
-                         trcr_depend)
+      do j = 1, ny_block
+      do i = 1, nx_block
+         if (tmask(i,j,iblk)) &
+         call colpkg_aggregate (ncat,               &
+                                aicen(i,j,:,iblk),  &
+                                trcrn(i,j,:,:,iblk),&
+                                vicen(i,j,:,iblk),  &
+                                vsnon(i,j,:,iblk),  &
+                                aice (i,j,  iblk),  &
+                                trcr (i,j,:,iblk),  &
+                                vice (i,j,  iblk),  &
+                                vsno (i,j,  iblk),  &
+                                aice0(i,j,  iblk),  &
+                                max_ntrcr,          &
+                                trcr_depend,        &
+                                trcr_base,          &
+                                n_trcr_strata,      &
+                                nt_strata)
 
-         aice_init(:,:,iblk) = aice(:,:,iblk)
+         aice_init(i,j,iblk) = aice(i,j,iblk)
+      enddo
+      enddo
 
       enddo
       !$OMP END PARALLEL DO

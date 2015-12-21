@@ -354,8 +354,8 @@ end subroutine
           write(nu_diag,*) trim(subname)//' resetting idate to match sync clock'
        end if
 
-       idate0 = curr_ymd
-       idate = curr_ymd
+       idate0 = curr_ymd - (year_init*10000)
+       idate = curr_ymd - (year_init*10000)
 
        if (idate < 0) then
           write(nu_diag,*) trim(subname),' ERROR curr_ymd,year_init =',curr_ymd,year_init
