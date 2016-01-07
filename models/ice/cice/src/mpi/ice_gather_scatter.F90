@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_gather_scatter.F90 806 2014-07-31 19:00:00Z tcraig $
+!  SVN:$Id: ice_gather_scatter.F90 929 2015-03-10 00:35:22Z eclare $
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  module ice_gather_scatter

@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_drag.F90 700 2013-08-15 19:17:39Z eclare $
+!  SVN:$Id: ice_history_drag.F90 938 2015-03-17 21:52:38Z eclare $
 !=======================================================================
 
 ! 2013 module for form drag parameters
@@ -64,7 +64,6 @@
       use ice_fileunits, only: nu_nml, nml_filename, &
           get_fileunit, release_fileunit
       use ice_history_shared, only: tstr2D, tcstr, define_hist_field
-      use ice_state, only: tr_lvl
 
       integer (kind=int_kind) :: ns
       integer (kind=int_kind) :: nml_error ! namelist i/o error flag
@@ -232,7 +231,7 @@
       use ice_constants, only: c1
       use ice_history_shared, only: n2D, a2D, a3Dc, ncat_hist, &
           accum_hist_field
-      use ice_atmo, only: hfreebd, hdraft, hridge, distrdg, hkeel, &
+      use ice_arrays_column, only: hfreebd, hdraft, hridge, distrdg, hkeel, &
           dkeel, lfloe, dfloe, Cdn_atm, Cdn_atm_skin, Cdn_atm_floe, &
           Cdn_atm_pond, Cdn_atm_rdg, Cdn_atm_ratio, Cdn_ocn_skin, &
           Cdn_ocn_keel, Cdn_ocn_floe, Cdn_ocn

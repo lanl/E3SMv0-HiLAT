@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_mechred.F90 700 2013-08-15 19:17:39Z eclare $
+!  SVN:$Id: ice_history_mechred.F90 914 2015-02-06 22:22:03Z akt $
 !=======================================================================
 
 ! Mechanical redistribution history output
@@ -82,7 +82,7 @@
       use ice_fileunits, only: nu_nml, nml_filename, &
           get_fileunit, release_fileunit
       use ice_history_shared, only: tstr2D, tcstr, define_hist_field
-      use ice_state, only: tr_lvl
+      use ice_colpkg_tracers, only: tr_lvl
 
       integer (kind=int_kind) :: ns
       integer (kind=int_kind) :: nml_error ! namelist i/o error flag
@@ -294,8 +294,8 @@
       use ice_constants, only: c1
       use ice_history_shared, only: n2D, a2D, a3Dc, ncat_hist, &
           accum_hist_field
-      use ice_state, only: aice, vice, trcr, nt_alvl, nt_vlvl, &
-          aicen, vicen, trcrn
+      use ice_state, only: aice, vice, trcr, aicen, vicen, trcrn
+      use ice_colpkg_tracers, only: nt_alvl, nt_vlvl
       use ice_flux, only: dardg1dt, dardg2dt, dvirdgdt, dardg1ndt,&
           dardg2ndt, dvirdgndt, krdgn, aparticn, aredistn, vredistn, &
           araftn, vraftn, opening

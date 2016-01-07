@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_transport_driver.F90 732 2013-09-19 18:19:31Z eclare $
+!  SVN:$Id: ice_transport_driver.F90 1099 2015-12-12 18:12:30Z eclare $
 !=======================================================================
 !
 ! Drivers for remapping and upwind ice transport
@@ -65,10 +65,11 @@
 
       subroutine init_transport
 
-      use ice_state, only: ntrcr, trcr_depend, nt_Tsfc, nt_qice, nt_qsno, &
-          nt_sice, nt_fbri, nt_iage, nt_FY, nt_alvl, nt_vlvl, &
-          nt_apnd, nt_hpnd, nt_ipnd, nt_bgc_n_sk
       use ice_exit, only: abort_ice
+      use ice_state, only: trcr_depend
+      use ice_colpkg_tracers, only: ntrcr, nt_Tsfc, nt_qice, nt_qsno, &
+          nt_sice, nt_fbri, nt_iage, nt_FY, nt_alvl, nt_vlvl, &
+          nt_apnd, nt_hpnd, nt_ipnd, nt_bgc_Nit, nt_bgc_S
       use ice_timers, only: ice_timer_start, ice_timer_stop, timer_advect
       use ice_transport_remap, only: init_remap
 
@@ -170,8 +171,11 @@
              if (nt-k==nt_ipnd) &
                 write(nu_diag,*) 'nt_ipnd',nt,depend(nt),tracer_type(nt),&
                                               has_dependents(nt)
-             if (nt-k==nt_bgc_N_sk) &
-                write(nu_diag,*) 'nt_bgc_sk',nt,depend(nt),tracer_type(nt),&
+             if (nt-k==nt_bgc_Nit) &
+                write(nu_diag,*) 'nt_bgc_Nit',nt,depend(nt),tracer_type(nt),&
+                                              has_dependents(nt)
+             if (nt-k==nt_bgc_S) &
+                write(nu_diag,*) 'nt_bgc_S',nt,depend(nt),tracer_type(nt),&
                                               has_dependents(nt)
           enddo
           endif ! master_task
@@ -206,8 +210,9 @@
       use ice_domain, only: nblocks, distrb_info, blocks_ice, halo_info
       use ice_domain_size, only: ncat, max_blocks
       use ice_blocks, only: nx_block, ny_block, block, get_block, nghost
-      use ice_state, only: aice0, aicen, vicen, vsnon, trcrn, ntrcr, &
+      use ice_state, only: aice0, aicen, vicen, vsnon, trcrn, &
           uvel, vvel, bound_state
+      use ice_colpkg_tracers, only: ntrcr
       use ice_grid, only: tarea, HTE, HTN
       use ice_exit, only: abort_ice
       use ice_calendar, only: istep1
@@ -293,13 +298,16 @@
     !       Here we assume that aice0 is up to date.
     !-------------------------------------------------------------------
 
-!      !$OMP PARALLEL DO PRIVATE(iblk)
+!      !$OMP PARALLEL DO PRIVATE(i,j,iblk)
 !      do iblk = 1, nblocks
-!         call aggregate_area (nx_block, ny_block,
-!                              iblk,     &
-!                              aicen(:,:,:,iblk),     &
-!                              aice (:,:,  iblk),     &
-!                              aice0(:,:,  iblk)) 
+!      do j = 1, ny_block
+!      do i = 1, nx_block
+!         call aggregate_area (ncat,
+!                              aicen(i,j,:,iblk),     &
+!                              aice (i,j,  iblk),     &
+!                              aice0(i,j,  iblk)) 
+!      enddo
+!      enddo
 !      enddo
 !      !$OMP END PARALLEL DO
 
@@ -312,8 +320,9 @@
 !      call ice_HaloUpdate (aice0,            halo_info,     &
 !                           field_loc_center, field_type_scalar)
 
-!      call bound_state (aicen, trcrn,     &
-!                        vicen, vsnon)
+!      call bound_state (aicen,        &
+!                        vicen, vsnon, &
+!                        ntrcr, trcrn)
 
 !      call ice_timer_stop(timer_bound)
 
@@ -503,8 +512,9 @@
 
       call ice_timer_start(timer_bound)
 
-      call bound_state (aicen, trcrn,     &
-                        vicen, vsnon)
+      call bound_state (aicen,        &
+                        vicen, vsnon, &
+                        ntrcr, trcrn)
 
       call ice_timer_stop(timer_bound)
 
@@ -639,8 +649,10 @@
           field_loc_Nface, field_loc_Eface, field_type_vector
       use ice_domain, only: blocks_ice, halo_info, nblocks
       use ice_domain_size, only: ncat, max_blocks
-      use ice_state, only: aice0, aicen, vicen, vsnon, trcrn, ntrcr, &
-          uvel, vvel, trcr_depend, bound_state
+      use ice_state, only: aice0, aicen, vicen, vsnon, trcrn, &
+          uvel, vvel, trcr_depend, bound_state, trcr_base, &
+          n_trcr_strata, nt_strata
+      use ice_colpkg_tracers, only: ntrcr
       use ice_grid, only: HTE, HTN, tarea
       use ice_timers, only: ice_timer_start, ice_timer_stop, &
           timer_bound, timer_advect
@@ -677,8 +689,9 @@
     ! Get ghost cell values of state variables.
     ! (Assume velocities are already known for ghost cells, also.)
     !-------------------------------------------------------------------
-!      call bound_state (aicen, trcrn,     &
-!                        vicen, vsnon)
+!      call bound_state (aicen,        &
+!                        vicen, vsnon, &
+!                        ntrcr, trcrn)
 
     !-------------------------------------------------------------------
     ! Average corner velocities to edges.
@@ -745,8 +758,9 @@
       !-----------------------------------------------------------------
 
          call work_to_state (nx_block,            ny_block,             &
-                             ntrcr,                                     &
-                             narr,                trcr_depend,          &
+                             ntrcr,               narr,                 &
+                             trcr_depend(1:ntrcr), trcr_base(1:ntrcr,3), &
+                             n_trcr_strata(1:ntrcr), nt_strata(1:ntrcr,2), &
                              aicen(:,:,  :,iblk), trcrn (:,:,1:ntrcr,:,iblk), &
                              vicen(:,:,  :,iblk), vsnon (:,:,  :,iblk), &
                              aice0(:,:,    iblk), works (:,:,  :,iblk)) 
@@ -762,8 +776,9 @@
 
       call ice_timer_start(timer_bound)
 
-      call bound_state (aicen, trcrn,     &
-                        vicen, vsnon)
+      call bound_state (aicen,        &
+                        vicen, vsnon, &
+                        ntrcr, trcrn)
 
       call ice_timer_stop(timer_bound)
 
@@ -795,7 +810,7 @@
 
       use ice_constants, only: c0, c1, rhos, Lfresh, puny
       use ice_domain_size, only: ncat, nslyr
-      use ice_state, only: nt_qsno
+      use ice_colpkg_tracers, only: nt_qsno
 
       integer (kind=int_kind), intent(in) ::     &
            nx_block, ny_block, & ! block dimensions
@@ -914,7 +929,7 @@
 
       use ice_constants, only: c0, rhos, Lfresh
       use ice_domain_size, only: ncat, nslyr
-      use ice_state, only: nt_qsno
+      use ice_colpkg_tracers, only: nt_qsno
 
       integer (kind=int_kind), intent(in) ::     &
            nx_block, ny_block, & ! block dimensions
@@ -1387,7 +1402,7 @@
                                 aice0,    works)
 
       use ice_domain_size, only: ncat
-      use ice_state, only: nt_alvl, nt_apnd, nt_fbri, &
+      use ice_colpkg_tracers, only: nt_alvl, nt_apnd, nt_fbri, &
                            tr_pond_cesm, tr_pond_lvl, tr_pond_topo
 
       integer (kind=int_kind), intent(in) ::     &
@@ -1516,24 +1531,34 @@
 !
 ! Convert work array back to state variables
 
-      subroutine work_to_state (nx_block, ny_block,        &
-                                ntrcr,                     &
-                                narr,     trcr_depend,     &
-                                aicen,    trcrn,           &
-                                vicen,    vsnon,           &
+      subroutine work_to_state (nx_block, ny_block, &
+                                ntrcr,    narr,     &
+                                trcr_depend,        &
+                                trcr_base,          &
+                                n_trcr_strata,      &
+                                nt_strata,          &
+                                aicen,    trcrn,    &
+                                vicen,    vsnon,    &
                                 aice0,    works)
 
       use ice_domain_size, only: ncat
-      use ice_blocks, only: 
-      use ice_itd, only: compute_tracers
+      use ice_colpkg_tracers, only: colpkg_compute_tracers
 
       integer (kind=int_kind), intent (in) ::                       &
          nx_block, ny_block, & ! block dimensions
          ntrcr             , & ! number of tracers in use
          narr        ! number of 2D state variable arrays in works array
 
-      integer (kind=int_kind), dimension (ntrcr), intent(in) ::     &
-         trcr_depend ! = 0 for aicen tracers, 1 for vicen, 2 for vsnon
+      integer (kind=int_kind), dimension (ntrcr), intent(in) :: &
+         trcr_depend, & ! = 0 for aicen tracers, 1 for vicen, 2 for vsnon
+         n_trcr_strata  ! number of underlying tracer layers
+
+      real (kind=dbl_kind), dimension (ntrcr,3), intent(in) :: &
+         trcr_base      ! = 0 or 1 depending on tracer dependency
+                        ! argument 2:  (1) aice, (2) vice, (3) vsno
+
+      integer (kind=int_kind), dimension (ntrcr,2), intent(in) :: &
+         nt_strata      ! indices of underlying tracer layers
 
       real (kind=dbl_kind), intent (in) ::                          &
          works (nx_block,ny_block,narr)
@@ -1555,7 +1580,7 @@
       ! local variables
 
       integer (kind=int_kind) ::      &
-         i, j, n        ,&! counting indices
+         i, j, ij, n    ,&! counting indices
          narrays        ,&! counter for number of state variable arrays
          icells           ! number of ocean/ice cells
 
@@ -1594,14 +1619,18 @@
          enddo
          narrays = narrays + 3
 
-         call compute_tracers (nx_block,     ny_block,               &
-                               icells,       indxi,   indxj,         &
-                               ntrcr,        trcr_depend,            &
-                               work (:,narrays+1:narrays+ntrcr),     &
-                               aicen(:,:,n),                         &
-                               vicen(:,:,n), vsnon(:,:,n),           &
-                               trcrn(:,:,:,n))
+         do ij = 1, icells
+            i = indxi(ij)
+            j = indxj(ij)
 
+            call colpkg_compute_tracers (ntrcr,        trcr_depend(:),     &
+                                         work (ij,narrays+1:narrays+ntrcr), &
+                                         aicen(i,j,n),                     &
+                                         vicen(i,j,n), vsnon(i,j,n),       &
+                                         trcr_base(:,:), n_trcr_strata(:), &
+                                         nt_strata(:,:), &
+                                         trcrn(i,j,:,n))
+         enddo
          narrays = narrays + ntrcr
 
       enddo                     ! ncat

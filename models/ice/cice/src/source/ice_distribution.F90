@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_distribution.F90 732 2013-09-19 18:19:31Z eclare $
+!  SVN:$Id: ice_distribution.F90 834 2014-09-09 18:01:09Z eclare $
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  module ice_distribution

@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_pond.F90 700 2013-08-15 19:17:39Z eclare $
+!  SVN:$Id: ice_history_pond.F90 1078 2015-11-12 00:56:52Z eclare $
 !=======================================================================
 
 ! Melt pond history output
@@ -67,7 +67,7 @@
       use ice_fileunits, only: nu_nml, nml_filename, &
           get_fileunit, release_fileunit
       use ice_history_shared, only: tstr2D, tcstr, define_hist_field
-      use ice_state, only: tr_pond
+      use ice_colpkg_tracers, only: tr_pond
 
       integer (kind=int_kind) :: ns
       integer (kind=int_kind) :: nml_error ! namelist i/o error flag
@@ -185,7 +185,7 @@
       use ice_calendar, only: nstreams
       use ice_constants, only: c0, c1
       use ice_history_shared, only: tstr3Dc, tcstr, define_hist_field
-      use ice_state, only: tr_pond
+      use ice_colpkg_tracers, only: tr_pond
 
       integer (kind=int_kind) :: ns
       
@@ -218,15 +218,16 @@
 
       subroutine accum_hist_pond (iblk)
 
+      use ice_arrays_column, only: apeffn
       use ice_blocks, only: block, get_block, nx_block, ny_block
       use ice_constants, only: c0, puny
       use ice_domain, only: blocks_ice
       use ice_flux, only: apeff_ai
       use ice_history_shared, only: n2D, a2D, a3Dc, ncat_hist, &
           accum_hist_field
-      use ice_shortwave, only: apeffn
-      use ice_state, only: tr_pond_cesm, tr_pond_lvl, tr_pond_topo, &
-          aice, trcr, trcrn, nt_apnd, nt_hpnd, nt_ipnd, nt_alvl
+      use ice_state, only: aice, trcr, trcrn
+      use ice_colpkg_tracers, only: tr_pond_cesm, tr_pond_lvl, tr_pond_topo, &
+          nt_apnd, nt_hpnd, nt_ipnd, nt_alvl
 
       integer (kind=int_kind), intent(in) :: &
            iblk                 ! block index

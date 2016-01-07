@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_domain_size.F90 700 2013-08-15 19:17:39Z eclare $
+!  SVN:$Id: ice_domain_size.F90 1052 2015-08-28 21:54:05Z njeffery $
 !=======================================================================
 
 ! Defines the global domain size and number of categories and layers.
@@ -26,14 +26,23 @@
         ncat      = NICECAT   , & ! number of categories
         nilyr     = NICELYR   , & ! number of ice layers per category
         nslyr     = NSNWLYR   , & ! number of snow layers per category
-
-        max_aero  =   6       , & ! maximum number of aerosols 
         n_aero    = NTRAERO   , & ! number of aerosols in use
-
-        nblyr     = NBGCLYR   , & ! number of bio/brine layers per category
-        max_nbtrcr=   9       , & ! maximum number of biology tracers
-!        nltrcr    = max_nbtrcr*TRBRI, & ! maximum layer bgc tracers (for zbgc)
-
+        n_zaero   = TRZAERO   , & ! number of z aerosols in use 
+        n_algae   = TRALG     , & ! number of algae in use 
+        n_doc     = TRDOC     , & ! number of DOC pools in use
+        n_dic     = TRDIC     , & ! number of DIC pools in use
+        n_don     = TRDON     , & ! number of DON pools in use
+        n_fed     = TRFED     , & ! number of Fe  pools in use dissolved Fe
+        n_fep     = TRFEP     , & ! number of Fe  pools in use particulate Fe
+        nblyr     = NBGCLYR   , & ! number of bio/brine layers per category 
+                                  ! maximum number of biology tracers + aerosols
+                                  ! *** add to kscavz in ice_zbgc_shared.F90 
+        n_bgc     = (n_algae*2 + n_doc + n_dic + n_don + n_fed + n_fep + n_zaero &
+                  + 8)        , & ! nit, am, sil, dmspp, dmspd, dms, pon, humic 
+        nltrcr    = (n_bgc*TRBGCZ+TRZS)*TRBRI, & ! number of zbgc (includes zaero)
+                                                 ! and zsalinity tracers 
+        max_nsw   = (nilyr+nslyr+2) & ! total chlorophyll plus aerosols
+                  * (1+TRZAERO),& ! number of tracers active in shortwave calculation
         max_ntrcr =   1         & ! 1 = surface temperature              
                   + nilyr       & ! ice salinity
                   + nilyr       & ! ice enthalpy
@@ -44,9 +53,12 @@
                   + TRLVL*2     & ! level/deformed ice
                   + TRPND*3     & ! ponds
                   + n_aero*4    & ! number of aerosols * 4 aero layers
-                  + TRBRI       & ! brine height
-                  + TRBGCS    , & ! skeletal layer BGC
-!                  + TRBGCZ*nltrcr*nblyr ! for zbgc (off if TRBRI=0)
+                  + TRBRI       & ! brine height 
+                  + TRBGCS*n_bgc           & ! skeletal layer BGC 
+                  + TRZS  *TRBRI* nblyr    & ! zsalinity  (off if TRBRI=0)
+                  + n_bgc*TRBGCZ*TRBRI*(nblyr+3) & ! zbgc (off if TRBRI=0) 
+                  + n_bgc*TRBGCZ           & ! mobile/stationary phase tracer 
+                  + 1         , & ! for unused tracer flags
         max_nstrm =   5           ! max number of history output streams
 
       integer (kind=int_kind), parameter, public :: &

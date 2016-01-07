@@ -15,12 +15,9 @@
       use ice_restart_shared, only: &
           restart, restart_ext, restart_dir, restart_file, pointer_file, &
           runid, runtype, use_restart_time, restart_format, lenstr
-      use ice_state, only: tr_iage, tr_aero, tr_lvl, tr_FY, tr_brine, &
-                           tr_pond_cesm, tr_pond_lvl, tr_pond_topo
-      use ice_zbgc_shared, only: tr_bgc_N_sk, tr_bgc_C_sk, tr_bgc_Nit_sk, &
-                           tr_bgc_Sil_sk, tr_bgc_DMSPp_sk, tr_bgc_DMS_sk, &
-                           tr_bgc_chl_sk, tr_bgc_DMSPd_sk, tr_bgc_Am_sk, &
-                           skl_bgc
+      use ice_colpkg_tracers, only: tr_iage, tr_FY, tr_lvl, tr_aero, tr_pond_cesm, &
+                             tr_pond_topo, tr_pond_lvl, tr_brine, nbtrcr
+      use ice_colpkg_shared, only: solve_zsal
 
       implicit none
       private
@@ -257,7 +254,7 @@
          endif
       endif
 
-      if (skl_bgc) then
+      if (solve_zsal .or. nbtrcr > 0) then
          if (my_task == master_task) then
             n = index(filename0,trim(restart_file))
             if (n == 0) call abort_ice('bgc restart: filename discrepancy')
@@ -516,7 +513,7 @@
 
       endif
 
-      if (skl_bgc) then
+      if (solve_zsal .or. nbtrcr > 0) then
 
          write(filename,'(a,a,a,i4.4,a,i2.2,a,i2.2,a,i5.5)') &
               restart_dir(1:lenstr(restart_dir)), &
@@ -533,7 +530,6 @@
            write(nu_dump_bgc) istep1,time,time_forc
            write(nu_diag,*) 'Writing ',filename(1:lenstr(filename))
          endif
-
       endif
 
       if (tr_aero) then
@@ -697,6 +693,9 @@
          if (tr_pond_cesm) close(nu_dump_pond)
          if (tr_pond_lvl)  close(nu_dump_pond)
          if (tr_pond_topo) close(nu_dump_pond)
+         if (tr_brine)     close(nu_dump_hbrine)
+         if (solve_zsal .or. nbtrcr > 0) &
+                           close(nu_dump_bgc)
 
          write(nu_diag,*) 'Restart read/written ',istep1,time,time_forc
       endif

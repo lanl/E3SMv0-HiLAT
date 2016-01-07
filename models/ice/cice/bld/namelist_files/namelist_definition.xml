@@ -1169,6 +1169,123 @@ Default: false
 </entry>
 
 <entry
+id="restart_hbrine"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+restart brine tracer values from file
+Default: false
+</entry>
+
+<entry
+id="tr_zaero"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+vertical aerosols
+Default: false
+</entry>
+
+<entry
+id="modal_aero"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+use modal aerosol radiative parameters
+Default: false
+</entry>
+
+<entry
+id="skl_bgc"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+skeletal layer biogeochemistry
+Default: false
+</entry>
+
+<entry
+id="z_tracers"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+vertical bgc tracers 
+Default: false
+</entry>
+
+<entry
+id="dEdd_algae"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+use prognostic tracers in shortwave  
+Default: false
+</entry>
+
+<entry
+id="solve_zbgc"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+compute biogeochemical reactions 
+Default: false
+</entry>
+
+<entry
+id="bgc_flux_type"
+type="char*80"
+category="parameterizations"
+group="zbgc_nml" >
+ice-ocean flux velocity (Jin2006, constant)
+Default: Jin2006
+</entry>
+
+<entry
+id="restore_bgc"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+restore nitrate/silicate to data
+Default: false
+</entry>
+
+<entry
+id="restart_bgc"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+restart tracer values from file
+Default: false
+</entry>
+
+<entry
+id="scale_bgc"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+initial bgc vertical profiles scale with salinity
+Default: false
+</entry>
+
+<entry
+id="solve_zsal"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+zsalinity (with BL99)
+Default: false
+</entry>
+
+<entry
+id="restart_zsal"
+type="logical"
+category="parameterizations"
+group="zbgc_nml" >
+restart zsalinity tracer from file
+Default: false
+</entry>
+
+<entry
 id="bgc_data_dir"
 type="char*80"
 category="parameterizations"
@@ -1196,34 +1313,35 @@ Default: 'default'
 </entry>
 
 <entry
-id="restore_bgc"
+id="fe_data_type"
+type="char*80"
+category="parameterizations"
+group="zbgc_nml" >
+default forcing value for nitrate (default, clim)
+Default: 'default'
+</entry>
+
+
+<entry
+id="tr_bgc_Nit"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
-restore nitrate/silicate to data
+nitrate tracer
 Default: false
 </entry>
 
 <entry
-id="skl_bgc"
+id="tr_bgc_C"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
-biogeochemistry
+Organic and inorganic carbon tracers
 Default: false
 </entry>
 
 <entry
-id="tr_bgc_C_sk"
-type="logical"
-category="parameterizations"
-group="zbgc_nml" >
-algal carbon tracer
-Default: false
-</entry>
-
-<entry
-id="tr_bgc_chl_sk"
+id="tr_bgc_chl"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
@@ -1232,7 +1350,7 @@ Default: false
 </entry>
 
 <entry
-id="tr_bgc_Am_sk"
+id="tr_bgc_Am"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
@@ -1241,7 +1359,7 @@ Default: false
 </entry>
 
 <entry
-id="tr_bgc_Sil_sk"
+id="tr_bgc_Sil"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
@@ -1250,48 +1368,93 @@ Default: false
 </entry>
 
 <entry
-id="tr_bgc_DMSPp_sk"
+id="tr_bgc_DMS"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
-particular DMSP tracer
+All DMS-type tracers (includes DMS, DMPSp, DMSPd)
 Default: false
 </entry>
 
 <entry
-id="tr_bgc_DMSPd_sk"
+id="tr_bgc_PON"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
-dissolved DMSP tracer
+nonreactive mobile tracer
 Default: false
 </entry>
 
 <entry
-id="tr_bgc_DMS_sk"
+id="tr_bgc_hum"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
-DMS tracer
+humic material 
 Default: false
 </entry>
 
 <entry
-id="restart_bgc"
+id="tr_bgc_DON"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
-restart tracer values from file
+DON (Proteins and amino acids)
 Default: false
 </entry>
 
 <entry
-id="restart_hbrine"
+id="tr_bgc_Fe"
 type="logical"
 category="parameterizations"
 group="zbgc_nml" >
-restart tracer values from file
+Iron tracers (particulate and dissolved)
 Default: false
+</entry>
+
+<entry
+id="grid_o"
+type="real"
+category="parameterizations"
+group="zbgc_nml" >
+Length scale (m) for ice-ocean bgc flux
+Default: 0.006
+</entry>
+
+<entry
+id="grid_o_t"
+type="real"
+category="parameterizations"
+group="zbgc_nml" >
+Length scale (m) for ice-atm bgc flux
+Default: 0.006
+</entry>
+
+<entry
+id="l_sk"
+type="real"
+category="parameterizations"
+group="zbgc_nml" >
+characteristic diffusive length scale (m) for zbgc
+Default: 0.024
+</entry>
+
+<entry
+id="grid_oS"
+type="real"
+category="parameterizations"
+group="zbgc_nml" >
+Length scale (m) for ice-ocean zsalinity flux
+Default: 0.0
+</entry>
+
+<entry
+id="l_skS"
+type="real"
+category="parameterizations"
+group="zbgc_nml" >
+characteristic diffusive length scale (m) for zsalinity
+Default: 0.028
 </entry>
 
 <entry
@@ -1299,19 +1462,27 @@ id="phi_snow"
 type="real"
 category="parameterizations"
 group="zbgc_nml" >
-snow prorosity for brine height tracer
-Default: 0.5
+snow prorosity for brine height (if negative compute from density) 
+Default: -0.3
 </entry>
 
 <entry
-id="bgc_flux_type"
-type="char*80"
+id="initbio_frac"
+type="real"
 category="parameterizations"
 group="zbgc_nml" >
-ice-ocean flux velocity (Jin2006, constant)
-Default: Jin2006
+fraction of ocean zbgc retained during initial ice formation
+Default: 0.8
 </entry>
 
+<entry
+id="frazil_scav"
+type="real"
+category="parameterizations"
+group="zbgc_nml" >
+fraction (or multiple) of ocean zbgc scavenged during frazil formation
+Default: 0.8
+</entry>
 
 <!----------------------------->
 <!--Group: ice_prescribed_nml-->
@@ -1532,13 +1703,6 @@ group="icefields_nml" >
 </entry>
 
 <entry
-id="f_bounds"
-type="logical"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
 id="f_NCAT"
 type="logical"
 category="history"
@@ -1567,6 +1731,27 @@ group="icefields_nml" >
 </entry>
 
 <entry
+id="f_VGRDa"
+type="logical"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_bounds"
+type="logical"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_aice"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
 id="f_hi"
 type="char*5"
 category="history"
@@ -1581,13 +1766,6 @@ group="icefields_nml" >
 </entry>
 
 <entry
-id="f_snowfrac"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
 id="f_Tsfc"
 type="char*5"
 category="history"
@@ -1595,7 +1773,7 @@ group="icefields_nml" >
 </entry>
 
 <entry
-id="f_aice"
+id="f_sice"
 type="char*5"
 category="history"
 group="icefields_nml" >
@@ -1637,14 +1815,14 @@ group="icefields_nml" >
 </entry>
 
 <entry
-id="f_fswup"
+id="f_flwdn"
 type="char*5"
 category="history"
 group="icefields_nml" >
 </entry>
 
 <entry
-id="f_flwdn"
+id="f_snowfrac"
 type="char*5"
 category="history"
 group="icefields_nml" >
@@ -1707,13 +1885,6 @@ group="icefields_nml" >
 </entry>
 
 <entry
-id="f_sice"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
 id="f_frzmlt"
 type="char*5"
 category="history"
@@ -1728,6 +1899,13 @@ group="icefields_nml" >
 </entry>
 
 <entry
+id="f_fswint_ai"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
 id="f_fswabs"
 type="char*5"
 category="history"
@@ -1736,13 +1914,6 @@ group="icefields_nml" >
 
 <entry
 id="f_fswabs_ai"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
-id="f_fswint_ai"
 type="char*5"
 category="history"
 group="icefields_nml" >
@@ -1868,6 +2039,13 @@ group="icefields_nml" >
 </entry>
 
 <entry
+id="f_fswup"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
 id="f_flwup"
 type="char*5"
 category="history"
@@ -1945,14 +2123,14 @@ group="icefields_nml" >
 </entry>
 
 <entry
-id="f_meltt"
+id="f_melts"
 type="char*5"
 category="history"
 group="icefields_nml" >
 </entry>
 
 <entry
-id="f_melts"
+id="f_meltt"
 type="char*5"
 category="history"
 group="icefields_nml" >
@@ -2023,6 +2201,27 @@ group="icefields_nml" >
 
 <entry
 id="f_fswthru_ai"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_fsurf_ai"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_fcondtop_ai"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_fmeltt_ai"
 type="char*5"
 category="history"
 group="icefields_nml" >
@@ -2162,6 +2361,20 @@ group="icefields_nml" >
 </entry>
 
 <entry
+id="f_dagedtt"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_dagedtd"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
 id="f_mlt_onset"
 type="char*5"
 category="history"
@@ -2176,20 +2389,6 @@ group="icefields_nml" >
 </entry>
 
 <entry
-id="f_iage"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
-id="f_FY"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
 id="f_hisnap"
 type="char*5"
 category="history"
@@ -2198,6 +2397,34 @@ group="icefields_nml" >
 
 <entry
 id="f_aisnap"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_trsig"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_icepresent"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_iage"
+type="char*5"
+category="history"
+group="icefields_nml" >
+</entry>
+
+<entry
+id="f_FY"
 type="char*5"
 category="history"
 group="icefields_nml" >
@@ -2232,35 +2459,28 @@ group="icefields_nml" >
 </entry>
 
 <entry
-id="f_trsig"
+id="f_keffn_top"
 type="char*5"
 category="history"
 group="icefields_nml" >
 </entry>
 
 <entry
-id="f_icepresent"
+id="f_Tinz"
 type="char*5"
 category="history"
 group="icefields_nml" >
 </entry>
 
 <entry
-id="f_fsurf_ai"
+id="f_Sinz"
 type="char*5"
 category="history"
 group="icefields_nml" >
 </entry>
 
 <entry
-id="f_fcondtop_ai"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
-id="f_fmeltt_ai"
+id="f_Tsnz"
 type="char*5"
 category="history"
 group="icefields_nml" >
@@ -2296,34 +2516,6 @@ group="icefields_nml" >
 
 <entry
 id="f_fsensn_ai"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
-id="f_keffn_top"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
-id="f_Tinz"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
-id="f_Sinz"
-type="char*5"
-category="history"
-group="icefields_nml" >
-</entry>
-
-<entry
-id="f_Tsnz"
 type="char*5"
 category="history"
 group="icefields_nml" >
@@ -2678,182 +2870,28 @@ group="icefields_bgc_nml" >
 </entry>
 
 <entry
-id="f_aeron"
+id="f_fbio"
 type="char*5"
 category="history"
 group="icefields_bgc_nml" >
 </entry>
 
 <entry
-id="f_fNO"
+id="f_fbio_ai"
 type="char*5"
 category="history"
 group="icefields_bgc_nml" >
 </entry>
 
 <entry
-id="f_fNO_ai"
+id="f_zaero"
 type="char*5"
 category="history"
 group="icefields_bgc_nml" >
 </entry>
 
 <entry
-id="f_fNH"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_fNH_ai"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_fN"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_fN_ai"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_fSil"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_fSil_ai"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_N_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_C_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_chl_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_Nit_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_Am_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_Sil_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_DMSPp_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_DMSPd_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_DMS_sk"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_Sil_ml"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_Nit_ml"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_Am_ml"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_DMSP_ml"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_DMS_ml"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bTin"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bphi"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
-id="f_bgc_NO"
+id="f_bgc_S"
 type="char*5"
 category="history"
 group="icefields_bgc_nml" >
@@ -2867,13 +2905,6 @@ group="icefields_bgc_nml" >
 </entry>
 
 <entry
-id="f_bgc_NH"
-type="char*5"
-category="history"
-group="icefields_bgc_nml" >
-</entry>
-
-<entry
 id="f_bgc_C"
 type="char*5"
 category="history"
@@ -2881,7 +2912,42 @@ group="icefields_bgc_nml" >
 </entry>
 
 <entry
+id="f_bgc_DOC"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bgc_DIC"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
 id="f_bgc_chl"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bgc_Nit"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bgc_Am"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bgc_Sil"
 type="char*5"
 category="history"
 group="icefields_bgc_nml" >
@@ -2909,14 +2975,77 @@ group="icefields_bgc_nml" >
 </entry>
 
 <entry
-id="f_bgc_Sil"
+id="f_bgc_DON"
 type="char*5"
 category="history"
 group="icefields_bgc_nml" >
 </entry>
 
 <entry
-id="f_bgc_S"
+id="f_bgc_Fe"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bgc_hum"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bgc_PON"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bgc_ml"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_upNO"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_upNH"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bTin"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bphi"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_iDi"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_iki"
 type="char*5"
 category="history"
 group="icefields_bgc_nml" >
@@ -2937,6 +3066,27 @@ group="icefields_bgc_nml" >
 </entry>
 
 <entry
+id="f_zfswin"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_bionet"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_biosnow"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
 id="f_grownet"
 type="char*5"
 category="history"
@@ -2950,5 +3100,18 @@ category="history"
 group="icefields_bgc_nml" >
 </entry>
 
+<entry
+id="f_algalpeak"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
+
+<entry
+id="f_zbgc_frac"
+type="char*5"
+category="history"
+group="icefields_bgc_nml" >
+</entry>
 
 </namelist_definition>

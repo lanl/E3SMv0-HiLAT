@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_flux.F90 915 2015-02-08 02:50:33Z tcraig $
+!  SVN:$Id: ice_flux.F90 1099 2015-12-12 18:12:30Z eclare $
 !=======================================================================
 
 ! Flux variable declarations; these include fields sent from the coupler
@@ -16,15 +16,14 @@
       use ice_kinds_mod
       use ice_fileunits, only: nu_diag
       use ice_blocks, only: nx_block, ny_block
-      use ice_domain_size, only: max_blocks, ncat, max_aero, max_nstrm, nilyr
+      use ice_domain_size, only: max_blocks, ncat, max_nstrm, nilyr
       use ice_constants, only: c0, c1, c5, c10, c20, c180, dragio, &
-          depressT, stefan_boltzmann, Tffresh, emissivity
+          stefan_boltzmann, Tffresh, emissivity
 
       implicit none
       private
       public :: init_coupler_flux, init_history_therm, init_history_dyn, &
-                init_flux_ocn, init_flux_atm, scale_fluxes, merge_fluxes, &
-                set_sfcflux
+                init_flux_ocn, init_flux_atm, scale_fluxes
       save
 
       !-----------------------------------------------------------------
@@ -145,10 +144,6 @@
          frain   , & ! rainfall rate (kg/m^2 s)
          fsnow       ! snowfall rate (kg/m^2 s)
 
-      real (kind=dbl_kind), &
-         dimension (nx_block,ny_block,max_aero,max_blocks), public :: &
-         faero_atm   ! aerosol deposition rate (kg/m^2 s)
-
        ! in from ocean
 
       real (kind=dbl_kind), dimension (nx_block,ny_block,max_blocks), public :: &
@@ -208,10 +203,6 @@
          fhocn   , & ! net heat flux to ocean (W/m^2)
          fswthru     ! shortwave penetrating to ocean (W/m^2)
 
-      real (kind=dbl_kind), &
-        dimension (nx_block,ny_block,max_aero,max_blocks), public :: &
-         faero_ocn   ! aerosol flux to ocean  (kg/m^2/s)
-
        ! internal
 
       real (kind=dbl_kind), &
@@ -235,15 +226,8 @@
          keffn_top       ! effective thermal conductivity of the top ice layer 
                          ! on categories (W/m^2/K)
 
-      ! for biogeochemistry
-      real (kind=dbl_kind), dimension (nx_block,ny_block,ncat,max_blocks), public :: &
-         hin_old     , & ! old ice thickness
-         dsnown          ! change in snow thickness in category n (m)
-
-      !-----------------------------------------------------------------
       ! quantities passed from ocean mixed layer to atmosphere
       ! (for running with CAM)
-      !-----------------------------------------------------------------
 
       real (kind=dbl_kind), dimension (nx_block,ny_block,max_blocks), public :: &
          strairx_ocn , & ! stress on ocean by air, x-direction
@@ -259,9 +243,7 @@
          Tref_ocn    , & ! 2m atm reference temperature (K)
          Qref_ocn        ! 2m atm reference spec humidity (kg/kg)
 
-      !-----------------------------------------------------------------
       ! diagnostic
-      !-----------------------------------------------------------------
 
       real (kind=dbl_kind), dimension (nx_block,ny_block,max_blocks), public :: &
          fsurf , & ! net surface heat flux (excluding fcondtop)(W/m^2)
@@ -333,10 +315,10 @@
 
       subroutine init_coupler_flux
 
+      use ice_arrays_column, only: Cdn_atm
+      use ice_colpkg, only: colpkg_liquidus_temperature
       use ice_constants, only: p001,vonkar,zref,iceruf
-      use ice_therm_shared, only: ktherm
-      use ice_zbgc_shared, only: flux_bio
-      use ice_atmo, only: Cdn_atm
+      use ice_flux_bgc, only: flux_bio_atm, flux_bio, faero_atm
 
       integer (kind=int_kind) :: n
 
@@ -351,6 +333,8 @@
 #endif
 
       real (kind=dbl_kind) :: fcondtopn_d(6), fsurfn_d(6)
+
+      integer :: i, j, iblk
 
       data fcondtopn_d / -50.0_dbl_kind,-17.0_dbl_kind,-12.0_dbl_kind, &
                           -9.0_dbl_kind, -7.0_dbl_kind, -3.0_dbl_kind /
@@ -421,6 +405,7 @@
       endif !     l_winter
 
       faero_atm (:,:,:,:) = c0           ! aerosol deposition rate (kg/m2/s)
+      flux_bio_atm (:,:,:,:) = c0        ! zaero and bio deposition rate (kg/m2/s)
 
       !-----------------------------------------------------------------
       ! fluxes received from ocean
@@ -432,13 +417,15 @@
       vocn  (:,:,:) = c0
       frzmlt(:,:,:) = c0              ! freezing/melting potential (W/m^2)
       sss   (:,:,:) = 34.0_dbl_kind   ! sea surface salinity (ppt)
-      if (ktherm == 2) then           ! freezing temp (C)
-         ! liquidus_temperature_mush(sss)
-         Tf (:,:,:) = sss(:,:,:) / (-18.48_dbl_kind &
-                                 + ((18.48_dbl_kind*p001)*sss(:,:,:)))
-      else
-         Tf (:,:,:) = -depressT*sss(:,:,:)
-      endif
+
+      do iblk = 1, size(Tf,3)
+      do j = 1, size(Tf,2)
+      do i = 1, size(Tf,1)
+         Tf (i,j,iblk) = colpkg_liquidus_temperature(sss(i,j,iblk)) ! freezing temp (C)
+      enddo
+      enddo
+      enddo
+
 #ifndef CICE_IN_NEMO
       sst   (:,:,:) = Tf(:,:,:)       ! sea surface temp (C)
 #endif
@@ -485,6 +472,7 @@
       ! derived or computed fields
       !-----------------------------------------------------------------
 
+      coszen  (:,:,:) = c0            ! Cosine of the zenith angle
       fsw     (:,:,:) = c0            ! shortwave radiation (W/m^2)
       scale_factor(:,:,:) = c1        ! shortwave scaling factor 
       wind    (:,:,:) = sqrt(uatm(:,:,:)**2 &
@@ -536,7 +524,7 @@
 
       subroutine init_flux_ocn
 
-      use ice_zbgc_shared, only: flux_bio
+      use ice_flux_bgc, only: faero_ocn
 
       !-----------------------------------------------------------------
       ! fluxes sent
@@ -547,8 +535,6 @@
       fhocn    (:,:,:)   = c0
       fswthru  (:,:,:)   = c0
       faero_ocn(:,:,:,:) = c0
- 
-      flux_bio (:,:,:,:) = c0  ! bgc
 
       end subroutine init_flux_ocn
 
@@ -561,12 +547,14 @@
 
       subroutine init_history_therm
 
-      use ice_atmo, only: hfreebd, hdraft, hridge, distrdg, hkeel, &
-                          dkeel, lfloe, dfloe, Cdn_atm, Cdn_atm_rdg, &
-                          Cdn_atm_floe, Cdn_atm_pond, Cdn_atm_skin, &
-                          Cdn_atm_ratio, Cdn_ocn, Cdn_ocn_keel, &
-                          Cdn_ocn_floe, Cdn_ocn_skin, formdrag
-      use ice_state, only: aice, vice, trcr, tr_iage, nt_iage
+      use ice_state, only: aice, vice, trcr
+      use ice_colpkg_tracers, only: tr_iage, nt_iage
+      use ice_colpkg_shared, only: formdrag
+      use ice_arrays_column, only: &
+          hfreebd, hdraft, hridge, distrdg, hkeel, dkeel, lfloe, dfloe, &
+          Cdn_atm_skin, Cdn_atm_floe, Cdn_atm_pond, Cdn_atm_rdg, &
+          Cdn_ocn_skin, Cdn_ocn_floe, Cdn_ocn_keel, Cdn_atm_ratio, &
+          Cdn_atm, Cdn_ocn
       use ice_constants, only: vonkar,zref,iceruf
 
       fsurf  (:,:,:) = c0
@@ -637,7 +625,8 @@
 
       subroutine init_history_dyn
 
-      use ice_state, only: aice, vice, trcr, tr_iage, nt_iage
+      use ice_state, only: aice, vice, trcr
+      use ice_colpkg_tracers, only: tr_iage, nt_iage
 
       sig1    (:,:,:) = c0
       sig2    (:,:,:) = c0
@@ -668,166 +657,12 @@
       dardg1ndt(:,:,:,:) = c0
       dardg2ndt(:,:,:,:) = c0
       dvirdgndt(:,:,:,:) = c0
+      araftn   (:,:,:,:) = c0
+      vraftn   (:,:,:,:) = c0
+      aredistn (:,:,:,:) = c0
+      vredistn (:,:,:,:) = c0
 
       end subroutine init_history_dyn
-
-!=======================================================================
-
-! Aggregate flux information from all ice thickness categories
-!
-! author: Elizabeth C. Hunke and William H. Lipscomb, LANL
-
-      subroutine merge_fluxes (nx_block, ny_block,   &
-                               icells,               &
-                               indxi,    indxj,      &
-                               aicen,                &    
-                               flw,      coszn,      &
-                               strairxn, strairyn,   &
-                               Cdn_atm_ratio_n,      &
-                               fsurfn,   fcondtopn,  &  
-                               fsensn,   flatn,      & 
-                               fswabsn,  flwoutn,    &
-                               evapn,                &
-                               Trefn,    Qrefn,      &
-                               freshn,   fsaltn,     &
-                               fhocnn,   fswthrun,   &
-                               strairxT, strairyT,   &  
-                               Cdn_atm_ratio,        &
-                               fsurf,    fcondtop,   &
-                               fsens,    flat,       & 
-                               fswabs,   flwout,     &
-                               evap,                 & 
-                               Tref,     Qref,       &
-                               fresh,    fsalt,      & 
-                               fhocn,    fswthru,    &
-                               melttn, meltsn, meltbn, congeln, snoicen, &
-                               meltt,  melts,        &
-                               meltb,                &
-                               congel,  snoice,      &
-                               Uref,     Urefn       )
-                               
-      integer (kind=int_kind), intent(in) :: &
-          nx_block, ny_block, & ! block dimensions
-          icells                ! number of cells with aicen > puny
-
-      integer (kind=int_kind), dimension(nx_block*ny_block), &
-          intent(in) :: &
-          indxi, indxj    ! compressed indices for cells with aicen > puny
-
-      ! single category fluxes
-      real (kind=dbl_kind), dimension(nx_block,ny_block), intent(in):: &
-          aicen   , & ! concentration of ice
-          flw     , & ! downward longwave flux          (W/m**2)
-          coszn   , & ! cosine of solar zenith angle 
-          strairxn, & ! air/ice zonal  strss,           (N/m**2)
-          strairyn, & ! air/ice merdnl strss,           (N/m**2)
-          Cdn_atm_ratio_n, & ! ratio of total drag over neutral drag (atm)
-          fsurfn  , & ! net heat flux to top surface    (W/m**2)
-          fcondtopn,& ! downward cond flux at top sfc   (W/m**2)
-          fsensn  , & ! sensible heat flx               (W/m**2)
-          flatn   , & ! latent   heat flx               (W/m**2)
-          fswabsn , & ! shortwave absorbed heat flx     (W/m**2)
-          flwoutn , & ! upwd lw emitted heat flx        (W/m**2)
-          evapn   , & ! evaporation                     (kg/m2/s)
-          Trefn   , & ! air tmp reference level         (K)
-          Qrefn   , & ! air sp hum reference level      (kg/kg)
-          freshn  , & ! fresh water flux to ocean       (kg/m2/s)
-          fsaltn  , & ! salt flux to ocean              (kg/m2/s)
-          fhocnn  , & ! actual ocn/ice heat flx         (W/m**2)
-          fswthrun, & ! sw radiation through ice bot    (W/m**2)
-          melttn  , & ! top ice melt                    (m)
-          meltbn  , & ! bottom ice melt                 (m)
-          meltsn  , & ! snow melt                       (m)
-          congeln , & ! congelation ice growth          (m)
-          snoicen     ! snow-ice growth                 (m)
-           
-      real (kind=dbl_kind), dimension(nx_block,ny_block), optional, intent(in):: &
-          Urefn       ! air speed reference level       (m/s)
-
-      ! cumulative fluxes
-      real (kind=dbl_kind), dimension(nx_block,ny_block), &
-          intent(inout):: &
-          strairxT, & ! air/ice zonal  strss,           (N/m**2)
-          strairyT, & ! air/ice merdnl strss,           (N/m**2)
-          Cdn_atm_ratio, & ! ratio of total drag over neutral drag (atm)
-          fsurf   , & ! net heat flux to top surface    (W/m**2)
-          fcondtop, & ! downward cond flux at top sfc   (W/m**2)
-          fsens   , & ! sensible heat flx               (W/m**2)
-          flat    , & ! latent   heat flx               (W/m**2)
-          fswabs  , & ! shortwave absorbed heat flx     (W/m**2)
-          flwout  , & ! upwd lw emitted heat flx        (W/m**2)
-          evap    , & ! evaporation                     (kg/m2/s)
-          Tref    , & ! air tmp reference level         (K)
-          Qref    , & ! air sp hum reference level      (kg/kg)
-          fresh   , & ! fresh water flux to ocean       (kg/m2/s)
-          fsalt   , & ! salt flux to ocean              (kg/m2/s)
-          fhocn   , & ! actual ocn/ice heat flx         (W/m**2)
-          fswthru , & ! sw radiation through ice bot    (W/m**2)
-          meltt   , & ! top ice melt                    (m)
-          meltb   , & ! bottom ice melt                 (m)
-          melts   , & ! snow melt                       (m)
-          congel  , & ! congelation ice growth          (m)
-          snoice      ! snow-ice growth                 (m)
-
-      real (kind=dbl_kind), dimension(nx_block,ny_block), optional, &
-          intent(inout):: &
-          Uref        ! air speed reference level       (m/s)
-
-      integer (kind=int_kind) :: &
-          ij, i, j    ! horizontal indices
-
-      !-----------------------------------------------------------------
-      ! Merge fluxes
-      ! NOTE: The albedo is aggregated only in cells where ice exists
-      !       and (for the delta-Eddington scheme) where the sun is above
-      !       the horizon. 
-      !-----------------------------------------------------------------
-
-!DIR$ CONCURRENT !Cray
-!cdir nodep      !NEC
-!ocl novrec      !Fujitsu
-      do ij = 1, icells
-         i = indxi(ij)
-         j = indxj(ij)
-
-         ! atmo fluxes
-
-         strairxT (i,j)  = strairxT(i,j) + strairxn(i,j)*aicen(i,j)
-         strairyT (i,j)  = strairyT(i,j) + strairyn(i,j)*aicen(i,j)
-         Cdn_atm_ratio (i,j) = Cdn_atm_ratio (i,j) + &
-                                   Cdn_atm_ratio_n (i,j)*aicen(i,j)
-         fsurf    (i,j)  = fsurf   (i,j) + fsurfn  (i,j)*aicen(i,j)
-         fcondtop (i,j)  = fcondtop(i,j) + fcondtopn(i,j)*aicen(i,j) 
-         fsens    (i,j)  = fsens   (i,j) + fsensn  (i,j)*aicen(i,j)
-         flat     (i,j)  = flat    (i,j) + flatn   (i,j)*aicen(i,j)
-         fswabs   (i,j)  = fswabs  (i,j) + fswabsn (i,j)*aicen(i,j)
-         flwout   (i,j)  = flwout  (i,j) &
-             + (flwoutn(i,j) - (c1-emissivity)*flw(i,j))*aicen(i,j)
-         evap     (i,j)  = evap    (i,j) + evapn   (i,j)*aicen(i,j)
-         Tref     (i,j)  = Tref    (i,j) + Trefn   (i,j)*aicen(i,j)
-         Qref     (i,j)  = Qref    (i,j) + Qrefn   (i,j)*aicen(i,j)
-         if (present(Urefn) .and. present(Uref)) then
-            Uref  (i,j)  = Uref    (i,j) + Urefn   (i,j)*aicen(i,j)
-         endif
-
-         ! ocean fluxes
-
-         fresh    (i,j) = fresh    (i,j) + freshn  (i,j)*aicen(i,j)
-         fsalt    (i,j) = fsalt    (i,j) + fsaltn  (i,j)*aicen(i,j)
-         fhocn    (i,j) = fhocn    (i,j) + fhocnn  (i,j)*aicen(i,j)
-         fswthru  (i,j) = fswthru  (i,j) + fswthrun(i,j)*aicen(i,j)
-
-         ! ice/snow thickness
-
-         meltt    (i,j) = meltt    (i,j) + melttn  (i,j)*aicen(i,j)
-         meltb    (i,j) = meltb    (i,j) + meltbn  (i,j)*aicen(i,j)
-         melts    (i,j) = melts    (i,j) + meltsn  (i,j)*aicen(i,j)
-         congel   (i,j) = congel   (i,j) + congeln (i,j)*aicen(i,j)
-         snoice   (i,j) = snoice   (i,j) + snoicen (i,j)*aicen(i,j)
-
-      enddo                     ! ij
-      
-      end subroutine merge_fluxes
 
 !=======================================================================
 
@@ -837,7 +672,8 @@
 ! authors: C.M.Bitz, William H. Lipscomb
 
       subroutine scale_fluxes (nx_block, ny_block, &
-                               tmask,    nbtrcr,   &
+                               tmask,              &
+                               nbtrcr,   max_aero, &
                                aice,     Tf,       &
                                Tair,     Qa,       &
                                strairxT, strairyT, &
@@ -850,13 +686,15 @@
                                faero_ocn,          &
                                alvdr,    alidr,    &
                                alvdf,    alidf,    &
+                               fzsal,    fzsal_g,  &
                                flux_bio,           &
                                fsurf,    fcondtop, &
                                Uref,     wind      )
 
       integer (kind=int_kind), intent(in) :: &
           nx_block, ny_block, &    ! block dimensions
-          nbtrcr                   ! number of biology tracers
+          nbtrcr            , &    ! number of biology tracers
+          max_aero                 ! maximum number of aerosols
 
       logical (kind=log_kind), dimension (nx_block,ny_block), &
           intent(in) :: &
@@ -904,13 +742,19 @@
 
       real (kind=dbl_kind), dimension(nx_block,ny_block,max_aero), &
           intent(inout):: &
-          faero_ocn   ! aersol flux to ocean            (kg/m2/s)
+          faero_ocn   ! aerosol flux to ocean            (kg/m2/s)
 
       ! For hadgem drivers. Assumes either both fields are passed or neither
       real (kind=dbl_kind), dimension(nx_block,ny_block), &
           intent(inout), optional :: &
           fsurf   , & ! surface heat flux               (W/m**2)
           fcondtop    ! top surface conductive flux     (W/m**2)
+
+      ! zsalinity fluxes
+      real (kind=dbl_kind), dimension(nx_block,ny_block), &
+          intent(inout):: &
+          fzsal   , & ! salt flux to ocean with prognositic salinity (kg/m2/s)  
+          fzsal_g     ! Gravity drainage salt flux to ocean (kg/m2/s) 
 
       ! local variables
 
@@ -935,9 +779,8 @@
             evap    (i,j) = evap    (i,j) * ar
             Tref    (i,j) = Tref    (i,j) * ar
             Qref    (i,j) = Qref    (i,j) * ar
-            if (present(Uref)) then
-               Uref    (i,j) = Uref    (i,j) * ar
-            endif
+            if (present(Uref)) &
+               Uref (i,j) = Uref    (i,j) * ar
             fresh   (i,j) = fresh   (i,j) * ar
             fsalt   (i,j) = fsalt   (i,j) * ar
             fhocn   (i,j) = fhocn   (i,j) * ar
@@ -946,6 +789,8 @@
             alidr   (i,j) = alidr   (i,j) * ar
             alvdf   (i,j) = alvdf   (i,j) * ar
             alidf   (i,j) = alidf   (i,j) * ar
+            fzsal   (i,j) = fzsal   (i,j) * ar  
+            fzsal_g (i,j) = fzsal_g (i,j) * ar  
             flux_bio (i,j,:) = flux_bio (i,j,:) * ar
             faero_ocn(i,j,:) = faero_ocn(i,j,:) * ar
          else                   ! zero out fluxes
@@ -959,9 +804,8 @@
             evap    (i,j) = c0
             Tref    (i,j) = Tair(i,j)
             Qref    (i,j) = Qa  (i,j)
-            if (present(Uref) .and. present(wind)) then
-               Uref    (i,j) = wind(i,j)
-            endif
+            if (present(Uref) .and. present(wind)) &
+               Uref (i,j) = wind(i,j)
             fresh   (i,j) = c0
             fsalt   (i,j) = c0
             fhocn   (i,j) = c0
@@ -970,6 +814,8 @@
             alidr   (i,j) = c0
             alvdf   (i,j) = c0 
             alidf   (i,j) = c0
+            fzsal   (i,j) = c0  
+            fzsal_g (i,j) = c0 
             flux_bio (i,j,:) = c0
             faero_ocn(i,j,:) = c0
          endif                  ! tmask and aice > 0
@@ -998,153 +844,6 @@
       endif                       ! present(fsurf & fcondtop)
       
       end subroutine scale_fluxes
-
-!=======================================================================
-
-! If model is not calculating surface temperature, set the surface
-! flux values using values read in from forcing data or supplied via
-! coupling (stored in ice_flux).
-!
-! If CICE is running in NEMO environment, convert fluxes from GBM values 
-! to per unit ice area values. If model is not running in NEMO environment, 
-! the forcing is supplied as per unit ice area values.
-!
-! authors Alison McLaren, Met Office
-
-      subroutine set_sfcflux (nx_block,  ny_block, &
-                              n,         iblk,     &
-                              icells,              & 
-                              indxi,     indxj,    &
-                              aicen,               &
-                              flatn,               &
-                              fsensn,              &
-                              fsurfn,              &
-                              fcondtopn)
-
-      use ice_fileunits, only: nu_diag
-
-      integer (kind=int_kind), intent(in) :: &
-         nx_block, ny_block, & ! block dimensions
-         n,                  & ! thickness category index
-         iblk,               & ! block index
-         icells                ! number of cells with aicen > puny
-
-      integer (kind=int_kind), dimension(nx_block*ny_block), &
-         intent(in) :: &
-         indxi, indxj    ! compressed indices for cells with aicen > puny
-
-      ! ice state variables
-      real (kind=dbl_kind), dimension (nx_block,ny_block), &
-         intent(in) :: &
-         aicen           ! concentration of ice
-
-      real (kind=dbl_kind), dimension (nx_block,ny_block), intent(out):: &
-         flatn       , & ! latent heat flux   (W/m^2) 
-         fsensn      , & ! sensible heat flux   (W/m^2) 
-         fsurfn      , & ! net flux to top surface, not including fcondtopn
-         fcondtopn       ! downward cond flux at top surface (W m-2)
-
-      ! local variables
-
-      integer (kind=int_kind) :: &
-         i, j        , & ! horizontal indices
-         ij              ! horizontal indices, combine i and j loops
-
-      real (kind=dbl_kind)  :: &
-         raicen          ! 1 or 1/aicen
-
-      logical (kind=log_kind) :: &
-         extreme_flag    ! flag for extreme forcing values
-
-      logical (kind=log_kind), parameter :: & 
-         extreme_test=.false. ! test and write out extreme forcing data
-
-         raicen        = c1
-         do ij = 1, icells
-            i = indxi(ij)
-            j = indxj(ij)
-
-#ifdef CICE_IN_NEMO
-!----------------------------------------------------------------------
-! Convert fluxes from GBM values to per ice area values when 
-! running in NEMO environment.  (When in standalone mode, fluxes
-! are input as per ice area.)
-!----------------------------------------------------------------------
-            raicen        = c1 / aicen(i,j)
-#endif
-            fsurfn(i,j)   = fsurfn_f(i,j,n,iblk)*raicen
-            fcondtopn(i,j)= fcondtopn_f(i,j,n,iblk)*raicen
-            flatn(i,j)    = flatn_f(i,j,n,iblk)*raicen
-            fsensn(i,j)   = fsensn_f(i,j,n,iblk)*raicen
-
-         enddo
-
-!----------------------------------------------------------------
-! Flag up any extreme fluxes
-!---------------------------------------------------------------
-
-         if (extreme_test) then
-            extreme_flag = .false.
-
-            do ij = 1, icells
-               i = indxi(ij)
-               j = indxj(ij)         
-
-               if (fcondtopn(i,j) < -100.0_dbl_kind & 
-                     .or. fcondtopn(i,j) > 20.0_dbl_kind) then
-                  extreme_flag = .true.
-               endif
-
-               if (fsurfn(i,j) < -100.0_dbl_kind & 
-                    .or. fsurfn(i,j) > 80.0_dbl_kind) then
-                  extreme_flag = .true.
-               endif
-
-               if (flatn(i,j) < -20.0_dbl_kind & 
-                     .or. flatn(i,j) > 20.0_dbl_kind) then
-                  extreme_flag = .true.
-               endif
-
-            enddo  ! ij
-
-            if (extreme_flag) then
-               do ij = 1, icells
-                  i = indxi(ij)
-                  j = indxj(ij)         
-
-                  if (fcondtopn(i,j) < -100.0_dbl_kind & 
-                       .or. fcondtopn(i,j) > 20.0_dbl_kind) then
-                     write(nu_diag,*) & 
-                       'Extreme forcing: -100 > fcondtopn > 20'
-                     write(nu_diag,*) & 
-                       'i,j,n,iblk,aicen,fcondtopn = ', & 
-                       i,j,n,iblk,aicen(i,j),fcondtopn(i,j)
-                  endif
-
-                  if (fsurfn(i,j) < -100.0_dbl_kind & 
-                       .or. fsurfn(i,j) > 80.0_dbl_kind) then
-                     write(nu_diag,*) & 
-                       'Extreme forcing: -100 > fsurfn > 40'
-                     write(nu_diag,*) & 
-                       'i,j,n,iblk,aicen,fsurfn = ', & 
-                        i,j,n,iblk,aicen(i,j),fsurfn(i,j)
-                  endif
-
-                  if (flatn(i,j) < -20.0_dbl_kind & 
-                       .or. flatn(i,j) > 20.0_dbl_kind) then
-                     write(nu_diag,*) & 
-                       'Extreme forcing: -20 > flatn > 20'
-                     write(nu_diag,*) & 
-                       'i,j,n,iblk,aicen,flatn = ', & 
-                        i,j,n,iblk,aicen(i,j),flatn(i,j)
-                  endif
-
-               enddo  ! ij
-      
-            endif  ! extreme_flag
-         endif     ! extreme_test    
-
-      end subroutine set_sfcflux 
 
 !=======================================================================
 
