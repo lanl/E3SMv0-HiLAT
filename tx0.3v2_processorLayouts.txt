@@ -1,22 +1,31 @@
-Total #                      subgrid                    processor layout              16 proc nodes       24 proc nodes
-of processors         POP_BLCKX x POP_BLCKY        POP_NX_BLOCKS x POP_NY_BLOCKS       (e.g., wolf)      (e.g., mustang)
-                    or CICE_BLCKX x CICE_BLCKY
--------------------------------------------------------------------------------------------------------------------------
-480                          50x40                         24x20                          30                  20
-480 (CICE only)              20x100                  not needed (60x8)                    30                  20
-480 (CICE only)              10x200                  not needed (120x4)                   30                  20
-600                          40x40                         30x20                         n/a                  25
-960                          40x25                         30x32                          60                  40
-1536                         25x25                         48x32                          96                  64
-1920                         25x20                         48x40                         120                  80
-2400                         20x20                         60x40                         150                 100 
-3000                         20x16                         60x50                         n/a                 125
+ **** Manual settings in env_build.xml for the 0.3deg configuration ****
+ ****       (tx0.3v2 grid, with nx x ny = 1200 x 800)               ****
 
-Other settings for env_build.xml:
+1) Settings for POP
 POP_AUTO_DECOMP = false
-POP_MXBLCKS = 1
 POP_DECOMPTYPE = cartesian
+
+Total #               subgrid (# grid cells on each block)    max # blocks per processor   processor layout (# blocks per processor)   16 proc nodes   24 proc nodes
+processors                 POP_BLCKX x POP_BLCKY                     POP_MXBLCKS                  POP_NX_BLOCKS x POP_NY_BLOCKS        (e.g., wolf)    (e.g., mustang)
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+480                             50x40                                     1                                24x20                          30                  20
+600                             40x40                                     1                                30x20                         n/a                  25
+960                             40x25                                     1                                30x32                          60                  40
+1536                            25x25                                     1                                48x32                          96                  64
+1920                            25x20                                     1                                48x40                         120                  80
+2400                            20x20                                     1                                60x40                         150                 100 
+3000                            20x16                                     1                                60x50                         n/a                 125
+
+
+2) Settings for CICE
 CICE_AUTO_DECOMP = false
 CICE_MXBLCKS = 1 or 4
 CICE_DECOMPTYPE = cartesian
-CICE_DECOMPSETTING = slenderX2
+CICE_DECOMPSETTING = slenderX2 (also tried sectrobin with same settings as below, and square-pop
+                                with nprocs=480, CICE_BLCKX=20, CICE_BLCKY=100, and CICE_MXBLCKS=1,
+                                but slenderX2 and first row below proved more efficient)
+
+Total #               subgrid (# grid cells on each block)    max # blocks per processor   16 proc nodes   24 proc nodes
+processors                CICE_BLCKX x CICE_BLCKY                    CICE_MXBLCKS          (e.g., wolf)    (e.g., mustang)
+480                             5x100                                     4                 30                  20
+480                             5x400                                     1                 30                  20
