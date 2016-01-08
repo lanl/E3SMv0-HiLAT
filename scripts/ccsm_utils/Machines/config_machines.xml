@@ -176,6 +176,7 @@
          <EXEROOT>$CESMSCRATCHROOT/$CASE/bld</EXEROOT>
          <DIN_LOC_ROOT>/project/projectdirs/ccsm1/inputdata</DIN_LOC_ROOT>
          <DIN_LOC_ROOT_CLMFORC>/project/projectdirs/ccsm1/inputdata/atm/datm7</DIN_LOC_ROOT_CLMFORC>
+         <DOUT_S>FALSE</DOUT_S>
          <DOUT_S_ROOT>$CESMSCRATCHROOT/archive/$CASE</DOUT_S_ROOT>
          <DOUT_L_MSROOT>csm/$CASE</DOUT_L_MSROOT>
          <CCSM_BASELINE>/project/projectdirs/acme/baselines</CCSM_BASELINE>
@@ -345,30 +346,6 @@
          <SUPPORTED_BY>mirin1 -at- llnl.gov</SUPPORTED_BY>
          <GMAKE_J>8</GMAKE_J>
          <MAX_TASKS_PER_NODE>16</MAX_TASKS_PER_NODE>
-</machine>
-
-<machine MACH="hopper">
-         <DESC>NERSC XE6, os is CNL, 24 pes/node, batch system is PBS</DESC>
-	 <COMPILERS>pgi,intel,gnu,cray,pathscale</COMPILERS>
-	 <MPILIBS>mpt,mpi-serial</MPILIBS>
-         <CESMSCRATCHROOT>$ENV{SCRATCH2}</CESMSCRATCHROOT>
-         <RUNDIR>$CESMSCRATCHROOT/$CASE/run</RUNDIR>
-         <EXEROOT>$CESMSCRATCHROOT/$CASE/bld</EXEROOT>
-         <DIN_LOC_ROOT>/project/projectdirs/ccsm1/inputdata</DIN_LOC_ROOT>
-         <DIN_LOC_ROOT_CLMFORC>/project/projectdirs/ccsm1/inputdata/atm/datm7</DIN_LOC_ROOT_CLMFORC>
-         <DOUT_S_ROOT>$CESMSCRATCHROOT/archive/$CASE</DOUT_S_ROOT>
-         <DOUT_L_MSROOT>csm/$CASE</DOUT_L_MSROOT>
-         <CCSM_BASELINE>/project/projectdirs/ccsm1/ccsm_baselines</CCSM_BASELINE>
-         <CCSM_CPRNC>/project/projectdirs/ccsm1/tools/cprnc/cprnc</CCSM_CPRNC>
-         <SAVE_TIMING_DIR>/project/projectdirs/$PROJECT</SAVE_TIMING_DIR>
-         <OS>CNL</OS>
-         <BATCHQUERY>qstat -f</BATCHQUERY>
-         <BATCHSUBMIT>qsub</BATCHSUBMIT>
-         <SUPPORTED_BY>cseg</SUPPORTED_BY>
-         <GMAKE_J>4</GMAKE_J>
-         <MAX_TASKS_PER_NODE>24</MAX_TASKS_PER_NODE>
-         <PROJECT_REQUIRED>TRUE</PROJECT_REQUIRED>
-         <PIO_CONFIG_OPTS> -D PIO_BUILD_TIMING:BOOL=ON </PIO_CONFIG_OPTS>
 </machine>
 
 <machine MACH="janus">
@@ -563,6 +540,7 @@
          <EXEROOT>$CESMSCRATCHROOT/$CASE/bld</EXEROOT>
          <DIN_LOC_ROOT>/projects/ccsm/inputdata</DIN_LOC_ROOT>
          <DIN_LOC_ROOT_CLMFORC>/projects/ccsm/inputdata/atm/datm7</DIN_LOC_ROOT_CLMFORC>
+         <DOUT_S>FALSE</DOUT_S>
          <DOUT_S_ROOT>/projects/$PROJECT/$CCSMUSER/archive/$CASE</DOUT_S_ROOT>
          <DOUT_L_MSROOT>/home/$CCSMUSER/csm/$CASE/</DOUT_L_MSROOT>
          <CCSM_BASELINE>/projects/ccsm/ccsm_baselines/</CCSM_BASELINE>
@@ -796,6 +774,7 @@
          <EXEROOT>$CESMSCRATCHROOT/$CASE/bld</EXEROOT>
          <DIN_LOC_ROOT>/lustre/atlas1/cli900/world-shared/cesm/inputdata</DIN_LOC_ROOT>
          <DIN_LOC_ROOT_CLMFORC>/lustre/atlas1/cli900/world-shared/cesm/inputdata/atm/datm7</DIN_LOC_ROOT_CLMFORC>
+         <DOUT_S>FALSE</DOUT_S>
          <DOUT_S_ROOT>$CESMSCRATCHROOT/archive/$CASE</DOUT_S_ROOT>
          <DOUT_L_MSROOT>csm/$CASE</DOUT_L_MSROOT>
          <CCSM_BASELINE>/lustre/atlas1/cli900/world-shared/cesm/baselines</CCSM_BASELINE>
@@ -885,6 +864,7 @@
          <EXEROOT>/lustre/scratch1/turquoise/$ENV{USER}/$CASE/bld</EXEROOT>
          <DIN_LOC_ROOT>/usr/projects/cesm/input_data</DIN_LOC_ROOT>
          <DIN_LOC_ROOT_CLMFORC>/usr/projects/cesm/input_data/atm/datm7</DIN_LOC_ROOT_CLMFORC>
+         <DOUT_S>FALSE</DOUT_S>
          <DOUT_S_ROOT>/lustre/scratch1/turquoise/$ENV{USER}/archive/$CASE</DOUT_S_ROOT>
          <DOUT_L_MSROOT>UNSET</DOUT_L_MSROOT>
          <CCSM_BASELINE>/usr/projects/cesm/input_data/ccsm_baselines</CCSM_BASELINE>
@@ -906,6 +886,7 @@
          <EXEROOT>/lustre/scratch1/turquoise/$ENV{USER}/$CASE/bld</EXEROOT>
          <DIN_LOC_ROOT>/usr/projects/cesm/input_data</DIN_LOC_ROOT>
          <DIN_LOC_ROOT_CLMFORC>/usr/projects/cesm/input_data/atm/datm7</DIN_LOC_ROOT_CLMFORC>
+         <DOUT_S>FALSE</DOUT_S>
          <DOUT_S_ROOT>/lustre/scratch1/turquoise/$ENV{USER}/archive/$CASE</DOUT_S_ROOT>
          <DOUT_L_MSROOT>UNSET</DOUT_L_MSROOT>
          <CCSM_BASELINE>/usr/projects/cesm/input_data/ccsm_baselines</CCSM_BASELINE>
