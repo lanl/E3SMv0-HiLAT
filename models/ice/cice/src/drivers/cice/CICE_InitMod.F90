@@ -1,4 +1,4 @@
-!  SVN:$Id: CICE_InitMod.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: CICE_InitMod.F90 1106 2016-02-05 18:49:17Z njeffery $
 !=======================================================================
 !
 !  This module contains the CICE initialization routine that sets model
@@ -126,6 +126,9 @@
       call init_history_therm   ! initialize thermo history variables
       call init_history_dyn     ! initialize dynamic history variables
 
+      if (tr_aero .or. tr_zaero) call faero_optics !initialize aerosol optical 
+                                                   !property tables
+
       ! Initialize shortwave components using swdn from previous timestep 
       ! if restarting. These components will be scaled to current forcing 
       ! in prep_radiation.
@@ -142,8 +145,6 @@
    !--------------------------------------------------------------------
 
       call init_forcing_atmo    ! initialize atmospheric forcing (standalone)
-      if (tr_aero .or. tr_zaero) call faero_optics !initialize aerosol optical 
-                                                   !property tables
 
 #ifndef coupled
       call get_forcing_atmo     ! atmospheric forcing from data

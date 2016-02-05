@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_step_mod.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_step_mod.F90 1106 2016-02-05 18:49:17Z njeffery $
 !=======================================================================
 !
 !  Contains CICE component driver routines common to all drivers.
@@ -177,6 +177,8 @@
 #endif
 
       l_stop = .false.
+      aerosno(:,:,:) = c0
+      aeroice(:,:,:) = c0
 
       do j = 1, ny_block
       do i = 1, nx_block
@@ -709,7 +711,7 @@
       use ice_colpkg, only: colpkg_step_radiation
       use ice_colpkg_tracers, only: nt_Tsfc, nt_alvl, &
           nt_apnd, nt_hpnd, nt_ipnd, nt_aero, nlt_chl_sw, nlt_zaero_sw, &
-          tr_zaero, ntrcr, nbtrcr, nbtrcr_sw, nt_fbri, tr_brine
+          tr_zaero, ntrcr, nbtrcr, nbtrcr_sw, nt_fbri, tr_brine, nt_zaero
       use ice_colpkg_shared, only: dEdd_algae, modal_aero
 
       real (kind=dbl_kind), intent(in) :: &

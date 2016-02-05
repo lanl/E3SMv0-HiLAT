@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_init_column.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_init_column.F90 1106 2016-02-05 18:49:17Z njeffery $
 !=========================================================================
 !
 ! Initialization routines for the column package.
@@ -105,7 +105,8 @@
       use ice_colpkg_shared, only: shortwave, dEdd_algae, modal_aero
       use ice_colpkg_tracers, only: nt_Tsfc, &
           nt_alvl, nt_apnd, nt_hpnd, nt_ipnd, nt_aero, tr_bgc_N, &
-          tr_zaero, nlt_chl_sw, nlt_zaero_sw, ntrcr, nbtrcr, nbtrcr_sw, nt_fbri, tr_brine
+          tr_zaero, nlt_chl_sw, nlt_zaero_sw, ntrcr, nbtrcr, nbtrcr_sw, nt_fbri, tr_brine, &
+          nt_zaero
 
       integer (kind=int_kind) :: &
          i, j , k    , & ! horizontal indices
@@ -174,6 +175,11 @@
             alidr_ai(i,j,iblk) = c0
             alvdf_ai(i,j,iblk) = c0
             alidf_ai(i,j,iblk) = c0
+            albice(i,j,iblk) = c0
+            albsno(i,j,iblk) = c0
+            albpnd(i,j,iblk) = c0
+            snowfrac(i,j,iblk) = c0
+            apeff_ai(i,j,iblk) = c0
 
             do n = 1, ncat
                alvdrn(i,j,n,iblk) = c0
