@@ -144,6 +144,7 @@
       ecosys_tavg_forcing,          &
       ecosys_set_interior,          &
       ecosys_write_restart,         &
+      comp_surf_avg,                &
       ecosys_qsw_distrb_const
 
 !-----------------------------------------------------------------------
@@ -151,7 +152,7 @@
 !-----------------------------------------------------------------------
 
    integer (int_kind), parameter :: &
-      ecosys_tracer_cnt = 27
+      ecosys_tracer_cnt = 33
 
 !-----------------------------------------------------------------------
 !  flags controlling which portion of code are executed
@@ -172,7 +173,9 @@
 !  autotroph relative tracer indices are in autotroph derived type and are determined at run time
 !-----------------------------------------------------------------------
 
-   integer (int_kind), parameter :: &
+!maltrud need public for tracegas
+!  integer (int_kind), parameter :: &
+   integer (int_kind), public, parameter :: &
       po4_ind         =  1,  & ! dissolved inorganic phosphate
       no3_ind         =  2,  & ! dissolved inorganic nitrate
       sio3_ind        =  3,  & ! dissolved inorganic silicate
@@ -602,9 +605,14 @@
 
 !-----------------------------------------------------------------------
 
-   real (r8), dimension(nx_block,ny_block,max_blocks_clinic) :: &
-      PAR_out           ! photosynthetically available radiation (W/m^2)
+!maltrud make these public for use with tracegas
+   real (r8), dimension(nx_block,ny_block,max_blocks_clinic), public :: &
+      PAR_out,         &! photosynthetically available radiation (W/m^2)
+      PAR_avg           ! PAR averaged over a given layer
 
+! (swang) make public for use with tracegas
+   integer (int_kind), public :: &
+      auto_ind			! autotroph functional group index   
 !-----------------------------------------------------------------------
 
    real (r8), parameter :: &
@@ -703,7 +711,7 @@ contains
 
    integer (int_kind) :: &
       non_autotroph_ecosys_tracer_cnt, & ! number of non-autotroph ecosystem tracers
-      auto_ind,                  & ! autotroph functional group index
+!      auto_ind,                  & ! autotroph functional group index (swang for tracegas)
       n,                         & ! index for looping over tracers
       k,                         & ! index for looping over depth levels
       l,                         & ! index for looping over time levels
@@ -2695,6 +2703,7 @@ contains
    real (r8), dimension(nx_block,ny_block) :: &
       TEMP,           & ! local copy of model TEMP
       SALT,           & ! local copy of model SALT
+      tlatd,          & ! local copy of lat
       DIC_loc,        & ! local copy of model DIC
       DIC_ALT_CO2_loc,& ! local copy of model DIC_ALT_CO2
       ALK_loc,        & ! local copy of model ALK
@@ -2726,12 +2735,14 @@ contains
 
    real (r8) :: &
       f_loss_thres,    &! fraction of grazing loss reduction at depth
-      ztop              ! depth of top of cell
+      ztop,            & ! depth of top of cell
+      WORK5,WORK6        ! temporaries
 
    real (r8), dimension(nx_block,ny_block) :: &
       PAR_in,         & ! photosynthetically available radiation (W/m^2)
       KPARdz,         & ! PAR adsorption coefficient (non-dim)
-      PAR_avg,        & ! average PAR over mixed layer depth (W/m^2)
+!maltrud (tracegas)
+!     PAR_avg,        & ! average PAR over mixed layer depth (W/m^2)
       DOC_prod,       & ! production of DOC (mmol C/m^3/sec)
       DOC_remin,      & ! remineralization of DOC (mmol C/m^3/sec)
       DON_remin,      & ! portion of DON remineralized
@@ -2837,7 +2848,7 @@ contains
       auto_ind,       & ! autotroph functional group index
       auto_ind2,      & ! autotroph functional group index
       kk,             & ! index for looping over k levels
-      j                 ! index for looping over ny_block dimension
+      i,j               ! index for looping over nx_block and ny_block dimension
 
    logical (log_kind) :: &
       lalt_co2_terms    ! are any alt_co2 terms being time averaged
@@ -3063,7 +3074,9 @@ contains
    endif
 
    PAR_out(:,:,bid) = PAR_in * exp(-KPARdz)
-   PAR_avg = PAR_in * (c1 - exp(-KPARdz)) / KPARdz
+!maltrud now a public array (tracegas)
+!  PAR_avg = PAR_in * (c1 - exp(-KPARdz)) / KPARdz
+   PAR_avg(:,:,bid) = PAR_in * (c1 - exp(-KPARdz)) / KPARdz
 
 !-----------------------------------------------------------------------
 !  compute terms of carbonate chemistry
@@ -3196,11 +3209,20 @@ contains
 
 !-----------------------------------------------------------------------
 !  Compute Pprime for all autotrophs, used for loss terms
+!  temp_thres for phaeo is the upper limit for growth (swang)
 !-----------------------------------------------------------------------
-
+   tlatd = TLAT(:,:,bid)
    do auto_ind = 1, autotroph_cnt
       C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres
-      where (TEMP < autotrophs(auto_ind)%temp_thres) C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
+      where (TEMP < autotrophs(auto_ind)%temp_thres .or. TEMP > autotrophs(auto_ind)%temp_thres2) 
+      		C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
+      end where
+
+      where (tlatd > c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeo' )
+            C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
+      elsewhere (tlatd < c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeon' )  
+	    C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
+      end where	  
 
       Pprime(:,:,auto_ind) = max(autotrophC_loc(:,:,auto_ind) - C_loss_thres, c0)
    end do
@@ -3245,9 +3267,31 @@ contains
 !-----------------------------------------------------------------------
 
       PCmax = autotrophs(auto_ind)%PCref * f_nut * Tfunc
-      where (TEMP < autotrophs(auto_ind)%temp_thres) PCmax = c0
 
-      light_lim = (c1 - exp((-c1 * autotrophs(auto_ind)%alphaPI * thetaC(:,:,auto_ind) * PAR_avg) / &
+!  (sw: add temp_function to modify growth and loss: classic Q10, or decline after Topt. )
+
+    select case (autotrophs(auto_ind)%temp_function)
+
+      case (tfnc_q10)
+
+	    PCmax = PCmax
+
+      case (tfnc_quasi_mmrt)
+
+	    PCmax = PCmax * min(c1,((autotrophs(auto_ind)%temp_thres2 - TEMP) / &
+            (autotrophs(auto_ind)%temp_thres2 - (autotrophs(auto_ind)%temp_opt))))
+    end select
+    
+      where (TEMP < autotrophs(auto_ind)%temp_thres .or. TEMP > autotrophs(auto_ind)%temp_thres2) PCmax = c0
+        ! swang: phaeo and phaeon only grow in SH and NH, respectively	  
+
+    where (tlatd > c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeo' ) 
+         PCmax=c0
+    elsewhere (tlatd < c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeon' )  
+	 PCmax=c0
+    end where	  
+
+      light_lim = (c1 - exp((-c1 * autotrophs(auto_ind)%alphaPI * thetaC(:,:,auto_ind) * PAR_avg(:,:,bid)) / &
                             (PCmax + epsTinv)))
       PCphoto = PCmax * light_lim
 
@@ -3301,7 +3345,7 @@ contains
 !  GD 98 Chl. synth. term
 !-----------------------------------------------------------------------
 
-      WORK1 = autotrophs(auto_ind)%alphaPI * thetaC(:,:,auto_ind) * PAR_avg
+      WORK1 = autotrophs(auto_ind)%alphaPI * thetaC(:,:,auto_ind) * PAR_avg(:,:,bid)
       where (WORK1 > c0)
          pChl = autotrophs(auto_ind)%thetaN_max * PCphoto / WORK1
          photoacc(:,:,auto_ind) = (pChl * VNC / thetaC(:,:,auto_ind)) * autotrophChl_loc(:,:,auto_ind)
@@ -3360,12 +3404,28 @@ contains
 !-----------------------------------------------------------------------
 
       WORK1 = c0
+      WORK5 = c0
+      WORK6 = c0
+! set grazing on diat or phaeo depends on the total biomass of diat and phaeo (swang)
       do auto_ind2 = 1, autotroph_cnt
          if (autotrophs(auto_ind2)%grazee_ind == autotrophs(auto_ind)%grazee_ind) &
-            WORK1 = WORK1 + Pprime(:,:,auto_ind)
+            WORK1 = WORK1 + Pprime(:,:,auto_ind2)
+         if (autotrophs(auto_ind2)%sname == 'phaeo') &
+            WORK5 =  autotrophs(auto_ind2)%temp_thres
+         if (autotrophs(auto_ind2)%sname == 'phaeon') & 
+            WORK6 =  autotrophs(auto_ind2)%temp_thres
       end do
 
       z_umax = autotrophs(auto_ind)%z_umax_0 * Tfunc
+
+! decrease grazing pressure on diat, when phaeo growth decreases with temperature (swang)
+      if ((WORK5 /= c0) .and. (WORK6 /= c0) .and. (autotrophs(auto_ind)%sname == 'diat')) then
+        where ((tlatd < 0.0_r8) .and. (TEMP > autotrophs(4)%temp_opt)) 
+            z_umax = z_umax * max((WORK5 - TEMP) / (WORK5 - autotrophs(4)%temp_opt), 0.95_r8)
+        elsewhere ((tlatd > 0.0_r8) .and. (TEMP > autotrophs(5)%temp_opt)) 
+            z_umax = z_umax * max((WORK6 - TEMP) / (WORK6 - autotrophs(5)%temp_opt), 0.95_r8)
+        end where
+      endif        
 
       where (WORK1 > c0)
          auto_graze(:,:,auto_ind) = (Pprime(:,:,auto_ind) / WORK1) * &
@@ -3493,7 +3553,7 @@ contains
 !  below euphotic zone remin rate sharply decrease
 !-----------------------------------------------------------------------
 
-   where (PAR_avg > 1.0_r8)
+   where (PAR_avg(:,:,bid) > 1.0_r8)
       DONr_remin = DONr_loc * DONr_reminR
       DOPr_remin = DOPr_loc * DOPr_reminR
    elsewhere
@@ -3866,7 +3926,7 @@ contains
       call accumulate_tavg_field(WORK1, tavg_AOU,bid,k)
    endif
 
-   call accumulate_tavg_field(PAR_avg, tavg_PAR_avg,bid,k)
+   call accumulate_tavg_field(PAR_avg(:,:,bid), tavg_PAR_avg,bid,k)
 
    call accumulate_tavg_field(zoo_loss, tavg_zoo_loss,bid,k)
 

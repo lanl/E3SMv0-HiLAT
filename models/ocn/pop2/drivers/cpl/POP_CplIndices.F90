@@ -27,6 +27,7 @@ module POP_CplIndices
   integer :: index_x2o_Sa_pslv         ! sea-level pressure               (Pa)
   integer :: index_x2o_Sa_co2prog      ! bottom atm level prognostic CO2
   integer :: index_x2o_Sa_co2diag      ! bottom atm level diagnostic CO2
+  integer :: index_x2o_Sa_dms          ! bottom atm level prognostic DMS
   integer :: index_x2o_Foxx_taux       ! zonal wind stress (taux)         (W/m2   )
   integer :: index_x2o_Foxx_tauy       ! meridonal wind stress (tauy)     (W/m2   )
   integer :: index_x2o_Foxx_swnet      ! net short-wave heat flux         (W/m2   )
@@ -116,6 +117,7 @@ contains
     index_x2o_Faxa_dstwet4  = mct_avect_indexra(x2o,'Faxa_dstwet4')
     index_x2o_Sa_co2prog    = mct_avect_indexra(x2o,'Sa_co2prog',perrWith='quiet')
     index_x2o_Sa_co2diag    = mct_avect_indexra(x2o,'Sa_co2diag',perrWith='quiet')
+    index_x2o_Sa_dms        = mct_avect_indexra(x2o,'Sa_dms',perrWith='quiet')
 
     call mct_aVect_clean(x2o)
     call mct_aVect_clean(o2x)

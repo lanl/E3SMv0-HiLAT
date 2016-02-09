@@ -51,6 +51,14 @@
        ecosys_set_interior,        &
        ecosys_write_restart
 
+   use tracegas_mod, only:           &
+       tracegas_tracer_cnt,          &
+       tracegas_init,                &
+       tracegas_tracer_ref_val,      &
+       tracegas_set_sflux,           &
+       tracegas_tavg_forcing,        &
+       tracegas_set_interior
+
    use cfc_mod, only:              &
        cfc_tracer_cnt,             &
        cfc_init,                   &
@@ -95,7 +103,7 @@
       passive_tracers_send_time,             &
       tracer_ref_val,                        &
       tadvect_ctype_passive_tracers,         &
-      ecosys_on, moby_on
+      ecosys_on, moby_on, tracegas_on
 
 !EOP
 !BOC
@@ -139,10 +147,10 @@
 !-----------------------------------------------------------------------
 
    logical (kind=log_kind) ::  &
-      ecosys_on, cfc_on, iage_on, moby_on
+      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on
 
    namelist /passive_tracers_on_nml/  &
-      ecosys_on, cfc_on, iage_on, moby_on
+      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on
 
 !-----------------------------------------------------------------------
 !     index bounds of passive tracer module variables in TRACER
@@ -150,6 +158,7 @@
 
    integer (kind=int_kind) ::                       &
       ecosys_ind_begin,     ecosys_ind_end,         &
+      tracegas_ind_begin,   tracegas_ind_end,       &
       iage_ind_begin,       iage_ind_end,           &
       cfc_ind_begin,        cfc_ind_end,            &
       moby_ind_begin,       moby_ind_end
@@ -223,10 +232,11 @@
 
    call register_string('init_passive_tracers')
 
-   ecosys_on    = .false.
-   cfc_on       = .false.
-   iage_on      = .false.
-   moby_on      = .false.
+   ecosys_on         = .false.
+   tracegas_on       = .false.
+   cfc_on            = .false.
+   iage_on           = .false.
+   moby_on           = .false.
 
    if (my_task == master_task) then
       open (nml_in, file=nml_filename, status='old', iostat=nml_error)
@@ -258,10 +268,12 @@
       call POP_IOUnitsFlush(POP_stdout)
    endif
 
-   call broadcast_scalar(ecosys_on, master_task)
-   call broadcast_scalar(cfc_on,    master_task)
-   call broadcast_scalar(iage_on,   master_task)
-   call broadcast_scalar(moby_on,   master_task)
+
+   call broadcast_scalar(ecosys_on,         master_task)
+   call broadcast_scalar(tracegas_on,       master_task)
+   call broadcast_scalar(cfc_on,            master_task)
+   call broadcast_scalar(iage_on,           master_task)
+   call broadcast_scalar(moby_on,           master_task)
 
 !-----------------------------------------------------------------------
 !  check for modules that require the flux coupler
@@ -286,6 +298,11 @@
    if (ecosys_on) then
       call set_tracer_indices('ECOSYS', ecosys_tracer_cnt, cumulative_nt,  &
                               ecosys_ind_begin, ecosys_ind_end)
+   end if
+
+   if (tracegas_on) then
+      call set_tracer_indices('TRACEGAS', tracegas_tracer_cnt, cumulative_nt,  &
+                              tracegas_ind_begin, tracegas_ind_end)
    end if
 
    if (cfc_on) then
@@ -336,6 +353,25 @@
       if (errorCode /= POP_Success) then
          call POP_ErrorSet(errorCode, &
             'init_passive_tracers: error in ecosys_init')
+         return
+      endif
+
+   end if
+
+!-----------------------------------------------------------------------
+!  TRACEGAS block
+!-----------------------------------------------------------------------
+
+   if (tracegas_on) then
+      call tracegas_init(init_ts_file_fmt, read_restart_filename, &
+                       tracer_d(tracegas_ind_begin:tracegas_ind_end), &
+                       TRACER(:,:,:,tracegas_ind_begin:tracegas_ind_end,:,:), &
+                       tadvect_ctype_passive_tracers(tracegas_ind_begin:tracegas_ind_end), &
+                       errorCode)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'init_passive_tracers: error in tracegas_init')
          return
       endif
 
@@ -647,6 +683,21 @@
    end if
 
 !-----------------------------------------------------------------------
+!  TRACEGAS block
+!-----------------------------------------------------------------------
+
+   if (tracegas_on) then
+      call tracegas_set_interior(k,                                  &
+         TRACER(:,:,1,1,oldtime,bid), TRACER(:,:,1,1,curtime,bid), &
+         TRACER(:,:,:,ecosys_ind_begin:ecosys_ind_end,oldtime,bid),&
+         TRACER(:,:,:,ecosys_ind_begin:ecosys_ind_end,curtime,bid),&
+         TRACER(:,:,:,tracegas_ind_begin:tracegas_ind_end,oldtime,bid),&
+         TRACER(:,:,:,tracegas_ind_begin:tracegas_ind_end,curtime,bid),&
+         TRACER_SOURCE(:,:,tracegas_ind_begin:tracegas_ind_end),       &
+         this_block)
+   end if
+
+!-----------------------------------------------------------------------
 !  CFC does not have source-sink terms
 !-----------------------------------------------------------------------
 
@@ -847,6 +898,19 @@
    end if
 
 !-----------------------------------------------------------------------
+!  TRACEGAS block
+!-----------------------------------------------------------------------
+
+   if (tracegas_on) then
+      call tracegas_set_sflux(                                       &
+         U10_SQR, ICE_FRAC, PRESS,                                 &
+         SST_FILT, SSS_FILT,                                       &
+         TRACER(:,:,1,tracegas_ind_begin:tracegas_ind_end,oldtime,:),  &
+         TRACER(:,:,1,tracegas_ind_begin:tracegas_ind_end,curtime,:),  &
+         STF(:,:,tracegas_ind_begin:tracegas_ind_end,:))
+   end if
+
+!-----------------------------------------------------------------------
 !  CFC block
 !-----------------------------------------------------------------------
 
@@ -933,6 +997,10 @@
    if (ecosys_on) then
       call ecosys_write_restart(restart_file, action)
    end if
+
+!-----------------------------------------------------------------------
+!  TRACEGAS does not write additional restart fields
+!-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
 !  CFC does not write additional restart fields
@@ -1218,6 +1286,15 @@
    end if
 
 !-----------------------------------------------------------------------
+!  TRACEGAS block
+!-----------------------------------------------------------------------
+
+   if (tracegas_on) then
+      call tracegas_tavg_forcing( &
+         STF(:,:,tracegas_ind_begin:tracegas_ind_end,:))
+   end if
+
+!-----------------------------------------------------------------------
 !  CFC block
 !-----------------------------------------------------------------------
 
@@ -1408,6 +1485,16 @@
    if (ecosys_on) then
       if (ind >= ecosys_ind_begin .and. ind <= ecosys_ind_end) then
          tracer_ref_val = ecosys_tracer_ref_val(ind-ecosys_ind_begin+1)
+      endif
+   endif
+
+!-----------------------------------------------------------------------
+!  TRACEGAS block
+!-----------------------------------------------------------------------
+
+   if (tracegas_on) then
+      if (ind >= tracegas_ind_begin .and. ind <= tracegas_ind_end) then
+         tracer_ref_val = tracegas_tracer_ref_val(ind-tracegas_ind_begin+1)
       endif
    endif
 

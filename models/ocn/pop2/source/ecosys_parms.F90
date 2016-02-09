@@ -58,6 +58,7 @@ MODULE ecosys_parms
      INTEGER (KIND=int_kind) :: &
         Chl_ind, C_ind, Fe_ind,             & ! tracer indices for Chl, C, Fe content
         Si_ind, CaCO3_ind,                  & ! tracer indices for Si, CaCO3 content
+        temp_function,						& ! functional form of temperature parameterization 
         grazee_ind                            ! which grazee category does autotroph belong to
      REAL(KIND=r8) :: &
         kFe, kPO4, kDOP, kNO3, kNH4, kSiO3, & ! nutrient uptake half-sat constants
@@ -67,7 +68,8 @@ MODULE ecosys_parms
         PCref,                              & ! max C-spec. grth rate at tref (1/sec)
         thetaN_max,                         & ! max thetaN (Chl/N) (mg Chl/mmol N)
         loss_thres, loss_thres2,            & ! conc. where losses go to zero
-        temp_thres,                         & ! Temp. where concentration threshold and photosynth. rate drops
+        temp_thres, temp_thres2,            & ! Temp. where concentration threshold and photosynth. rate drops
+        temp_opt,        				    & ! Temp. function optimal value
         mort, mort2,                        & ! linear and quadratic mortality rates (1/sec), (1/sec/((mmol C/m3))
         agg_rate_max, agg_rate_min,         & ! max and min agg. rate (1/d)
         z_umax_0,                           & ! max zoo growth rate at tref (1/sec)
@@ -78,10 +80,12 @@ MODULE ecosys_parms
   END TYPE
 
   INTEGER (KIND=int_kind), PARAMETER :: &
-     autotroph_cnt   = 3, &
+     autotroph_cnt   = 5, &
      sp_ind          = 1, &  ! small phytoplankton
      diat_ind        = 2, &  ! diatoms
-     diaz_ind        = 3     ! diazotrophs
+     diaz_ind        = 3, &  ! diazotrophs
+     phaeo_ind		 = 4, &  ! Phaeocystis
+     phaeon_ind      = 5     ! Phaeocystis NH
 
   TYPE(autotroph_type), DIMENSION(autotroph_cnt) :: autotrophs
 
@@ -206,6 +210,13 @@ MODULE ecosys_parms
       CaCO3_sp_thres    = 4.0_r8      ! bloom condition thres (mmolC/m3)
 
   !---------------------------------------------------------------------
+  !     temperature functions
+  !---------------------------------------------------------------------
+
+  INTEGER (INT_KIND), PARAMETER ::   &
+         tfnc_q10				  = 1,		 & ! classic Q10, no decline
+         tfnc_quasi_mmrt 		  = 2  		   ! consider Topt, mimic macromolecular rate theory
+  !---------------------------------------------------------------------
   !     fraction of incoming shortwave assumed to be PAR
   !---------------------------------------------------------------------
 
@@ -321,6 +332,7 @@ CONTAINS
     autotrophs(auto_ind)%loss_thres    = 0.04_r8
     autotrophs(auto_ind)%loss_thres2   = 0.0_r8
     autotrophs(auto_ind)%temp_thres    = -10.0_r8
+    autotrophs(auto_ind)%temp_thres2    = 50.0_r8
     autotrophs(auto_ind)%mort          = 0.12_r8 * dps
     autotrophs(auto_ind)%mort2         = 0.001_r8 * dps
     autotrophs(auto_ind)%agg_rate_max  = 0.9_r8
@@ -331,6 +343,8 @@ CONTAINS
     autotrophs(auto_ind)%graze_poc     = 0.0_r8
     autotrophs(auto_ind)%graze_doc     = 0.15_r8
     autotrophs(auto_ind)%loss_poc      = 0.0_r8
+    autotrophs(auto_ind)%temp_function = tfnc_q10
+    autotrophs(auto_ind)%temp_opt      = 50.0_r8
     autotrophs(auto_ind)%f_zoo_detr    = 0.15_r8
 
     auto_ind = diat_ind
@@ -355,17 +369,20 @@ CONTAINS
     autotrophs(auto_ind)%loss_thres    = 0.04_r8
     autotrophs(auto_ind)%loss_thres2   = 0.0_r8
     autotrophs(auto_ind)%temp_thres    = -10.0_r8
+    autotrophs(auto_ind)%temp_thres2    = 50.0_r8
     autotrophs(auto_ind)%mort          = 0.12_r8 * dps
     autotrophs(auto_ind)%mort2         = 0.001_r8 * dps
     autotrophs(auto_ind)%agg_rate_max  = 0.9_r8
     autotrophs(auto_ind)%agg_rate_min  = 0.02_r8
-    autotrophs(auto_ind)%z_umax_0      = 3.08_r8 * dps ! x1 default
+    autotrophs(auto_ind)%z_umax_0      = 3.23_r8 * dps ! x1 default
     autotrophs(auto_ind)%z_grz         = 1.0_r8              
     autotrophs(auto_ind)%graze_zoo     = 0.3_r8
     autotrophs(auto_ind)%graze_poc     = 0.42_r8
     autotrophs(auto_ind)%graze_doc     = 0.15_r8
     autotrophs(auto_ind)%loss_poc      = 0.0_r8
-    autotrophs(auto_ind)%f_zoo_detr    = 0.2_r8
+    autotrophs(auto_ind)%temp_function = tfnc_q10
+    autotrophs(auto_ind)%temp_opt      = 50.0_r8
+    autotrophs(auto_ind)%f_zoo_detr    = 0.2_r8   
 
     auto_ind = diaz_ind
     autotrophs(auto_ind)%sname         = 'diaz'
@@ -389,6 +406,7 @@ CONTAINS
     autotrophs(auto_ind)%loss_thres    = 0.022_r8
     autotrophs(auto_ind)%loss_thres2   = 0.001_r8
     autotrophs(auto_ind)%temp_thres    = 14.0_r8
+    autotrophs(auto_ind)%temp_thres2    = 50.0_r8
     autotrophs(auto_ind)%mort          = 0.15_r8 * dps
     autotrophs(auto_ind)%mort2         = 0.0_r8
     autotrophs(auto_ind)%agg_rate_max  = 0.0_r8
@@ -399,8 +417,84 @@ CONTAINS
     autotrophs(auto_ind)%graze_poc     = 0.05_r8
     autotrophs(auto_ind)%graze_doc     = 0.15_r8
     autotrophs(auto_ind)%loss_poc      = 0.0_r8
-    autotrophs(auto_ind)%f_zoo_detr    = 0.15_r8
+    autotrophs(auto_ind)%temp_function = tfnc_q10
+    autotrophs(auto_ind)%temp_opt      = 50.0_r8
+    autotrophs(auto_ind)%f_zoo_detr    = 0.15_r8 
 
+    auto_ind = phaeo_ind
+    autotrophs(auto_ind)%sname         = 'phaeo'
+    autotrophs(auto_ind)%lname         = 'Phaeocystis'
+    autotrophs(auto_ind)%Nfixer        = .false.
+    autotrophs(auto_ind)%imp_calcifier = .false.
+    autotrophs(auto_ind)%exp_calcifier = .false.
+    autotrophs(auto_ind)%grazee_ind    = diat_ind
+    autotrophs(auto_ind)%kFe           = 0.075e-3_r8
+    autotrophs(auto_ind)%kPO4          = 0.05_r8
+    autotrophs(auto_ind)%kDOP          = 0.9_r8
+    autotrophs(auto_ind)%kNO3          = 0.65_r8
+    autotrophs(auto_ind)%kNH4          = 0.05_r8
+    autotrophs(auto_ind)%kSiO3         = 0.0_r8
+    autotrophs(auto_ind)%Qp            = 0.00855_r8
+    autotrophs(auto_ind)%gQfe_0        = 20.0e-6_r8
+    autotrophs(auto_ind)%gQfe_min      = 3.0e-6_r8
+    autotrophs(auto_ind)%alphaPI       = 0.77_r8 * dps
+    autotrophs(auto_ind)%PCref         = 5.5_r8 * dps
+    autotrophs(auto_ind)%thetaN_max    = 2.5_r8
+    autotrophs(auto_ind)%loss_thres    = 0.04_r8
+    autotrophs(auto_ind)%loss_thres2   = 0.00_r8
+    autotrophs(auto_ind)%temp_thres    = -10.0_r8
+    autotrophs(auto_ind)%temp_thres2    = 10.0_r8
+    autotrophs(auto_ind)%mort          = 0.12_r8 * dps
+    autotrophs(auto_ind)%mort2         = 0.001_r8 * dps
+    autotrophs(auto_ind)%agg_rate_max  = 0.9_r8
+    autotrophs(auto_ind)%agg_rate_min  = 0.02_r8
+    autotrophs(auto_ind)%z_umax_0      = 3.23_r8 * dps ! x1 default
+    autotrophs(auto_ind)%z_grz         = 1.0_r8              
+    autotrophs(auto_ind)%graze_zoo     = 0.3_r8
+    autotrophs(auto_ind)%graze_poc     = 0.42_r8
+    autotrophs(auto_ind)%graze_doc     = 0.15_r8
+    autotrophs(auto_ind)%loss_poc      = 0.0_r8
+    autotrophs(auto_ind)%temp_function = tfnc_quasi_mmrt 
+    autotrophs(auto_ind)%temp_opt      = 5.0_r8
+    autotrophs(auto_ind)%f_zoo_detr    = 0.2_r8
+
+    auto_ind = phaeon_ind
+    autotrophs(auto_ind)%sname         = 'phaeon'
+    autotrophs(auto_ind)%lname         = 'Phaeocystis NH'
+    autotrophs(auto_ind)%Nfixer        = .false.
+    autotrophs(auto_ind)%imp_calcifier = .false.
+    autotrophs(auto_ind)%exp_calcifier = .false.
+    autotrophs(auto_ind)%grazee_ind    = diat_ind
+    autotrophs(auto_ind)%kFe           = 0.075e-3_r8
+    autotrophs(auto_ind)%kPO4          = 0.05_r8
+    autotrophs(auto_ind)%kDOP          = 0.9_r8
+    autotrophs(auto_ind)%kNO3          = 0.7_r8
+    autotrophs(auto_ind)%kNH4          = 0.05_r8
+    autotrophs(auto_ind)%kSiO3         = 0.0_r8
+    autotrophs(auto_ind)%Qp            = 0.00855_r8
+    autotrophs(auto_ind)%gQfe_0        = 20.0e-6_r8
+    autotrophs(auto_ind)%gQfe_min      = 3.0e-6_r8
+    autotrophs(auto_ind)%alphaPI       = 0.77_r8 * dps
+    autotrophs(auto_ind)%PCref         = 5.5_r8 * dps
+    autotrophs(auto_ind)%thetaN_max    = 2.5_r8
+    autotrophs(auto_ind)%loss_thres    = 0.04_r8
+    autotrophs(auto_ind)%loss_thres2   = 0.00_r8
+    autotrophs(auto_ind)%temp_thres    = -10.0_r8
+    autotrophs(auto_ind)%temp_thres2    = 30.0_r8
+    autotrophs(auto_ind)%mort          = 0.12_r8 * dps
+    autotrophs(auto_ind)%mort2         = 0.001_r8 * dps
+    autotrophs(auto_ind)%agg_rate_max  = 0.9_r8
+    autotrophs(auto_ind)%agg_rate_min  = 0.02_r8
+    autotrophs(auto_ind)%z_umax_0      = 3.23_r8 * dps ! x1 default
+    autotrophs(auto_ind)%z_grz         = 1.0_r8              
+    autotrophs(auto_ind)%graze_zoo     = 0.3_r8
+    autotrophs(auto_ind)%graze_poc     = 0.42_r8
+    autotrophs(auto_ind)%graze_doc     = 0.15_r8
+    autotrophs(auto_ind)%loss_poc      = 0.0_r8
+    autotrophs(auto_ind)%temp_function = tfnc_quasi_mmrt 
+    autotrophs(auto_ind)%temp_opt      = 16.3_r8
+    autotrophs(auto_ind)%f_zoo_detr    = 0.2_r8
+    
     !---------------------------------------------------------------------------
     !   read in namelist
     !---------------------------------------------------------------------------
@@ -466,6 +560,7 @@ CONTAINS
        CALL broadcast_scalar(autotrophs(auto_ind)%loss_thres, master_task)
        CALL broadcast_scalar(autotrophs(auto_ind)%loss_thres2, master_task)
        CALL broadcast_scalar(autotrophs(auto_ind)%temp_thres, master_task)
+       CALL broadcast_scalar(autotrophs(auto_ind)%temp_thres2, master_task)
        CALL broadcast_scalar(autotrophs(auto_ind)%mort, master_task)
        CALL broadcast_scalar(autotrophs(auto_ind)%mort2, master_task)
        CALL broadcast_scalar(autotrophs(auto_ind)%agg_rate_max, master_task)
@@ -476,6 +571,8 @@ CONTAINS
        CALL broadcast_scalar(autotrophs(auto_ind)%graze_poc, master_task)
        CALL broadcast_scalar(autotrophs(auto_ind)%graze_doc, master_task)
        CALL broadcast_scalar(autotrophs(auto_ind)%loss_poc, master_task)
+       CALL broadcast_scalar(autotrophs(auto_ind)%temp_function, master_task)
+       CALL broadcast_scalar(autotrophs(auto_ind)%temp_opt, master_task)
        CALL broadcast_scalar(autotrophs(auto_ind)%f_zoo_detr, master_task)
     END DO
 
@@ -524,6 +621,7 @@ CONTAINS
           WRITE (stdout,*) 'loss_thres(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%loss_thres
           WRITE (stdout,*) 'loss_thres2(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%loss_thres2
           WRITE (stdout,*) 'temp_thres(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%temp_thres
+          WRITE (stdout,*) 'temp_thres2(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%temp_thres2
           WRITE (stdout,*) 'mort(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%mort
           WRITE (stdout,*) 'mort2(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%mort2
           WRITE (stdout,*) 'agg_rate_max(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%agg_rate_max
@@ -534,8 +632,10 @@ CONTAINS
           WRITE (stdout,*) 'graze_poc(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%graze_poc
           WRITE (stdout,*) 'graze_doc(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%graze_doc
           WRITE (stdout,*) 'loss_poc(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%loss_poc
+          WRITE (stdout,*) 'temp_function(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%temp_function
+          WRITE (stdout,*) 'temp_opt(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%temp_opt
           WRITE (stdout,*) 'f_zoo_detr(', trim(autotrophs(auto_ind)%sname), ') = ', autotrophs(auto_ind)%f_zoo_detr
-       END DO
+      END DO
        WRITE (stdout,*) '----------------------------------------'
     END IF
 

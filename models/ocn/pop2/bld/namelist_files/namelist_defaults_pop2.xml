@@ -854,7 +854,7 @@
 <!---------------------------->
 
 <init_ecosys_init_file ocn_grid="gx3v7">ocn/pop/gx3v7/ic/ecosys_jan_IC_gx3v7_Nov2012_corrO2.nc</init_ecosys_init_file>
-<init_ecosys_init_file ocn_grid="gx1v6">ocn/pop/gx1v6/ic/ecosys_jan_IC_gx1v6_corrO2_Feb2013.nc</init_ecosys_init_file>
+<init_ecosys_init_file ocn_grid="gx1v6">ocn/pop/gx1v6/ic/ecosys_jan_IC_gx1v6_corrO2_Feb2013DMS2p.nc</init_ecosys_init_file>
 
 <init_ecosys_init_file_fmt>nc</init_ecosys_init_file_fmt>
 
@@ -1094,6 +1094,10 @@
 <autotrophs(1)%kSiO3>0.0     </autotrophs(1)%kSiO3>
 <autotrophs(1)%z_umax_0 ocn_grid="gx3v7">3.7847e-05</autotrophs(1)%z_umax_0>
 <autotrophs(1)%z_umax_0                 >3.8194e-05</autotrophs(1)%z_umax_0>
+<autotrophs(1)%temp_thres2> 50.0     </autotrophs(1)%temp_thres2>
+<autotrophs(1)%temp_opt> 50.0     </autotrophs(1)%temp_opt>
+<autotrophs(1)%alphaPI  >6.9444e-06        </autotrophs(1)%alphaPI>
+<autotrophs(1)%thetaN_max      >2.5        </autotrophs(1)%thetaN_max>
 
 <autotrophs(2)%sname>diat</autotrophs(2)%sname>
 <autotrophs(2)%kFe  >0.06e-3 </autotrophs(2)%kFe>
@@ -1103,7 +1107,11 @@
 <autotrophs(2)%kNH4 >0.05    </autotrophs(2)%kNH4>
 <autotrophs(2)%kSiO3>0.8     </autotrophs(2)%kSiO3>
 <autotrophs(2)%z_umax_0 ocn_grid="gx3v7">3.6227e-05</autotrophs(2)%z_umax_0>
-<autotrophs(2)%z_umax_0                 >3.5648e-05</autotrophs(2)%z_umax_0>
+<autotrophs(2)%z_umax_0                 >3.7384e-5</autotrophs(2)%z_umax_0>
+<autotrophs(2)%temp_thres2> 50.0     </autotrophs(2)%temp_thres2>
+<autotrophs(2)%temp_opt> 50.0     </autotrophs(2)%temp_opt>
+<autotrophs(2)%alphaPI >5.3819e-06      </autotrophs(2)%alphaPI>
+<autotrophs(2)%thetaN_max      >4.0        </autotrophs(2)%thetaN_max>
 
 <autotrophs(3)%sname>diaz</autotrophs(3)%sname>
 <autotrophs(3)%kFe  >0.04e-3 </autotrophs(3)%kFe>
@@ -1113,6 +1121,36 @@
 <autotrophs(3)%kNH4 >0.15    </autotrophs(3)%kNH4>
 <autotrophs(3)%kSiO3>0.0     </autotrophs(3)%kSiO3>
 <autotrophs(3)%z_umax_0>6.9444e-06</autotrophs(3)%z_umax_0>
+<autotrophs(3)%temp_thres2> 50.0     </autotrophs(3)%temp_thres2>
+<autotrophs(3)%temp_opt> 50.0     </autotrophs(3)%temp_opt>
+<autotrophs(3)%alphaPI  >4.6296e-06       </autotrophs(3)%alphaPI>
+<autotrophs(3)%thetaN_max      >2.5        </autotrophs(3)%thetaN_max>
+
+<autotrophs(4)%sname>phaeo</autotrophs(4)%sname>
+<autotrophs(4)%kFe  >0.075e-3 </autotrophs(4)%kFe>
+<autotrophs(4)%kPO4 >0.05    </autotrophs(4)%kPO4>
+<autotrophs(4)%kDOP >0.9    </autotrophs(4)%kDOP>
+<autotrophs(4)%kNO3 >0.7    </autotrophs(4)%kNO3>
+<autotrophs(4)%kNH4 >0.05    </autotrophs(4)%kNH4>
+<autotrophs(4)%kSiO3>0.0     </autotrophs(4)%kSiO3>
+<autotrophs(4)%z_umax_0>3.7384e-05</autotrophs(4)%z_umax_0>
+<autotrophs(4)%temp_thres2> 10.0     </autotrophs(4)%temp_thres2>
+<autotrophs(4)%temp_opt> 5.0     </autotrophs(4)%temp_opt>
+<autotrophs(4)%alphaPI  >8.9120e-06       </autotrophs(4)%alphaPI>
+<autotrophs(4)%thetaN_max      >2.5        </autotrophs(4)%thetaN_max>
+
+<autotrophs(5)%sname>phaeon</autotrophs(5)%sname>
+<autotrophs(5)%kFe  >0.075e-3 </autotrophs(5)%kFe>
+<autotrophs(5)%kPO4 >0.05    </autotrophs(5)%kPO4>
+<autotrophs(5)%kDOP >0.9    </autotrophs(5)%kDOP>
+<autotrophs(5)%kNO3 >0.7     </autotrophs(5)%kNO3>
+<autotrophs(5)%kNH4 >0.05    </autotrophs(5)%kNH4>
+<autotrophs(5)%kSiO3>0.0     </autotrophs(5)%kSiO3>
+<autotrophs(5)%z_umax_0>3.7384e-05</autotrophs(5)%z_umax_0>
+<autotrophs(5)%temp_thres2> 30.0     </autotrophs(5)%temp_thres2>
+<autotrophs(5)%temp_opt> 16.3     </autotrophs(5)%temp_opt>
+<autotrophs(5)%alphaPI  >8.9120e-06       </autotrophs(5)%alphaPI>
+<autotrophs(5)%thetaN_max      >2.5        </autotrophs(5)%thetaN_max>
 
 <!---------------------------->
 <!--moby_nml -->
@@ -1257,11 +1295,38 @@
 <ah&hmix_gm_nml ocn_grid="tx1v1"   kappa_isop_choice="bfre"     kappa_thic_choice="bfre"    >3.0e7</ah&hmix_gm_nml>  
 <ah&hmix_gm_nml ocn_grid="tx0.1v2" kappa_isop_choice="constant" kappa_thic_choice="constant">0.6e7</ah&hmix_gm_nml>  
 <ah&hmix_gm_nml ocn_grid="tx0.1v2" kappa_isop_choice="bfre"     kappa_thic_choice="bfre"    >3.0e7</ah&hmix_gm_nml>  
-<ah&hmix_gm_nml ocn_grid="tx0.3v2" kappa_isop_choice="constant" kappa_thic_choice="constant">0.6e7</ah&hmix_gm_nml>  
-<ah&hmix_gm_nml ocn_grid="tx0.3v2" kappa_isop_choice="bfre"     kappa_thic_choice="bfre"    >3.0e7</ah&hmix_gm_nml>  
 
 <rich_mix&vmix_rich_nml>50.0</rich_mix&vmix_rich_nml>
 
 <rich_mix&vmix_kpp_nml>50.0</rich_mix&vmix_kpp_nml>
 
+<!---------------------------->
+<!--       tracegas_nml       -->
+<!---------------------------->
+
+<init_tracegas_init_file>unknown</init_tracegas_init_file>
+
+<init_tracegas_init_file_fmt>nc</init_tracegas_init_file_fmt>
+
+<tracer_init_ext(1)%mod_varname&tracegas_nml>DMS</tracer_init_ext(1)%mod_varname&tracegas_nml>
+<tracer_init_ext(2)%mod_varname&tracegas_nml>DMSP</tracer_init_ext(2)%mod_varname&tracegas_nml>
+
+<lflux_gas_dms >.true.</lflux_gas_dms>
+
+<tracegas_tadvect_ctype>lw_lim</tracegas_tadvect_ctype>
+
+<gas_flux_forcing_opt>drv</gas_flux_forcing_opt>
+
+<lmarginal_seas>.true.</lmarginal_seas>
+
+<lsource_sink>.true.</lsource_sink>
+
+<comp_surf_avg_freq_opt>never</comp_surf_avg_freq_opt>
+
+<comp_surf_avg_freq>1</comp_surf_avg_freq>
+
+<use_nml_surf_vals>.false.</use_nml_surf_vals>
+<use_nml_surf_vals runtype="startup">.true.</use_nml_surf_vals>
+
 </namelist_defaults>
+
