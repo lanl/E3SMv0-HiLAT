@@ -197,7 +197,7 @@ EOF
 
 # generic autotroph fields
 # skip N_lim for diaz
-foreach autotroph ( sp diat diaz )
+foreach autotroph ( sp diat diaz phaeo phaeon)
    cat >> $CASEROOT/Buildconf/pop2conf/ecosys_tavg_contents << EOF
 $s1  ${autotroph}Chl
 $s1  ${autotroph}C

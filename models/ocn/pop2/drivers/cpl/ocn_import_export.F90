@@ -559,6 +559,31 @@ contains
 
 !-----------------------------------------------------------------------
 !
+!     pack dms flux, if requested (kg dms/m^2/s)
+!     units conversion occurs where dms flux is computed
+!
+!-----------------------------------------------------------------------
+
+!maltrud debug
+   write(stdout,*) 'pjc: ocn_export_mct: ', my_task, index_o2x_Faoo_fdms_ocn
+
+   if (index_o2x_Faoo_fdms_ocn > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_Faoo_fdms_ocn,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_Faoo_fdms_ocn)/tlast_coupled * &
+               62.132400_r8 *1D-8     !pjc, convert from (mmol/m3)(cm/s) to kg(DMS)/m2/s, using M(DMS)=62.1324 g/mol
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!
 !     diagnostics
 !
 !-----------------------------------------------------------------------
@@ -648,7 +673,8 @@ contains
 
    integer (int_kind) :: &
       iblock,           & ! block index
-      sflux_co2_nf_ind = 0! named field index of fco2
+      sflux_co2_nf_ind = 0, &! named field index of fco2
+      sflux_dms_nf_ind = 0   ! named field index of fDMS
 
    logical (log_kind) :: &
       first = .true.      ! only true for first call
@@ -701,6 +727,29 @@ contains
 
 !-----------------------------------------------------------------------
 !
+!  same as above for DMS
+!
+!-----------------------------------------------------------------------
+
+   if (index_o2x_Faoo_fdms_ocn > 0) then
+      if (sflux_dms_nf_ind == 0) then
+         call named_field_get_index('SFLUX_DMS', sflux_dms_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+
+!maltrud debug
+   write(stdout,*) 'pjc: pop_sum_buffer1: ', my_task, &
+     index_o2x_Faoo_fdms_ocn, sflux_dms_nf_ind, delt_last
+
+!-----------------------------------------------------------------------
+!
 !  accumulate sums of U,V,T,S and GRADP
 !  accumulate sum of co2 flux, if requested
 !     implicitly use zero flux if fco2 field not registered yet
@@ -738,6 +787,17 @@ contains
       call named_field_get(sflux_co2_nf_ind, iblock, WORK(:,:,iblock))
       SBUFF_SUM(:,:,iblock,index_o2x_Faoo_fco2_ocn) = &
          SBUFF_SUM(:,:,iblock,index_o2x_Faoo_fco2_ocn) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_Faoo_fdms_ocn > 0 .and. sflux_dms_nf_ind > 0) then
+      call named_field_get(sflux_dms_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_Faoo_fdms_ocn) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_Faoo_fdms_ocn) + delt_last*WORK(:,:,iblock)
+
+!maltrud debug
+   write(stdout,*) 'pjc: pop_sum_buffer2: ', my_task,  &
+     minval(WORK(:,:,iblock)), maxval(WORK(:,:,iblock))
+
    endif
 
    enddo

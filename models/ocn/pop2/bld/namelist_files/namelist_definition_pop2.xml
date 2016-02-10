@@ -3938,6 +3938,16 @@ Flag for using moby module.
 Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
 </entry>
 
+<entry 
+id="tracegas_on"
+type="logical" 
+category="passive_tracers"
+group="passive_tracers_on_nml" >
+Flag for using tracegas module.
+
+Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
+</entry>
+
 <!-- - - - - - - - - - - - - - - - - - -->
 <!-- Group: iage_nml                 - -->
 <!-- - - - - - - - - - - - - - - - - - -->
@@ -5693,6 +5703,38 @@ Default: (/0.0, 0.8, 0.0/)
 </entry>
 
 <entry 
+id="autotrophs%temp_thres2"
+type="dtype(3)%real" 
+category="ecosys"
+group="ecosys_parms_nml" >
+Default: (/50.0, 50.0, 50.0/)
+</entry>
+
+<entry 
+id="autotrophs%temp_opt"
+type="dtype(3)%real" 
+category="ecosys"
+group="ecosys_parms_nml" >
+Default: (/50.0, 50.0, 50.0/)
+</entry>
+
+<entry 
+id="autotrophs%alphaPI"
+type="dtype(3)%real" 
+category="ecosys"
+group="ecosys_parms_nml" >
+Default: (/6.9444e-06, 5.3819e-06, 4.6296e-06/)
+</entry>
+
+<entry 
+id="autotrophs%thetaN_max"
+type="dtype(3)%real" 
+category="ecosys"
+group="ecosys_parms_nml" >
+Default: (/2.5, 4.0, 2.5/)
+</entry>
+
+<entry 
 id="autotrophs%z_umax_0"
 type="dtype(3)%real" 
 category="ecosys"
@@ -5944,6 +5986,280 @@ id="moby_use_nml_surf_vals"
 type="logical" 
 category="pop2"
 group="moby_nml" >
+Default: 
+</entry>
+
+<!-- - - - - - - - - - - - - - - - - - -->
+<!-- Group: tracegas_nml               - -->
+<!-- - - - - - - - - - - - - - - - - - -->
+
+<entry 
+id="init_tracegas_option"
+type="char*256" 
+category="tracegas"
+group="tracegas_nml" >
+Default: 
+</entry>
+
+<entry 
+id="init_tracegas_init_file"
+type="char*256" 
+category="tracegas"
+group="tracegas_nml"
+input_pathname="abs" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%mod_varname&tracegas_nml"
+type="dtype(27)%char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%filename&tracegas_nml"
+type="dtype(27)%char*256" 
+category="tracegas"
+group="derived"
+input_pathname="abs" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%file_varname&tracegas_nml"
+type="dtype(27)%char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%file_fmt&tracegas_nml"
+type="dtype(27)%char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%scale_factor&tracegas_nml"
+type="dtype(27)%real" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%default_val&tracegas_nml"
+type="dtype(27)%real" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="init_tracegas_init_file_fmt"
+type="char*256" 
+category="tracegas"
+group="tracegas_nml" >
+Default: 'nc'
+</entry>
+
+<entry 
+id="gas_flux_forcing_opt"
+type="char*256" 
+category="tracegas"
+group="tracegas_nml" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_forcing_file"
+type="char*256" 
+category="tracegas"
+group="tracegas_nml"
+path="abs" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_fice%filename&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived"
+input_pathname="abs" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_fice%file_fmt&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_fice%file_varname&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_fice%scale_factor&tracegas_nml"
+type="real" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_fice%default_val&tracegas_nml"
+type="real" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ws%filename&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived"
+input_pathname="abs" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ws%file_fmt&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ws%file_varname&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ws%scale_factor&tracegas_nml"
+type="real" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ws%default_val&tracegas_nml"
+type="real" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ap%filename&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived"
+input_pathname="abs" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ap%file_fmt&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ap%file_varname&tracegas_nml"
+type="char*256" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ap%scale_factor&tracegas_nml"
+type="real" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="gas_flux_ap%default_val&tracegas_nml"
+type="real" 
+category="tracegas"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="comp_surf_avg_freq_opt"
+type="char*256" 
+category="tracegas"
+group="tracegas_nml" >
+Default: 
+</entry>
+
+<entry 
+id="comp_surf_avg_freq"
+type="integer" 
+category="tracegas"
+group="tracegas_nml" >
+Default: 
+</entry>
+
+<entry 
+id="use_nml_surf_vals"
+type="logical" 
+category="tracegas"
+group="tracegas_nml" >
+Default: 
+</entry>
+
+<entry 
+id="lmarginal_seas"
+type="logical"
+category="tracegas"
+group="tracegas_nml" >
+Default: 
+</entry>
+
+<entry 
+id="lsource_sink"
+type="logical"
+category="tracegas"
+group="tracegas_nml" >
+Default: 
+</entry>
+
+<entry 
+id="lflux_gas_dms"
+type="logical" 
+category="tracegas"
+group="tracegas_nml" >
+Default: 
+</entry>
+
+<entry 
+id="tracegas_tadvect_ctype"
+type="char*256" 
+category="tracegas"
+group="tracegas_nml" >
 Default: 
 </entry>
 

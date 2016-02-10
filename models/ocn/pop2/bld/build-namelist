@@ -1206,6 +1206,28 @@ if (any(\@OCN_TRACER_MODULES, "cfc")) {
 
 
 ##########################################
+# namelist group: tracegas_nml             #
+#    add_default($nl, 'tracegas_tadvect_ctype');
+#    add_default($nl, 'lmarginal_seas');
+##########################################
+
+if (any(\@OCN_TRACER_MODULES, "tracegas")) {
+
+    add_default($nl, 'init_tracegas_option', 'val'=>"ccsm_${RUN_TYPE}");
+    add_default($nl, 'init_tracegas_init_file', 'val'=>'same_as_TS', 'noprepend'=>1);
+
+    add_default($nl, 'tracegas_tadvect_ctype');
+    add_default($nl, 'gas_flux_forcing_opt');
+    add_default($nl, 'lmarginal_seas');
+
+    add_default($nl, 'lsource_sink');
+    add_default($nl, 'comp_surf_avg_freq_opt');
+    add_default($nl, 'comp_surf_avg_freq');
+
+    add_default($nl, 'use_nml_surf_vals', 'runtype'=>"$RUN_TYPE");
+
+}
+##########################################
 # namelist group: ecosys_nml             #
 ##########################################
 
@@ -1364,6 +1386,10 @@ if (any(\@OCN_TRACER_MODULES, "ecosys")) {
     add_default($nl, 'autotrophs(1)%kNH4');
     add_default($nl, 'autotrophs(1)%kSiO3');
     add_default($nl, 'autotrophs(1)%z_umax_0');
+    add_default($nl, 'autotrophs(1)%temp_thres2');
+    add_default($nl, 'autotrophs(1)%alphaPI');
+    add_default($nl, 'autotrophs(1)%thetaN_max');
+    add_default($nl, 'autotrophs(1)%temp_opt');
 
     add_default($nl, 'autotrophs(2)%sname');
     add_default($nl, 'autotrophs(2)%kFe');
@@ -1373,6 +1399,10 @@ if (any(\@OCN_TRACER_MODULES, "ecosys")) {
     add_default($nl, 'autotrophs(2)%kNH4');
     add_default($nl, 'autotrophs(2)%kSiO3');
     add_default($nl, 'autotrophs(2)%z_umax_0');
+    add_default($nl, 'autotrophs(2)%temp_thres2');
+    add_default($nl, 'autotrophs(2)%alphaPI');
+    add_default($nl, 'autotrophs(2)%thetaN_max');
+    add_default($nl, 'autotrophs(2)%temp_opt');
 
     add_default($nl, 'autotrophs(3)%sname');
     add_default($nl, 'autotrophs(3)%kFe');
@@ -1382,8 +1412,38 @@ if (any(\@OCN_TRACER_MODULES, "ecosys")) {
     add_default($nl, 'autotrophs(3)%kNH4');
     add_default($nl, 'autotrophs(3)%kSiO3');
     add_default($nl, 'autotrophs(3)%z_umax_0');
-}
+    add_default($nl, 'autotrophs(3)%temp_thres2');
+    add_default($nl, 'autotrophs(3)%alphaPI');
+    add_default($nl, 'autotrophs(3)%thetaN_max');
+    add_default($nl, 'autotrophs(3)%temp_opt');
 
+    add_default($nl, 'autotrophs(4)%sname');
+    add_default($nl, 'autotrophs(4)%kFe');
+    add_default($nl, 'autotrophs(4)%kPO4');
+    add_default($nl, 'autotrophs(4)%kDOP');
+    add_default($nl, 'autotrophs(4)%kNO3');
+    add_default($nl, 'autotrophs(4)%kNH4');
+    add_default($nl, 'autotrophs(4)%kSiO3');
+    add_default($nl, 'autotrophs(4)%z_umax_0');
+    add_default($nl, 'autotrophs(4)%temp_thres2');
+    add_default($nl, 'autotrophs(4)%alphaPI');
+    add_default($nl, 'autotrophs(4)%thetaN_max');
+    add_default($nl, 'autotrophs(4)%temp_opt');
+
+    add_default($nl, 'autotrophs(5)%sname');
+    add_default($nl, 'autotrophs(5)%kFe');
+    add_default($nl, 'autotrophs(5)%kPO4');
+    add_default($nl, 'autotrophs(5)%kDOP');
+    add_default($nl, 'autotrophs(5)%kNO3');
+    add_default($nl, 'autotrophs(5)%kNH4');
+    add_default($nl, 'autotrophs(5)%kSiO3');
+    add_default($nl, 'autotrophs(5)%z_umax_0');
+    add_default($nl, 'autotrophs(5)%temp_thres2');
+    add_default($nl, 'autotrophs(5)%alphaPI');
+    add_default($nl, 'autotrophs(5)%thetaN_max');
+    add_default($nl, 'autotrophs(5)%temp_opt');
+}
+ 
 ##########################################
 # namelist group: moby_nml             #
 ##########################################
@@ -1757,6 +1817,9 @@ if (any(\@OCN_TRACER_MODULES, "cfc")) {
 }    
 if (any(\@OCN_TRACER_MODULES, "ecosys")) {
     push @groups, qw(ecosys_nml ecosys_parms_nml);
+}    
+if (any(\@OCN_TRACER_MODULES, "tracegas")) {
+    push @groups, qw(tracegas_nml);
 }    
 if (any(\@OCN_TRACER_MODULES, "moby")) {
     push @groups, qw(moby_nml moby_parms_nml );
