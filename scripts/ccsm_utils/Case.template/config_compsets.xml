@@ -104,6 +104,9 @@ value of RUN_STARTDATE will be date2.
 
 <COMPSET sname="B_1850"                alias="B1850"         >1850_CAM4_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
 <COMPSET sname="B_1850_CAM5"           alias="B1850C5"       >1850_CAM5_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
+<COMPSET sname="B_1850_CAM5_MAM4"      alias="B1850C5MAM4"   >1850_CAM5%MAM4_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
+<COMPSET sname="B_1850_CAM5_PLMOD"     alias="B1850C5PLMOD"  >1850_CAM5%PLMOD_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
+<COMPSET sname="B_1850_CAM5_MAM4PLMOD"     alias="B1850C5MAM4PLMOD"  >1850_CAM5%MAM4%PLMOD_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
 <COMPSET sname="B_1850_CN"             alias="B1850CN"       >1850_CAM4_CLM40%CN_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
 <COMPSET sname="B_1850_CAM5_CN"        alias="B1850C5CN"     >1850_CAM5_CLM40%CN_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
 <COMPSET sname="B_1850_CAM5_CLM45BGC"  alias="B1850C5L45BGC" >1850_CAM5_CLM45%BGC_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
@@ -244,6 +247,9 @@ value of RUN_STARTDATE will be date2.
 <COMPSET sname="FGEOS_C5SMAM_L40CN"         alias="FSDSMAM"         >GEOS_CAM5%SMA3_CLM40%SP_CICE%PRES_DOCN%DOM_RTM_SGLC_SWAV</COMPSET>
 <COMPSET sname="F_ARM95_SCAM4"              alias="FSCM4A95"        >AR95_CAM4%SCAM_CLM40%SP_CICE%PRES_DOCN%DOM_RTM_SGLC_SWAV</COMPSET>
 <COMPSET sname="F_ARM97_SCAM5"              alias="FSCM5A97"        >AR97_CAM5%SCAM_CLM40%SP_CICE%PRES_DOCN%DOM_RTM_SGLC_SWAV</COMPSET>
+<COMPSET sname="F_2000_CAM5_MAM4"           alias="FC5MAM4"         >2000_CAM5%MAM4_CLM40%SP_CICE%PRES_DOCN%DOM_RTM_SGLC_SWAV</COMPSET>
+<COMPSET sname="F_2000_CAM5_PLMOD"          alias="FC5PLMOD"        >2000_CAM5%PLMOD_CLM40%SP_CICE%PRES_DOCN%DOM_RTM_SGLC_SWAV</COMPSET>
+<COMPSET sname="F_2000_CAM5_MAM4PLMOD"      alias="FC5MAM4PLMOD"    >2000_CAM5%MAM4%PLMOD_CLM40%SP_CICE%PRES_DOCN%DOM_RTM_SGLC_SWAV</COMPSET>
 
 <COMPSET sname="F_2000_CAM4_AQUAPLANET" alias="FC4AQUAP" >2000_CAM4_SLND_SICE_AQUAP_SROF_SGLC_SWAV</COMPSET>
 <COMPSET sname="F_2000_CAM5_AQUAPLANET" alias="FC5AQUAP" >2000_CAM5_SLND_SICE_AQUAP_SROF_SGLC_SWAV</COMPSET>
@@ -550,6 +556,7 @@ GEOS => GEOS5 meteorology for "stand-alone" CAM
 
 <CAM_CONFIG_OPTS compset="_CAM4"          >-phys cam4</CAM_CONFIG_OPTS>              
 <CAM_CONFIG_OPTS compset="_CAM5"          >-phys cam5</CAM_CONFIG_OPTS> 
+<CAM_CONFIG_OPTS compset="_CAM5%MAM4"     >-chem trop_mam4</CAM_CONFIG_OPTS>
 <CAM_CONFIG_OPTS compset="_CAM5%CLB"      >-clubb_sgs</CAM_CONFIG_OPTS>
 <CAM_CONFIG_OPTS compset="_CAM4%TBAM"     >-chem trop_bam</CAM_CONFIG_OPTS>
 <CAM_CONFIG_OPTS compset="_CAM4%TMOZ"     >-chem trop_mozart</CAM_CONFIG_OPTS>
@@ -592,6 +599,8 @@ GEOS => GEOS5 meteorology for "stand-alone" CAM
 <!-- Note that these are additive            --> 
 <!-- ======================================= -->
 
+<CAM_NML_USE_CASE compset="2000_CAM5.*PLMOD" >2000_cam5_plmod</CAM_NML_USE_CASE>
+<CAM_NML_USE_CASE compset="1850_CAM5.*PLMOD" >1850_cam5_plmod</CAM_NML_USE_CASE>
 <CAM_NML_USE_CASE compset="2000_CAM4%TMOZ"   >2000_cam4_trop_chem</CAM_NML_USE_CASE> 
 <CAM_NML_USE_CASE compset="1850_CAM4"        >1850_cam4</CAM_NML_USE_CASE> 
 <CAM_NML_USE_CASE compset="1850_CAM5"        >1850_cam5</CAM_NML_USE_CASE> 
@@ -669,6 +678,8 @@ GEOS => GEOS5 meteorology for "stand-alone" CAM
 
 <desc compset="_CAM4"  >cam4 physics:</desc>
 <desc compset="_CAM5"  >cam5 physics:</desc>
+<desc compset="_CAM5%MAM4"   >CAM trop_mam4 chemistry:</desc>
+<desc compset="_CAM5.*PLMOD" >CAM with all polar mods:</desc>
 <desc compset="_CAM5%CLB"    >CAM CLUBB:</desc>
 <desc compset="_CAM5%PM"     >CAM prescribed modal aerosols:</desc>
 <desc compset="_CAM[45]%WCCM">CAM WACCM with daily solar data and SPEs:</desc>
