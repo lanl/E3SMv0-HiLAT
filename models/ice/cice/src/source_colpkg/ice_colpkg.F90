@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_colpkg.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_colpkg.F90 1105 2016-01-28 17:14:14Z njeffery $
 !=========================================================================
 !
 ! flags and interface routines for the column package
@@ -1542,7 +1542,9 @@
 
       logical (kind=log_kind), intent(in) :: &
          lmask_n     , & ! northern hemisphere mask
-         lmask_s     , & ! southern hemisphere mask
+         lmask_s         ! southern hemisphere mask
+
+      logical (kind=log_kind), intent(in), optional :: &
          prescribed_ice  ! if .true., use prescribed ice instead of computed
 
       real (kind=dbl_kind), intent(inout) :: &

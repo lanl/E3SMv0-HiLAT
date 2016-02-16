@@ -143,6 +143,13 @@
       real (kind=dbl_kind) :: &
          offset          ! d(age)/dt time offset
 
+      character (len=char_len) :: plabeld
+
+      plabeld = 'beginning time step'
+      do iblk = 1, nblocks
+         call debug_ice (iblk, plabeld)
+      enddo
+
       !-----------------------------------------------------------------
       ! restoring on grid boundaries
       !-----------------------------------------------------------------
@@ -178,14 +185,28 @@
 
             if (calc_Tsfc) call prep_radiation (dt, iblk)
 
+            plabeld = 'post prep_radiation'
+            call debug_ice (iblk, plabeld)
+
       !-----------------------------------------------------------------
       ! thermodynamics and biogeochemistry
       !-----------------------------------------------------------------
             
             call step_therm1     (dt, iblk) ! vertical thermodynamics
+
+            plabeld = 'post step_therm1'
+            call debug_ice (iblk, plabeld)
+
             call biogeochemistry (dt, iblk) ! biogeochemistry
+
+            plabeld = 'post biogeochemistry'
+            call debug_ice (iblk, plabeld)
+
             if (.not.prescribed_ice) &
                call step_therm2  (dt, iblk) ! ice thickness distribution thermo
+
+            plabeld = 'post step_therm2'
+            call debug_ice (iblk, plabeld)
 
          enddo ! iblk
          !$OMP END PARALLEL DO
@@ -219,6 +240,11 @@
             call update_state (dt_dyn, daidtd, dvidtd, dagedtd, offset)
 
          enddo
+
+         plabeld = 'post dynamics'
+         do iblk = 1, nblocks
+            call debug_ice (iblk, plabeld)
+         enddo
          endif
 
       !-----------------------------------------------------------------
@@ -233,11 +259,17 @@
 
             call step_radiation (dt, iblk)
 
+            plabeld = 'post step_radiation'
+            call debug_ice (iblk, plabeld)
+
       !-----------------------------------------------------------------
       ! get ready for coupling and the next time step
       !-----------------------------------------------------------------
 
             call coupling_prep (iblk)
+
+            plabeld = 'post coupling_prep'
+            call debug_ice (iblk, plabeld)
 
          enddo ! iblk
          !$OMP END PARALLEL DO
@@ -564,6 +596,42 @@
 #endif 
 
       end subroutine sfcflux_to_ocn
+
+!=======================================================================
+!
+! Wrapper for the print_state debugging routine.
+! Useful for debugging in the main driver (see ice.F_debug)
+! ip, jp, mtask are set in ice_diagnostics.F
+!
+! author Elizabeth C. Hunke, LANL
+!
+      subroutine debug_ice(iblk, plabeld)
+
+      use ice_kinds_mod
+      use ice_calendar, only: istep1
+      use ice_communicate, only: my_task
+      use ice_diagnostics, only: check_step, iblkp, ip, jp, mtask, print_state
+      use ice_domain, only: nblocks
+      use ice_blocks, only: nx_block, ny_block
+
+      character (char_len), intent(in) :: plabeld
+      integer (kind=int_kind), intent(in) :: iblk
+
+      ! local 
+      integer (kind=int_kind) :: i, j
+
+      if (istep1 >= check_step .and. &
+          iblk==iblkp .and. my_task==mtask) then
+
+      do j = 1, ny_block
+      do i = 1, nx_block
+         if (i==ip .and. j==jp) call print_state(plabeld,i,j,iblk)
+      enddo
+      enddo
+
+      endif
+
+      end subroutine debug_ice
 
 !=======================================================================
 

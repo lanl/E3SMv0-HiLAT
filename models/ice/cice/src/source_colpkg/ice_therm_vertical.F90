@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_therm_vertical.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_therm_vertical.F90 1105 2016-01-28 17:14:14Z njeffery $
 !=========================================================================
 !
 ! Update ice and snow internal temperatures and compute
@@ -74,7 +74,6 @@
                                   yday,        dsnow,     &
                                   l_stop,      nu_diag,   &
                                   prescribed_ice)
-
       use ice_therm_mushy, only: temperature_changes_salinity
 
       integer (kind=int_kind), intent(in) :: &
@@ -98,7 +97,9 @@
          iage        ! ice age (s)
 
       logical (kind=log_kind), intent(in) :: &
-         tr_pond_topo, & ! if .true., use melt pond tracer
+         tr_pond_topo    ! if .true., use melt pond tracer
+
+      logical (kind=log_kind), intent(in), optional :: &
          prescribed_ice  ! if .true., use prescribed ice instead of computed
 
       real (kind=dbl_kind), dimension (:), intent(inout) :: &
@@ -402,9 +403,11 @@
       !-----------------------------------------------------------------
 
 #ifdef CCSMCOUPLED
-      if (prescribed_ice) then
+      if (present(prescribed_ice)) then
+          if (prescribed_ice) then
             hin    = worki
             fhocnn = c0             ! for diagnostics
+          endif
       endif
 #endif
 

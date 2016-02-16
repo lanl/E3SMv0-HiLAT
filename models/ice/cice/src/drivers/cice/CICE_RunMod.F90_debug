@@ -352,7 +352,9 @@
          i,j         , & ! horizontal indices
          k               ! tracer index
 
-      real (kind=dbl_kind) :: cszn ! counter for history averaging
+      real (kind=dbl_kind) :: &
+         cszn        , & ! counter for history averaging
+         netsw           ! flag for shortwave radiation presence
 
       !-----------------------------------------------------------------
       ! Save current value of frzmlt for diagnostics.
@@ -385,10 +387,12 @@
             albsno(i,j,iblk) = c0
             albpnd(i,j,iblk) = c0
             apeff_ai(i,j,iblk) = c0
+            snowfrac(i,j,iblk) = c0
 
             ! for history averaging
             cszn = c0
-            if (coszen(i,j,iblk) > puny) cszn = c1
+            netsw = swvdr(i,j,iblk)+swidr(i,j,iblk)+swvdf(i,j,iblk)+swidf(i,j,iblk)
+            if (netsw > puny) cszn = c1
             do n = 1, nstreams
                albcnt(i,j,iblk,n) = albcnt(i,j,iblk,n) + cszn
             enddo
@@ -406,7 +410,9 @@
             alidr(i,j,iblk) = alidr(i,j,iblk) &
                + alidrn(i,j,n,iblk)*aicen(i,j,n,iblk)
 
-            if (coszen(i,j,iblk) > puny) then ! sun above horizon
+            netsw = swvdr(i,j,iblk) + swidr(i,j,iblk) &
+                  + swvdf(i,j,iblk) + swidf(i,j,iblk)
+            if (netsw > puny) then ! sun above horizon
             albice(i,j,iblk) = albice(i,j,iblk) &
                + albicen(i,j,n,iblk)*aicen(i,j,n,iblk)
             albsno(i,j,iblk) = albsno(i,j,iblk) &
@@ -417,6 +423,8 @@
 
             apeff_ai(i,j,iblk) = apeff_ai(i,j,iblk) &       ! for history
                + apeffn(i,j,n,iblk)*aicen(i,j,n,iblk)
+            snowfrac(i,j,iblk) = snowfrac(i,j,iblk) &       ! for history
+               + snowfracn(i,j,n,iblk)*aicen(i,j,n,iblk)
          enddo
          enddo
          enddo
@@ -473,7 +481,7 @@
       !-----------------------------------------------------------------
 
          call scale_fluxes (nx_block,            ny_block,           &
-                            tmask    (:,:,iblk), nbtrcr,             &
+                            tmask    (:,:,iblk), nbtrcr, max_aero,   &
                             aice     (:,:,iblk), Tf      (:,:,iblk), &
                             Tair     (:,:,iblk), Qa      (:,:,iblk), &
                             strairxT (:,:,iblk), strairyT(:,:,iblk), &

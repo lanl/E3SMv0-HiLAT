@@ -1,4 +1,4 @@
-!  SVN:$Id: CICE_InitMod.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: CICE_InitMod.F90 1106 2016-02-05 18:49:17Z njeffery $
 !=======================================================================
 !
 !  This module contains the CICE initialization routine that sets model
@@ -126,6 +126,9 @@
       call init_history_therm   ! initialize thermo history variables
       call init_history_dyn     ! initialize dynamic history variables
 
+      if (tr_aero .or. tr_zaero) call faero_optics !initialize aerosol optical 
+                                                   !property tables
+
       ! Initialize shortwave components using swdn from previous timestep 
       ! if restarting. These components will be scaled to current forcing 
       ! in prep_radiation.
@@ -142,8 +145,6 @@
    !--------------------------------------------------------------------
 
       call init_forcing_atmo    ! initialize atmospheric forcing (standalone)
-      if (tr_aero .or. tr_zaero) call faero_optics !initialize aerosol optical 
-                                                   !property tables
 
 #ifndef coupled
       call get_forcing_atmo     ! atmospheric forcing from data
@@ -190,7 +191,7 @@
           restart_pond_topo, read_restart_pond_topo, &
           restart_aero, read_restart_aero, &
           restart_hbrine, read_restart_hbrine, &
-          restart_zsal
+          restart_zsal, restart_bgc
       use ice_restart_driver, only: restartfile, restartfile_v4
       use ice_restart_shared, only: runtype, restart
       use ice_state ! almost everything
@@ -303,6 +304,15 @@
                call init_aerosol(trcrn(:,:,nt_aero:nt_aero+4*n_aero-1,:,iblk))
             enddo ! iblk
          endif ! .not. restart_aero
+      endif
+
+      if (trim(runtype) == 'continue') then
+         if (tr_brine) &
+             restart_hbrine = .true.
+         if (solve_zsal) &
+             restart_zsal = .true.
+         if (skl_bgc .or. z_tracers) &
+             restart_bgc = .true.
       endif
 
       if (tr_brine .or. skl_bgc) then ! brine height tracer

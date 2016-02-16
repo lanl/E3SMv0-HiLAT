@@ -1,4 +1,4 @@
-!  SVN:$Id: CICE_RunMod.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: CICE_RunMod.F90 1106 2016-02-05 18:49:17Z njeffery $
 !=======================================================================
 !
 !  Main driver for time stepping of CICE.
@@ -384,7 +384,9 @@
             alidr(i,j,iblk) = alidr(i,j,iblk) &
                + alidrn(i,j,n,iblk)*aicen(i,j,n,iblk)
 
-            if (coszen(i,j,iblk) >= puny) then ! sun above horizon
+            netsw = swvdr(i,j,iblk) + swidr(i,j,iblk) &
+                  + swvdf(i,j,iblk) + swidf(i,j,iblk)
+            if (netsw > puny) then ! sun above horizon
             albice(i,j,iblk) = albice(i,j,iblk) &
                + albicen(i,j,n,iblk)*aicen(i,j,n,iblk)
             albsno(i,j,iblk) = albsno(i,j,iblk) &

@@ -1542,7 +1542,9 @@
 
       logical (kind=log_kind), intent(in) :: &
          lmask_n     , & ! northern hemisphere mask
-         lmask_s     , & ! southern hemisphere mask
+         lmask_s         ! southern hemisphere mask
+
+      logical (kind=log_kind), intent(in), optional :: &
          prescribed_ice  ! if .true., use prescribed ice instead of computed
 
       real (kind=dbl_kind), intent(inout) :: &
