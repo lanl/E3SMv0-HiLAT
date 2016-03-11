@@ -286,7 +286,9 @@
 !-----------------------------------------------------------------------
 
    integer (int_kind) :: &
-      sflux_dms_nf_ind = 0       ! dms flux
+      surf_dms_nf_ind   = 0,    & ! surface DMS
+      surf_dmsp_nf_ind  = 0,    & ! surface DMSP
+      sflux_dms_nf_ind  = 0       ! dms flux
 
 !-----------------------------------------------------------------------
 
@@ -766,6 +768,56 @@ contains
       call exit_POP(sigAbort, 'unknown init_tracegas_option')
 
    end select
+
+!-----------------------------------------------------------------------
+!  register surf_dms field for passing to ice module; set surf_dms field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDMS', surf_dms_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,tracegas_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,dms_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,dms_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_dms_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_dmsp field for passing to ice module; set surf_dmsp field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDMSP', surf_dmsp_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,tracegas_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,dmsp_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,dmsp_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_dmsp_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
 
 !-----------------------------------------------------------------------
 !  timer init
@@ -2176,6 +2228,36 @@ contains
 
    if (check_time_flag(comp_surf_avg_flag))  &
       call comp_surf_avg(SURF_VALS_OLD,SURF_VALS_CUR)
+
+!-----------------------------------------------------------------------
+!  set DMS field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,dms_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,dms_ind,iblock))) 
+
+      call named_field_set(surf_dms_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set DMSP field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,dmsp_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,dmsp_ind,iblock))) 
+
+      call named_field_set(surf_dmsp_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
 
 !---------------------------------------------------------------------------
 !   Some k==1 initializations occur in this area.

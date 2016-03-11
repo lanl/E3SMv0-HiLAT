@@ -19,6 +19,19 @@ module POP_CplIndices
   integer :: index_o2x_Fioo_q
   integer :: index_o2x_Faoo_fco2_ocn
   integer :: index_o2x_Faoo_fdms_ocn
+  integer :: index_o2x_So_fed
+  integer :: index_o2x_So_nh4
+  integer :: index_o2x_So_no3
+  integer :: index_o2x_So_sio3
+  integer :: index_o2x_So_dic
+  integer :: index_o2x_So_doc
+  integer :: index_o2x_So_don
+  integer :: index_o2x_So_donr
+  integer :: index_o2x_So_diat
+  integer :: index_o2x_So_sp
+  integer :: index_o2x_So_phaeo
+  integer :: index_o2x_So_dms
+  integer :: index_o2x_So_dmsp
 
   ! drv -> ocn
 
@@ -81,6 +94,19 @@ contains
     index_o2x_Fioo_q        = mct_avect_indexra(o2x,'Fioo_q')
     index_o2x_Faoo_fco2_ocn = mct_avect_indexra(o2x,'Faoo_fco2_ocn',perrWith='quiet')
     index_o2x_Faoo_fdms_ocn = mct_avect_indexra(o2x,'Faoo_fdms_ocn',perrWith='quiet')
+    index_o2x_So_fed        = mct_avect_indexra(o2x,'So_fed')
+    index_o2x_So_nh4        = mct_avect_indexra(o2x,'So_nh4')
+    index_o2x_So_no3        = mct_avect_indexra(o2x,'So_no3')
+    index_o2x_So_sio3       = mct_avect_indexra(o2x,'So_sio3')
+    index_o2x_So_dic        = mct_avect_indexra(o2x,'So_dic')
+    index_o2x_So_doc        = mct_avect_indexra(o2x,'So_doc')
+    index_o2x_So_don        = mct_avect_indexra(o2x,'So_don')
+    index_o2x_So_donr       = mct_avect_indexra(o2x,'So_donr')
+    index_o2x_So_diat       = mct_avect_indexra(o2x,'So_diat')
+    index_o2x_So_sp         = mct_avect_indexra(o2x,'So_sp')
+    index_o2x_So_phaeo      = mct_avect_indexra(o2x,'So_phaeo')
+    index_o2x_So_dms        = mct_avect_indexra(o2x,'So_dms')
+    index_o2x_So_dmsp       = mct_avect_indexra(o2x,'So_dmsp')
     index_x2o_Si_ifrac      = mct_avect_indexra(x2o,'Si_ifrac')
     index_x2o_Sa_pslv       = mct_avect_indexra(x2o,'Sa_pslv')
     index_x2o_So_duu10n     = mct_avect_indexra(x2o,'So_duu10n')

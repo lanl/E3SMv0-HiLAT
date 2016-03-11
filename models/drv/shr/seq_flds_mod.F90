@@ -1330,6 +1330,123 @@ module seq_flds_mod
      attname  = 'So_s'
      call metadata_set(attname, longname, stdname, units)
 
+     ! Sea surface  dissolved Fe
+     call seq_flds_add(o2x_states,"So_fed")
+     call seq_flds_add(x2i_states,"So_fed")    
+     longname = 'Sea surface dissolved Fe'
+     stdname  = 'sea_surface_dFe'
+     units    = 'mmol m-3'
+     attname  = 'So_fed'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  NH4
+     call seq_flds_add(o2x_states,"So_nh4")
+     call seq_flds_add(x2i_states,"So_nh4")    
+     longname = 'Sea surface NH4'
+     stdname  = 'sea_surface_NH4'
+     units    = 'mmol m-3'
+     attname  = 'So_nh4'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  NO3
+     call seq_flds_add(o2x_states,"So_no3")
+     call seq_flds_add(x2i_states,"So_no3")    
+     longname = 'Sea surface NO3'
+     stdname  = 'sea_surface_NO3'
+     units    = 'mmol m-3'
+     attname  = 'So_no3'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  SiO3
+     call seq_flds_add(o2x_states,"So_sio3")
+     call seq_flds_add(x2i_states,"So_sio3")    
+     longname = 'Sea surface SiO3'
+     stdname  = 'sea_surface_SiO3'
+     units    = 'mmol m-3'
+     attname  = 'So_sio3'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  DIC
+     call seq_flds_add(o2x_states,"So_dic")
+     call seq_flds_add(x2i_states,"So_dic")    
+     longname = 'Sea surface DIC'
+     stdname  = 'sea_surface_DIC'
+     units    = 'mmol m-3'
+     attname  = 'So_dic'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  DOC
+     call seq_flds_add(o2x_states,"So_doc")
+     call seq_flds_add(x2i_states,"So_doc")    
+     longname = 'Sea surface DOC'
+     stdname  = 'sea_surface_DOC'
+     units    = 'mmol m-3'
+     attname  = 'So_doc'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  DON
+     call seq_flds_add(o2x_states,"So_don")
+     call seq_flds_add(x2i_states,"So_don")    
+     longname = 'Sea surface DON'
+     stdname  = 'sea_surface_DON'
+     units    = 'mmol m-3'
+     attname  = 'So_don'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  DONr
+     call seq_flds_add(o2x_states,"So_donr")
+     call seq_flds_add(x2i_states,"So_donr")
+     longname = 'Sea surface refractory DON'
+     stdname  = 'sea_surface_DONr'
+     units    = 'mmol m-3'
+     attname  = 'So_donr'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  Diatom Carbon
+     call seq_flds_add(o2x_states,"So_diat")
+     call seq_flds_add(x2i_states,"So_diat")    
+     longname = 'Sea surface Diatom Carbon'
+     stdname  = 'sea_surface_diatC'
+     units    = 'mmol m-3'
+     attname  = 'So_diat'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  Small Phytoplankton Carbon
+     call seq_flds_add(o2x_states,"So_sp")
+     call seq_flds_add(x2i_states,"So_sp")    
+     longname = 'Sea surface Small Phyto Carbon'
+     stdname  = 'sea_surface_spC'
+     units    = 'mmol m-3'
+     attname  = 'So_sp'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  Phaeocystis Carbon
+     call seq_flds_add(o2x_states,"So_phaeo")
+     call seq_flds_add(x2i_states,"So_phaeo")    
+     longname = 'Sea surface total Phaeocystis Carbon'
+     stdname  = 'sea_surface_phaeoC'
+     units    = 'mmol m-3'
+     attname  = 'So_phaeo'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  DMS
+     call seq_flds_add(o2x_states,"So_dms")
+     call seq_flds_add(x2i_states,"So_dms")    
+     longname = 'Sea surface DMS'
+     stdname  = 'sea_surface_DMS'
+     units    = 'mmol m-3'
+     attname  = 'So_dms'
+     call metadata_set(attname, longname, stdname, units)
+
+     ! Sea surface  DMSP
+     call seq_flds_add(o2x_states,"So_dmsp")
+     call seq_flds_add(x2i_states,"So_dmsp")    
+     longname = 'Sea surface DMSP'
+     stdname  = 'sea_surface_DMSP'
+     units    = 'mmol m-3'
+     attname  = 'So_dmsp'
+     call metadata_set(attname, longname, stdname, units)
+
      ! Zonal sea water velocity
      call seq_flds_add(o2x_states,"So_u")
      call seq_flds_add(x2i_states,"So_u")    

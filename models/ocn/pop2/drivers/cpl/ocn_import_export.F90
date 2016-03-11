@@ -583,6 +583,240 @@ contains
    endif
 
 !-----------------------------------------------------------------------
+!     pack surf_dms, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_dms > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_dms,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_dms)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_dmsp, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_dmsp > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_dmsp,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_dmsp)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_diat, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_diat > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_diat,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_diat)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_sp, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_sp > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_sp,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_sp)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_phaeo, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_phaeo > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_phaeo,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_phaeo)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_dFe, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_fed > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_fed,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_fed)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_NH4, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_nh4 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_nh4,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_nh4)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_NO3, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_no3 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_no3,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_no3)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_SiO3, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_sio3 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_sio3,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_sio3)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_DIC, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_dic > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_dic,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_dic)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_DOC, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_doc > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_doc,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_doc)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_DON, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_don > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_don,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_don)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
+!     pack surf_DONr, NOTE: unit is mmol/m^3 (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_donr > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            o2x(index_o2x_So_donr,n) = &
+               SBUFF_SUM(i,j,iblock,index_o2x_So_donr)/tlast_coupled
+         enddo
+         enddo
+      enddo
+   endif
+
+!-----------------------------------------------------------------------
 !
 !     diagnostics
 !
@@ -674,7 +908,20 @@ contains
    integer (int_kind) :: &
       iblock,           & ! block index
       sflux_co2_nf_ind = 0, &! named field index of fco2
-      sflux_dms_nf_ind = 0   ! named field index of fDMS
+      sflux_dms_nf_ind = 0, & ! named field index of fDMS
+      surf_dms_nf_ind  = 0, & ! named field index of DMS
+      surf_dmsp_nf_ind = 0, & ! named field index of DMSP
+      surf_dFe_nf_ind  = 0, & ! named field index of dissolved iron
+      surf_NH4_nf_ind  = 0, & ! named field index of NH4
+      surf_NO3_nf_ind  = 0, & ! named field index of NO3
+      surf_SiO3_nf_ind = 0, & ! named field index of SiO3
+      surf_DIC_nf_ind  = 0, & ! named field index of DIC
+      surf_DOC_nf_ind  = 0, & ! named field index of DOC
+      surf_DON_nf_ind  = 0, & ! named field index of DON      
+      surf_DONr_nf_ind = 0, & ! named field index of DONr 
+      surf_diat_nf_ind = 0, & ! named field index of diatom C
+      surf_sp_nf_ind   = 0, & ! named field index of small phyto C
+      surf_phaeo_nf_ind= 0    ! named field index of phaeocystis C      
 
    logical (log_kind) :: &
       first = .true.      ! only true for first call
@@ -749,6 +996,257 @@ contains
      index_o2x_Faoo_fdms_ocn, sflux_dms_nf_ind, delt_last
 
 !-----------------------------------------------------------------------
+!  allow for surf_dms field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_dms > 0) then
+      if (surf_dms_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceDMS', surf_dms_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+
+!maltrud debug
+   write(stdout,*) 'swang: pop_sum_buffer1: ', my_task, &
+     index_o2x_So_dms, surf_dms_nf_ind, delt_last
+
+!-----------------------------------------------------------------------
+!  same as above for DMSP
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_dmsp > 0) then
+      if (surf_dmsp_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceDMSP', surf_dmsp_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+
+!-----------------------------------------------------------------------
+!  allow for surf_diat field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_diat > 0) then
+      if (surf_diat_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceDiatomCarbon',surf_diat_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!  allow for surf_sp field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_sp > 0) then
+      if (surf_sp_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceSmallPhytoCarbon', surf_sp_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!  allow for surf_phaeo field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_phaeo > 0) then
+      if (surf_phaeo_nf_ind == 0) then
+         call named_field_get_index('oceanSurfacePhaeoCarbon', surf_phaeo_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!
+!  allow for surf_Fe field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep
+!       (SW, copied index_o2x_Faoo_fco2 and sflux_co2_nf_ind
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_fed > 0) then
+      if (surf_dFe_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceFeBioavailable', surf_dFe_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!  allow for surf_NH4 field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_nh4 > 0) then
+      if (surf_NH4_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceNH4', surf_NH4_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!  allow for surf_NO3 field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_no3 > 0) then
+      if (surf_NO3_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceNO3', surf_NO3_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!  allow for surf_SiO3 field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_sio3 > 0) then
+      if (surf_SiO3_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceSiO3', surf_SiO3_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!  allow for surf_DIC field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_dic > 0) then
+      if (surf_DIC_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceDIC', surf_DIC_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!  allow for surf_DOC field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_doc > 0) then
+      if (surf_DOC_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceDOC', surf_DOC_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+!-----------------------------------------------------------------------
+!  allow for surf_DON field to not be registered on first call
+!     because init_forcing is called before init_passive_tracers
+!  use weight from previous timestep because flux used here is that
+!     computed during the previous timestep (SW)
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_don > 0) then
+      if (surf_DON_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceDON', surf_DON_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+
+!-----------------------------------------------------------------------
+!  same as above 
+!-----------------------------------------------------------------------
+
+   if (index_o2x_So_donr > 0) then
+      if (surf_DONr_nf_ind == 0) then
+         call named_field_get_index('oceanSurfaceDONr', surf_DONr_nf_ind, &
+                                    exit_on_err=.not. first)
+      endif
+
+      if (avg_ts .or. back_to_back) then
+         delt_last = p5*dtt
+      else
+         delt_last =    dtt
+      endif
+   endif
+
+!-----------------------------------------------------------------------
 !
 !  accumulate sums of U,V,T,S and GRADP
 !  accumulate sum of co2 flux, if requested
@@ -799,6 +1297,98 @@ contains
      minval(WORK(:,:,iblock)), maxval(WORK(:,:,iblock))
 
    endif
+
+   if (index_o2x_So_fed > 0 .and. surf_dFe_nf_ind > 0) then
+      print *,'surf_dFe_nf_ind',surf_dFe_nf_ind
+      call named_field_get(surf_dFe_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_fed) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_fed) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_nh4 > 0 .and. surf_NH4_nf_ind > 0) then
+      print *,'surf_NH4_nf_ind',surf_NH4_nf_ind
+      call named_field_get(surf_NH4_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_nh4) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_nh4) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_no3 > 0 .and. surf_NO3_nf_ind > 0) then
+      print *,'surf_NO3_nf_ind',surf_NO3_nf_ind
+      call named_field_get(surf_NO3_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_no3) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_no3) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_sio3 > 0 .and. surf_SiO3_nf_ind > 0) then
+      print *,'surf_SiO3_nf_ind',surf_SiO3_nf_ind
+      call named_field_get(surf_SiO3_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_sio3) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_sio3) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_dic > 0 .and. surf_DIC_nf_ind > 0) then
+      print *,'surf_DIC_nf_ind',surf_DIC_nf_ind
+      call named_field_get(surf_DIC_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_dic) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_dic) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_doc > 0 .and. surf_DOC_nf_ind > 0) then
+      print *,'surf_DOC_nf_ind',surf_DOC_nf_ind
+      call named_field_get(surf_DOC_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_doc) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_doc) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_don > 0 .and. surf_DON_nf_ind > 0) then
+      print *,'surf_DON_nf_ind',surf_DON_nf_ind
+      call named_field_get(surf_DON_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_don) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_don) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_donr > 0 .and. surf_DONr_nf_ind > 0) then
+      print *,'surf_DONr_nf_ind',surf_DONr_nf_ind
+      call named_field_get(surf_DONr_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_donr) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_donr) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_dms > 0 .and. surf_dms_nf_ind > 0) then
+      print *,'surf_dms_nf_ind',surf_dms_nf_ind
+      call named_field_get(surf_dms_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_dms) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_dms) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_dmsp > 0 .and. surf_dmsp_nf_ind > 0) then
+      print *,'surf_dmsp_nf_ind',surf_dmsp_nf_ind
+      call named_field_get(surf_dmsp_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_dmsp) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_dmsp) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_diat > 0 .and. surf_diat_nf_ind > 0) then
+      print *,'surf_diat_nf_ind',surf_diat_nf_ind
+      call named_field_get(surf_diat_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_diat) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_diat) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_sp > 0 .and. surf_sp_nf_ind > 0) then
+      print *,'surf_sp_nf_ind',surf_sp_nf_ind
+      call named_field_get(surf_sp_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_sp) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_sp) + delt_last*WORK(:,:,iblock)
+   endif
+
+   if (index_o2x_So_phaeo > 0 .and. surf_phaeo_nf_ind > 0) then
+      print *,'surf_phaeo_nf_ind',surf_phaeo_nf_ind
+      call named_field_get(surf_phaeo_nf_ind, iblock, WORK(:,:,iblock))
+      SBUFF_SUM(:,:,iblock,index_o2x_So_phaeo) = &
+         SBUFF_SUM(:,:,iblock,index_o2x_So_phaeo) + delt_last*WORK(:,:,iblock)
+   endif
+
 
    enddo
    !$OMP END PARALLEL DO
