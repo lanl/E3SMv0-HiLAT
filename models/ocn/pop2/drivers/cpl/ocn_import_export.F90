@@ -484,6 +484,8 @@ contains
          n = n + 1
          o2x(index_o2x_So_s,n) =   &
              SBUFF_SUM(i,j,iblock,index_o2x_So_s)*salt_to_ppt/tlast_coupled
+!----- if ocean salinity is negative then send zero:
+         o2x(index_o2x_So_s,n) = max(o2x(index_o2x_So_s,n), c0)
       enddo
       enddo
    enddo
