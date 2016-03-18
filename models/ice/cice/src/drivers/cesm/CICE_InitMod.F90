@@ -147,11 +147,11 @@
 #ifndef coupled
       call get_forcing_atmo     ! atmospheric forcing from data
       call get_forcing_ocn(dt)  ! ocean forcing from data
-!      if (tr_aero) call faero_data          ! aerosols
-      if (tr_aero) call faero_default ! aerosols
+     ! if (tr_aero) call faero_data          ! aerosols
+      if (tr_aero .or. tr_zaero) call faero_default ! aerosols
      ! if (skl_bgc .or. z_tracers) call get_forcing_bgc
-      if (z_tracers) call get_atm_bgc 
      ! if (tr_zaero) call fzaero_data ! zaerosols
+      if (z_tracers) call get_atm_bgc 
 #endif
 
       if (runtype == 'initial' .and. .not. restart) &

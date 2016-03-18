@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_init_column.F90 1106 2016-02-05 18:49:17Z njeffery $
+!  SVN:$Id: ice_init_column.F90 1110 2016-03-08 21:22:20Z njeffery $
 !=========================================================================
 !
 ! Initialization routines for the column package.
@@ -137,6 +137,9 @@
       real(kind= dbl_kind), dimension(ntrcr, ncat) :: &
          ztrcr
 
+      real(kind= dbl_kind), dimension(nbtrcr_sw, ncat) :: &
+         ztrcr_sw
+
       !$OMP PARALLEL DO PRIVATE(iblk,i,j,n,ilo,ihi,jlo,jhi,this_block, &
       !$OMP                     cszn,l_print_point,debug,ipoint)
       do iblk=1,nblocks
@@ -210,6 +213,7 @@
             endif
 
          fbri(:) = c0
+         ztrcr_sw(:,:) = c0
          do n = 1, ncat
            do k = 1, ntrcr
              ztrcr(k,n) = trcrn(i,j,k,n,iblk)
@@ -234,8 +238,8 @@
                           trcrn(i,j,nt_hpnd,:,iblk),                      &
                           trcrn(i,j,nt_ipnd,:,iblk),                      &
                           trcrn(i,j,nt_aero:nt_aero+4*n_aero-1,:,iblk),   &
-                          trcrn_sw(i,j,:,:,iblk),                         &
-                          ztrcr(:,:),                                     &
+                          ztrcr_sw,                                       &
+                          ztrcr,                                          &
                           TLAT(i,j,iblk),        TLON(i,j,iblk),          &
                           calendar_type,         days_per_year,           &
                           nextsw_cday,           yday,                    &
@@ -259,6 +263,18 @@
                           dhsn(i,j,:,iblk),      ffracn(i,j,:,iblk),      &
                           nu_diag,               l_print_point,           &
                           initonly = .true.)
+
+      !-----------------------------------------------------------------
+      ! Define aerosol tracer on shortwave grid
+      !-----------------------------------------------------------------
+
+      if (dEdd_algae .and. (tr_zaero .or. tr_bgc_N)) then
+        do n = 1, ncat
+           do k = 1, nbtrcr_sw
+              trcrn_sw(i,j,k,n,iblk) = ztrcr_sw(k,n)
+           enddo
+        enddo
+      endif
 
       !-----------------------------------------------------------------
       ! Aggregate albedos 
@@ -520,7 +536,7 @@
       if (solve_zsal) then
 
          !$OMP PARALLEL DO PRIVATE(iblk,i,j,n,ilo,ihi,jlo,jhi,this_block)
-         do iblk = 1, max_blocks
+         do iblk = 1, nblocks
 
             this_block = get_block(blocks_ice(iblk),iblk)         
             ilo = this_block%ilo
@@ -550,7 +566,8 @@
 
       if (restart_bgc) then       
      
-         do iblk = 1, max_blocks
+         !$OMP PARALLEL DO PRIVATE(iblk,i,j,n,ilo,ihi,jlo,jhi,this_block)
+         do iblk = 1, nblocks
 
             this_block = get_block(blocks_ice(iblk),iblk)         
             ilo = this_block%ilo
@@ -580,7 +597,8 @@
       !-----------------------------------------------------------------
       ! Initial Ocean Values if not coupled to the ocean bgc
       !-----------------------------------------------------------------
-         do iblk = 1, max_blocks
+         !$OMP PARALLEL DO PRIVATE(iblk,i,j,n,ilo,ihi,jlo,jhi,this_block)
+         do iblk = 1, nblocks
 
             this_block = get_block(blocks_ice(iblk),iblk)         
             ilo = this_block%ilo
@@ -609,7 +627,8 @@
       ! Complete bgc initialization
       !-----------------------------------------------------------------
 
-      do iblk = 1, max_blocks
+      !$OMP PARALLEL DO PRIVATE(iblk,i,j,n,ilo,ihi,jlo,jhi,this_block)
+      do iblk = 1, nblocks
 
          this_block = get_block(blocks_ice(iblk),iblk)         
          ilo = this_block%ilo

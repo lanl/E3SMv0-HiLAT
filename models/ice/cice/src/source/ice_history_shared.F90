@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_shared.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_history_shared.F90 1107 2016-02-15 23:24:14Z eclare $
 !=======================================================================
 !
 ! Output files: netCDF or binary data, Fortran unformatted dumps
@@ -214,6 +214,7 @@
            f_meltb     = 'm', f_meltl      = 'm', &
            f_fresh     = 'm', f_fresh_ai   = 'm', &
            f_fsalt     = 'm', f_fsalt_ai   = 'm', &
+           f_fbot      = 'm', &
            f_fhocn     = 'm', f_fhocn_ai   = 'm', &
            f_fswthru   = 'm', f_fswthru_ai = 'm', &
            f_strairx   = 'm', f_strairy    = 'm', &
@@ -299,6 +300,7 @@
            f_meltb,     f_meltl    , &
            f_fresh,     f_fresh_ai , &  
            f_fsalt,     f_fsalt_ai , &  
+           f_fbot,      &
            f_fhocn,     f_fhocn_ai , &
            f_fswthru,   f_fswthru_ai,&
            f_strairx,   f_strairy  , &
@@ -402,6 +404,7 @@
            n_fresh      , n_fresh_ai   , &
            n_fsalt      , n_fsalt_ai   , &
            n_vsnon      , &
+           n_fbot       , &
            n_fhocn      , n_fhocn_ai   , &
            n_fswthru    , n_fswthru_ai , &
            n_strairx    , n_strairy    , &

@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_step_mod.F90 1106 2016-02-05 18:49:17Z njeffery $
+!  SVN:$Id: ice_step_mod.F90 1110 2016-03-08 21:22:20Z njeffery $
 !=======================================================================
 !
 !  Contains CICE component driver routines common to all drivers.
@@ -38,7 +38,8 @@
       use ice_domain, only: blocks_ice
       use ice_domain_size, only: ncat, nilyr, nslyr
       use ice_flux, only: scale_factor, swvdr, swvdf, swidr, swidf, &
-          alvdr_ai, alvdf_ai, alidr_ai, alidf_ai, fswfac
+          alvdr_ai, alvdf_ai, alidr_ai, alidf_ai, fswfac, &
+          alvdr_init, alvdf_init, alidr_init, alidf_init
       use ice_arrays_column, only: fswsfcn, fswintn, fswthrun, &
            fswpenln, Sswabsn, Iswabsn
       use ice_state, only: aice, aicen
@@ -79,6 +80,11 @@
          do j = jlo, jhi
          do i = ilo, ihi
 
+            alvdr_init(i,j,iblk) = alvdr_ai(i,j,iblk)
+            alvdf_init(i,j,iblk) = alvdf_ai(i,j,iblk)
+            alidr_init(i,j,iblk) = alidr_ai(i,j,iblk)
+            alidf_init(i,j,iblk) = alidf_ai(i,j,iblk)
+
             call colpkg_prep_radiation (ncat, nilyr, nslyr,             &
                         aice    (i,j,    iblk), aicen   (i,j,  :,iblk), &
                         swvdr   (i,j,    iblk), swvdf   (i,j,    iblk), &
@@ -118,7 +124,7 @@
       use ice_domain, only: blocks_ice
       use ice_domain_size, only: ncat, nilyr, nslyr, n_aero
       use ice_fileunits, only: nu_diag
-      use ice_flux, only: frzmlt, sst, Tf, strocnxT, strocnyT, rside, &
+      use ice_flux, only: frzmlt, sst, Tf, strocnxT, strocnyT, rside, fbot, &
           meltsn, melttn, meltbn, congeln, snoicen, uatm, vatm, &
           wind, rhoa, potT, Qa, zlvl, strax, stray, flatn, fsensn, fsurfn, fcondtopn, &
           flw, fsnow, fpond, sss, mlt_onset, frz_onset, &
@@ -278,6 +284,7 @@
                             potT        (i,j,  iblk), sst         (i,j,  iblk), &
                             sss         (i,j,  iblk), Tf          (i,j,  iblk), &
                             strocnxT    (i,j,  iblk), strocnyT    (i,j,  iblk), &
+                            fbot        (i,j,  iblk),                           &
                             frzmlt      (i,j,  iblk), rside       (i,j,  iblk), &
                             fsnow       (i,j,  iblk), frain       (i,j,  iblk), &
                             fpond       (i,j,  iblk),                           &
@@ -709,7 +716,7 @@
 
       ! column package includes
       use ice_colpkg, only: colpkg_step_radiation
-      use ice_colpkg_tracers, only: nt_Tsfc, nt_alvl, &
+      use ice_colpkg_tracers, only: nt_Tsfc, nt_alvl, tr_bgc_N, &
           nt_apnd, nt_hpnd, nt_ipnd, nt_aero, nlt_chl_sw, nlt_zaero_sw, &
           tr_zaero, ntrcr, nbtrcr, nbtrcr_sw, nt_fbri, tr_brine, nt_zaero
       use ice_colpkg_shared, only: dEdd_algae, modal_aero
@@ -735,6 +742,9 @@
 
       real(kind= dbl_kind), dimension(ntrcr, ncat) :: &
          ztrcr
+
+      real(kind= dbl_kind), dimension(nbtrcr_sw, ncat) :: &
+         ztrcr_sw
 
       logical (kind=log_kind) :: &
          debug, &           ! flag for printing debugging information
@@ -763,6 +773,7 @@
             enddo ! ipoint
          endif
          fbri(:) = c0
+         ztrcr_sw(:,:) = c0
          do n = 1, ncat
            do k = 1, ntrcr
              ztrcr(k,n) = trcrn(i,j,k,n,iblk)
@@ -771,14 +782,14 @@
          enddo
 
          if (tmask(i,j,iblk))&
-         call colpkg_step_radiation (dt,       ncat,                      &
+         call colpkg_step_radiation (dt,         ncat,                    &
                           n_algae,   tr_zaero, nblyr,                     &
                           ntrcr,     nbtrcr,   nbtrcr_sw,                 &
-                          nilyr,     nslyr,     n_aero,                   &
-                          n_zaero,             dEdd_algae,                &
-                          nlt_chl_sw,          nlt_zaero_sw,              &
-                          swgrid,              igrid,                     &
-                          fbri,                                           &
+                          nilyr,    nslyr,       n_aero,                  &
+                          n_zaero,  dEdd_algae,  nlt_chl_sw,              &
+                          nlt_zaero_sw(:),                                &
+                          swgrid(:),           igrid(:),                  &
+                          fbri(:),                                        &
                           aicen(i,j,:,iblk),     vicen(i,j,:,iblk),       &
                           vsnon(i,j,:,iblk),                              &
                           trcrn(i,j,nt_Tsfc,:,iblk),                      &
@@ -787,7 +798,7 @@
                           trcrn(i,j,nt_hpnd,:,iblk),                      &
                           trcrn(i,j,nt_ipnd,:,iblk),                      &
                           trcrn(i,j,nt_aero:nt_aero+4*n_aero-1,:,iblk),   &
-                          trcrn_sw(i,j,:,:,iblk),                         &
+                          ztrcr_sw,                                       &
                           ztrcr,                                          &
                           TLAT(i,j,iblk),        TLON(i,j,iblk),          &
                           calendar_type,         days_per_year,           &
@@ -795,9 +806,9 @@
                           sec,                                            &
                           kaer_tab, waer_tab,                             &
                           gaer_tab,                                       &
-                          kaer_bc_tab,           waer_bc_tab,             &
-                          gaer_bc_tab,           bcenh,                   &
-                          modal_aero     ,                                &
+                          kaer_bc_tab(:,:),      waer_bc_tab(:,:),        &
+                          gaer_bc_tab(:,:),      bcenh(:,:,:),            &
+                          modal_aero,                                     &
                           swvdr(i,j,iblk),       swvdf(i,j,iblk),         &
                           swidr(i,j,iblk),       swidf(i,j,iblk),         &
                           coszen(i,j,iblk),      fsnow(i,j,iblk),         &
@@ -808,9 +819,18 @@
                           Sswabsn(i,j,:,:,iblk), Iswabsn(i,j,:,:,iblk),   &
                           albicen(i,j,:,iblk),   albsnon(i,j,:,iblk),     &
                           albpndn(i,j,:,iblk),   apeffn(i,j,:,iblk),      &
-                          snowfracn(i,j,:,iblk), &
+                          snowfracn(i,j,:,iblk),                          &
                           dhsn(i,j,:,iblk),      ffracn(i,j,:,iblk),      &
                           nu_diag,               l_print_point)
+
+      if (dEdd_algae .and. (tr_zaero .or. tr_bgc_N)) then
+        do n = 1, ncat
+           do k = 1, nbtrcr_sw
+              trcrn_sw(i,j,k,n,iblk) = ztrcr_sw(k,n)
+           enddo
+        enddo
+      endif
+
       enddo ! i
       enddo ! j
 
@@ -978,9 +998,10 @@
                            bgrid, igrid, icgrid, cgrid
       use ice_blocks, only: block, get_block
       use ice_calendar, only: istep1
-      use ice_colpkg, only: colpkg_biogeochemistry
-      use ice_colpkg_shared, only: skl_bgc, max_algae, max_nbtrcr
-      use ice_colpkg_tracers, only: tr_brine, nbtrcr, ntrcr, bio_index_o
+      use ice_colpkg, only: colpkg_biogeochemistry, colpkg_init_OceanConcArray
+      use ice_colpkg_shared, only: skl_bgc, max_algae, max_nbtrcr, max_don, &
+                             max_doc, max_dic, max_aero, max_fe
+      use ice_colpkg_tracers, only: tr_brine, nbtrcr, ntrcr, bio_index_o, nlt_zaero
       use ice_diagnostics, only: diagnostic_abort
       use ice_domain, only: blocks_ice
       use ice_domain_size, only: nblyr, nilyr, nslyr, n_algae, n_zaero, ncat, &
@@ -988,7 +1009,8 @@
       use ice_fileunits, only: nu_diag
       use ice_flux, only: meltbn, melttn, congeln, snoicen, &
                           sst, sss, fsnow, meltsn, hmix, salinz
-      use ice_flux_bgc, only: hin_old, flux_bio, flux_bio_atm
+      use ice_flux_bgc, only: hin_old, flux_bio, flux_bio_atm, faero_atm, & 
+          nit, amm, sil, dmsp, dms, algalN, doc, don, dic, fed, fep, zaeros, hum
       use ice_state, only: aicen_init, vicen_init, aicen, vicen, vsnon, &
           trcrn, vsnon_init          
       use ice_timers, only: timer_bgc, ice_timer_start, ice_timer_stop
@@ -1027,9 +1049,25 @@
 
       ! Define ocean concentrations for tracers used in simulation
       do j = jlo, jhi
-      do i = ilo, ihi       
+      do i = ilo, ihi    
+
+         call colpkg_init_OceanConcArray(max_nbtrcr, &
+                max_algae, max_don,  max_doc,        &
+                max_dic,   max_aero, max_fe,         &
+                nit(i,j,  iblk), amm   (i,j,  iblk), &
+                sil(i,j,  iblk), dmsp  (i,j,  iblk), &
+                dms(i,j,  iblk), algalN(i,j,:,iblk), &
+                doc(i,j,:,iblk), don   (i,j,:,iblk), &
+                dic(i,j,:,iblk), fed   (i,j,:,iblk), &
+                fep(i,j,:,iblk), zaeros(i,j,:,iblk), &
+                ocean_bio_all(i,j,:,iblk), &
+                hum(i,j,  iblk))
+        
          do mm = 1,nbtrcr
             ocean_bio(i,j,mm,iblk) = ocean_bio_all(i,j,bio_index_o(mm),iblk)  
+         enddo  ! mm    
+         do mm = 1, n_zaero  ! update aerosols
+            flux_bio_atm(i,j,nlt_zaero(mm),iblk) = faero_atm(i,j,mm,iblk)
          enddo  ! mm
 
          call colpkg_biogeochemistry(dt, ntrcr, nbtrcr,&

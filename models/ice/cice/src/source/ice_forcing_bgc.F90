@@ -384,7 +384,7 @@
       use ice_domain_size, only: n_zaero 
       use ice_colpkg_tracers, only: tr_zaero, nlt_zaero
       use ice_colpkg_shared, only: grid_o_t
-      use ice_flux_bgc, only: flux_bio_atm
+      use ice_flux_bgc, only: flux_bio_atm, faero_atm
 
       !  local variables
 
@@ -414,7 +414,7 @@
       do nn = 1, n_zaero 
          do j = jlo, jhi
          do i = ilo, ihi 
-            flux_bio_atm(i,j,nlt_zaero(nn),iblk) = 1.0e-12_dbl_kind
+            flux_bio_atm(i,j,nlt_zaero(nn),iblk) = faero_atm(i,j,nn,iblk)
          enddo
          enddo
       enddo
@@ -438,9 +438,12 @@
       use ice_colpkg_shared, only: max_aero
       use ice_colpkg_tracers, only: tr_aero
 
-        faero_atm(:,:,1,:) = 1.e-12_dbl_kind  !1.e-15_dbl_kind ! kg/m^2 s
+        faero_atm(:,:,1,:) = 1.e-12_dbl_kind ! kg/m^2 s
         faero_atm(:,:,2,:) = 1.e-13_dbl_kind
-        faero_atm(:,:,3,:) = 1.e-14_dbl_kind  !1.e-11_dbl_kind 
+        faero_atm(:,:,3,:) = 1.e-14_dbl_kind 
+        faero_atm(:,:,4,:) = 1.e-14_dbl_kind 
+        faero_atm(:,:,5,:) = 1.e-14_dbl_kind 
+        faero_atm(:,:,6,:) = 1.e-14_dbl_kind 
 
       end subroutine faero_default
 
@@ -550,7 +553,7 @@
 
       use ice_domain_size, only: n_zaero
       use ice_blocks, only: nx_block, ny_block
-      use ice_flux_bgc, only: flux_bio_atm
+      use ice_flux_bgc, only: faero_atm
       use ice_forcing, only: interp_coeff_monthly, read_clim_data_nc, interpolate_data
       use ice_constants, only: c0, field_type_scalar, field_loc_center
       use ice_colpkg_tracers, only: nlt_zaero
@@ -616,9 +619,9 @@
                               field_loc_center, field_type_scalar)
 
 
-      call interpolate_data (aero_data, flux_bio_atm(:,:,nlt_zaero(1),:)) ! kg/m^2/s
+      call interpolate_data (aero_data, faero_atm(:,:,nlt_zaero(1),:)) ! kg/m^2/s
 
-      where (flux_bio_atm(:,:,nlt_zaero(1),:) > 1.e20) flux_bio_atm(:,:,nlt_zaero(1),:) = c0
+      where (faero_atm(:,:,nlt_zaero(1),:) > 1.e20) faero_atm(:,:,nlt_zaero(1),:) = c0
 
 #endif
 

@@ -324,7 +324,7 @@ if (defined $opts{'ntr_aero'}) {
     if ($cice_mode eq 'prescribed') {
         $cfg_ref->set('ntr_aero', 0);
     } else {
-        $cfg_ref->set('ntr_aero', 3);
+        $cfg_ref->set('ntr_aero', 0);
     }
 }
 
@@ -355,7 +355,7 @@ if (defined $opts{'trlvl'}) {
 if (defined $opts{'trbri'}) {
     $cfg_ref->set('trbri', $opts{'trbri'});
 } else {
-    $cfg_ref->set('trbri', 0);
+    $cfg_ref->set('trbri', 1);
 }
 
 #BGC
@@ -365,7 +365,7 @@ if (defined $opts{'nbgclyr'}) {
     if ($cice_mode eq 'prescribed') {
 	$cfg_ref->set('nbgclyr', 0);
     } else {
-	$cfg_ref->set('nbgclyr', 3);
+	$cfg_ref->set('nbgclyr', 7);
     }
 }
 
@@ -378,7 +378,7 @@ if (defined $opts{'trbgcs'}) {
 if (defined $opts{'trbgcz'}) {
     $cfg_ref->set('trbgcz', $opts{'trbgcz'});
 } else {
-    $cfg_ref->set('trbgcz', 0);
+    $cfg_ref->set('trbgcz', 1);
 }
 
 if (defined $opts{'trzs'}) {
@@ -390,19 +390,19 @@ if (defined $opts{'trzs'}) {
 if (defined $opts{'trzaero'}) {
     $cfg_ref->set('trzaero', $opts{'trzaero'});
 } else {
-    $cfg_ref->set('trzaero', 0);
+    $cfg_ref->set('trzaero', 3);
 }
 
 if (defined $opts{'tralg'}) {
     $cfg_ref->set('tralg', $opts{'tralg'});
 } else {
-    $cfg_ref->set('tralg', 0);
+    $cfg_ref->set('tralg', 3);
 }
 
 if (defined $opts{'trdoc'}) {
     $cfg_ref->set('trdoc', $opts{'trdoc'});
 } else {
-    $cfg_ref->set('trdoc', 0);
+    $cfg_ref->set('trdoc', 2);
 }
 
 if (defined $opts{'trdic'}) {
@@ -414,19 +414,19 @@ if (defined $opts{'trdic'}) {
 if (defined $opts{'trdon'}) {
     $cfg_ref->set('trdon', $opts{'trdon'});
 } else {
-    $cfg_ref->set('trdon', 0);
+    $cfg_ref->set('trdon', 1);
 }
 
 if (defined $opts{'trfep'}) {
     $cfg_ref->set('trfep', $opts{'trfep'});
 } else {
-    $cfg_ref->set('trfep', 0);
+    $cfg_ref->set('trfep', 1);
 }
 
 if (defined $opts{'trfed'}) {
     $cfg_ref->set('trfed', $opts{'trfed'});
 } else {
-    $cfg_ref->set('trfed', 0);
+    $cfg_ref->set('trfed', 1);
 }
 
 #-----------------------------------------------------------------------------------------------

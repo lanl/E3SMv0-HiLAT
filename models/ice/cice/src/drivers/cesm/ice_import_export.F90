@@ -7,7 +7,7 @@ module ice_import_export
   use ice_constants     , only: field_loc_center, field_type_scalar
   use ice_constants     , only: field_type_vector, c100
   use ice_constants     , only: vonkar, zref, iceruf
-  use ice_constants     , only: p001
+  use ice_constants     , only: p001, p5
   use ice_blocks        , only: block, get_block, nx_block, ny_block
   use ice_flux          , only: strairxt, strairyt, strocnxt, strocnyt           
   use ice_flux          , only: alvdr, alidr, alvdf, alidf, Tref, Qref, Uref
@@ -16,11 +16,15 @@ module ice_import_export
   use ice_flux          , only: rhoa, swvdr, swvdf, swidr, swidf, flw, frain
   use ice_flux          , only: fsnow, uocn, vocn, sst, ss_tltx, ss_tlty, frzmlt
   use ice_flux          , only: sss, tf, wind, fsw, init_flux_atm, init_flux_ocn
-  use ice_flux_bgc      , only: faero_atm
-  use ice_colpkg_shared , only: tfrz_option
+  use ice_flux_bgc      , only: faero_atm, flux_bio_atm, nit, amm, sil, dmsp, &
+                          dms, hum, algalN, doc, don, dic, fed, fep, zaeros, &
+                          falgalN, fdoc, fdon, fnit, famm, fsil, fdmsp, fdms, &
+                          fhum, ffed, ffep, fdust
+  use ice_colpkg_shared , only: tfrz_option, modal_aero, z_tracers, skl_bgc
   use ice_arrays_column , only: Cdn_atm
   use ice_state         , only: vice, vsno, aice, trcr
-  use ice_colpkg_tracers, only: tr_aero, tr_iage, tr_FY, tr_pond, tr_lvl 
+  use ice_colpkg_tracers, only: tr_aero, tr_iage, tr_FY, tr_pond, tr_lvl, tr_zaero, tr_bgc_Nit 
+  use ice_colpkg_shared , only: R_C2N
   use ice_domain        , only: nblocks, blocks_ice, halo_info, distrb_info
   use ice_domain_size   , only: nx_global, ny_global, block_size_x, block_size_y, max_blocks
   use ice_grid          , only: tlon, tlat, tarea, tmask, anglet, hm
@@ -56,7 +60,7 @@ contains
     integer     :: i, j, iblk, n
     integer     :: ilo, ihi, jlo, jhi !beginning and end of physical domain
     type(block) :: this_block         ! block information for current block
-    integer,parameter                :: nflds=15,nfldv=6
+    integer,parameter                :: nflds=15,nfldv=6,nfldb=27
     real (kind=dbl_kind),allocatable :: aflds(:,:,:,:)
     real (kind=dbl_kind)             :: workx, worky
     real (kind=dbl_kind) :: MIN_RAIN_TEMP, MAX_SNOW_TEMP 
@@ -220,6 +224,9 @@ contains
     ! Set aerosols from coupler 
     !-------------------------------------------------------
 
+    allocate(aflds(nx_block,ny_block,nfldb,nblocks))
+    aflds = c0
+
     n=0
     do iblk = 1, nblocks
        this_block = get_block(blocks_ice(iblk),iblk)         
@@ -232,29 +239,120 @@ contains
           do i = ilo, ihi
 
              n = n+1
-             faero_atm(i,j,1,iblk) = x2i(index_x2i_Faxa_bcphodry,n)
+             if (tr_aero .or. tr_zaero) then
+                if (modal_aero) then
 
-             faero_atm(i,j,2,iblk) = x2i(index_x2i_Faxa_bcphidry,n) &
-                  + x2i(index_x2i_Faxa_bcphiwet,n)
-             ! Combine all of the dust into one category
-             faero_atm(i,j,3,iblk) = x2i(index_x2i_Faxa_dstwet1,n) &
-                  + x2i(index_x2i_Faxa_dstdry1,n) &
-                  + x2i(index_x2i_Faxa_dstwet2,n) &
-                  + x2i(index_x2i_Faxa_dstdry2,n) &
-                  + x2i(index_x2i_Faxa_dstwet3,n) &
-                  + x2i(index_x2i_Faxa_dstdry3,n) &
-                  + x2i(index_x2i_Faxa_dstwet4,n) &
-                  + x2i(index_x2i_Faxa_dstdry4,n)
+                   ! BC species 1 (=intersitial/external BC)
+                   aflds(i,j,1,iblk) = x2i(index_x2i_Faxa_bcphodry,n) &
+                              + x2i(index_x2i_Faxa_bcphidry,n)
 
+                   ! BC species 2 (=cloud_water/within-ice BC)
+                   aflds(i,j,2,iblk) = x2i(index_x2i_Faxa_bcphiwet,n)
+
+                   ! Combine all of the dust into one category
+                   aflds(i,j,3,iblk) = x2i(index_x2i_Faxa_dstwet1,n) &
+                              + x2i(index_x2i_Faxa_dstdry1,n) &
+                              + x2i(index_x2i_Faxa_dstwet2,n) &
+                              + x2i(index_x2i_Faxa_dstdry2,n) &
+                              + x2i(index_x2i_Faxa_dstwet3,n) &
+                              + x2i(index_x2i_Faxa_dstdry3,n) &
+                              + x2i(index_x2i_Faxa_dstwet4,n) &
+                              + x2i(index_x2i_Faxa_dstdry4,n)
+                else
+                   aflds(i,j,1,iblk) = x2i(index_x2i_Faxa_bcphodry,n)
+
+                   aflds(i,j,2,iblk) = x2i(index_x2i_Faxa_bcphidry,n) &
+                              + x2i(index_x2i_Faxa_bcphiwet,n)
+                   ! Combine all of the dust into one category
+                   aflds(i,j,3,iblk) = x2i(index_x2i_Faxa_dstwet1,n) &
+                              + x2i(index_x2i_Faxa_dstdry1,n) &
+                              + x2i(index_x2i_Faxa_dstwet2,n) &
+                              + x2i(index_x2i_Faxa_dstdry2,n) &
+                              + x2i(index_x2i_Faxa_dstwet3,n) &
+                              + x2i(index_x2i_Faxa_dstdry3,n) &
+                              + x2i(index_x2i_Faxa_dstwet4,n) &
+                              + x2i(index_x2i_Faxa_dstdry4,n)
+                endif
+             endif
+             if ((z_tracers .and. tr_bgc_Nit) .or. skl_bgc) then       
+                aflds(i,j,4,iblk)      = x2i(index_x2i_So_diat, n)
+                aflds(i,j,5,iblk)      = x2i(index_x2i_So_sp, n)
+                aflds(i,j,6,iblk)      = x2i(index_x2i_So_phaeo, n)
+                aflds(i,j,7,iblk)      = x2i(index_x2i_So_doc, n) * p5 ! split evenly for now
+                aflds(i,j,8,iblk)      = x2i(index_x2i_So_doc, n) * p5 !x2i(index_x2i_So_doc2, n)
+                aflds(i,j,9,iblk)      = c0
+                aflds(i,j,10,iblk)     = c0  !x2i(index_x2i_So_dic, n) 
+                aflds(i,j,11,iblk)     = x2i(index_x2i_So_don, n)
+                aflds(i,j,12,iblk)     = x2i(index_x2i_So_no3, n)
+                aflds(i,j,13,iblk)     = x2i(index_x2i_So_sio3, n)
+                aflds(i,j,14,iblk)     = x2i(index_x2i_So_nh4, n)
+                aflds(i,j,15,iblk)     = x2i(index_x2i_So_dms, n)
+                aflds(i,j,16,iblk)     = x2i(index_x2i_So_dmsp, n)
+                aflds(i,j,17,iblk)     = x2i(index_x2i_So_donr, n)
+                aflds(i,j,18,iblk)     = c0 !x2i(index_x2i_So_fep1, n)
+                aflds(i,j,19,iblk)     = c0 !x2i(index_x2i_So_fep2, n)
+                aflds(i,j,20,iblk)     = x2i(index_x2i_So_fed, n)
+                aflds(i,j,21,iblk)     = c0 !x2i(index_x2i_So_fed2, n)
+                aflds(i,j,22,iblk)     = c0 !x2i(index_x2i_So_zaer1, n) 
+                aflds(i,j,23,iblk)     = c0 !x2i(index_x2i_So_zaer2, n) 
+                aflds(i,j,24,iblk)     = c0 !x2i(index_x2i_So_zaer3, n) 
+                aflds(i,j,25,iblk)     = c0 !x2i(index_x2i_So_zaer4, n) 
+                aflds(i,j,26,iblk)     = c0 !x2i(index_x2i_So_zaer5, n) 
+                aflds(i,j,27,iblk)     = c0 !x2i(index_x2i_So_zaer6, n) 
+             endif
+          enddo
+       enddo
+    enddo
+
+    if (.not.prescribed_ice) then
+       call t_startf ('cice_imp_halo')
+       call ice_HaloUpdate(aflds, halo_info, field_loc_center, &
+            field_type_scalar)
+       call t_stopf ('cice_imp_halo')
+    endif
+
+    !$OMP PARALLEL DO PRIVATE(iblk,i,j)
+    do iblk = 1, nblocks
+       do j = 1,ny_block
+          do i = 1,nx_block
+                faero_atm(i,j,1,iblk) = aflds(i,j,1,iblk)
+                faero_atm(i,j,2,iblk) = aflds(i,j,2,iblk)
+                faero_atm(i,j,3,iblk) = aflds(i,j,3,iblk)    
+                algalN(i,j,1,iblk)    = aflds(i,j,4,iblk)    
+                algalN(i,j,2,iblk)    = aflds(i,j,5,iblk)
+                algalN(i,j,3,iblk)    = aflds(i,j,6,iblk)
+                doc(i,j,1,iblk)       = aflds(i,j,7,iblk)
+                doc(i,j,2,iblk)       = aflds(i,j,8,iblk)
+                doc(i,j,3,iblk)       = aflds(i,j,9,iblk)
+                dic(i,j,1,iblk)       = aflds(i,j,10,iblk)
+                don(i,j,1,iblk)       = aflds(i,j,11,iblk)
+                nit(i,j,iblk)         = aflds(i,j,12,iblk)
+                sil(i,j,iblk)         = aflds(i,j,13,iblk)
+                amm(i,j,iblk)         = aflds(i,j,14,iblk)
+                dms(i,j,iblk)         = aflds(i,j,15,iblk)
+                dmsp(i,j,iblk)        = aflds(i,j,16,iblk)
+                hum(i,j,iblk)         = aflds(i,j,17,iblk)
+                fep(i,j,1,iblk)       = aflds(i,j,18,iblk)
+                fep(i,j,2,iblk)       = aflds(i,j,19,iblk)
+                fed(i,j,1,iblk)       = aflds(i,j,20,iblk)
+                fed(i,j,2,iblk)       = aflds(i,j,21,iblk)
+                zaeros(i,j,1,iblk)    = aflds(i,j,22,iblk)
+                zaeros(i,j,2,iblk)    = aflds(i,j,23,iblk)
+                zaeros(i,j,3,iblk)    = aflds(i,j,24,iblk)
+                zaeros(i,j,4,iblk)    = aflds(i,j,25,iblk)
+                zaeros(i,j,5,iblk)    = aflds(i,j,26,iblk)
+                zaeros(i,j,6,iblk)    = aflds(i,j,27,iblk)
           enddo    !i
        enddo    !j
-
     enddo        !iblk
+    !$OMP END PARALLEL DO
 
+    deallocate(aflds)
 
     !-----------------------------------------------------------------
     ! rotate zonal/meridional vectors to local coordinates
     ! compute data derived quantities
+    ! unit conversions
     !-----------------------------------------------------------------
 
     ! Vector fields come in on T grid, but are oriented geographically
@@ -306,7 +404,18 @@ contains
                 write(nu_diag,*) subname,' ERROR: unknown tfrz_option = ',trim(tfrz_option)
                 call shr_sys_abort(subname//' ERROR: unknown tfrz_option = '//trim(tfrz_option))
              endif
+             ! convert from mmol C/m^3 to mmol N/m^3
 
+             algalN(i,j,1,iblk)    = algalN(i,j,1,iblk)/R_C2N(1)
+             algalN(i,j,2,iblk)    = algalN(i,j,2,iblk)/R_C2N(2)
+             algalN(i,j,3,iblk)    = algalN(i,j,3,iblk)/R_C2N(3)
+
+             ! convert from mmol Fe/m^3 to umol Fe/m^3
+
+             fep(i,j,1,iblk)       = fep(i,j,1,iblk) * 1000.0_dbl_kind
+             fep(i,j,2,iblk)       = fep(i,j,2,iblk) * 1000.0_dbl_kind
+             fed(i,j,1,iblk)       = fed(i,j,1,iblk) * 1000.0_dbl_kind
+             fed(i,j,2,iblk)       = fed(i,j,2,iblk) * 1000.0_dbl_kind
           enddo
        enddo
     enddo
@@ -510,7 +619,31 @@ contains
                 i2x(index_i2x_Fioi_salt ,n)   = fsalt(i,j,iblk)   ! salt flux from melting   ???
                 i2x(index_i2x_Fioi_taux ,n)   = tauxo(i,j,iblk)   ! stress : i/o zonal       ???
                 i2x(index_i2x_Fioi_tauy ,n)   = tauyo(i,j,iblk)   ! stress : i/o meridional  ???
-             end if
+
+                ! export biogeochemistry fields, if configured
+                ! convert from mmol N/m^3 to mmol C/m^3
+                i2x(index_i2x_Fioi_diat,n) = falgalN(i,j,1,iblk) * R_C2N(1)
+                i2x(index_i2x_Fioi_sp,n) = falgalN(i,j,2,iblk) * R_C2N(2)
+                i2x(index_i2x_Fioi_phaeo,n) = falgalN(i,j,3,iblk) * R_C2N(3)
+                i2x(index_i2x_Fioi_doc   ,n) = fdoc(i,j,1,iblk) + fdoc(i,j,2,iblk)  
+                i2x(index_i2x_Fioi_doc2  ,n) = c0 !fdoc(i,j,2,iblk) 
+                i2x(index_i2x_Fioi_doc3  ,n) = c0 !fdoc(i,j,3,iblk)
+                i2x(index_i2x_Fioi_dic   ,n) = c0 !fdic(i,j,1,iblk)
+                i2x(index_i2x_Fioi_don   ,n) = fdon(i,j,1,iblk) 
+                i2x(index_i2x_Fioi_no3   ,n) = fnit(i,j,iblk)      
+                i2x(index_i2x_Fioi_sio3  ,n) = fsil(i,j,iblk)      
+                i2x(index_i2x_Fioi_nh4   ,n) = famm(i,j,iblk)       
+                i2x(index_i2x_Fioi_dms   ,n) = fdms(i,j,iblk)  
+                i2x(index_i2x_Fioi_dmspp ,n) = c0                 
+                i2x(index_i2x_Fioi_dmsp  ,n) = fdmsp(i,j,iblk)   
+                i2x(index_i2x_Fioi_donr  ,n) = fhum(i,j,iblk)    
+                ! convert from umol Fe/m^3 to mmol Fe/m^3
+                i2x(index_i2x_Fioi_fep1  ,n) = c0 !ffep(i,j,1,iblk) / 1000.0_dbl_kind
+                i2x(index_i2x_Fioi_fep2  ,n) = c0 !ffep(i,j,2,iblk) / 1000.0_dbl_kind
+                i2x(index_i2x_Fioi_fed   ,n) = ffed(i,j,1,iblk) / 1000.0_dbl_kind
+                i2x(index_i2x_Fioi_fed2  ,n) = c0 !ffed(i,j,2,iblk) / 1000.0_dbl_kind
+                i2x(index_i2x_Fioi_dust  ,n) = fdust(i,j,iblk)
+            endif
           enddo    !i
        enddo    !j
     enddo        !iblk

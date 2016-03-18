@@ -35,6 +35,29 @@ module ice_cpl_indices
   integer :: index_i2x_Fioi_taux       ! ice/ocn stress, zonal
   integer :: index_i2x_Fioi_tauy       ! ice/ocn stress, zonal
 
+  ! ice -> drv (BGC)
+
+  integer :: index_i2x_Fioi_diat       ! ice diatoms
+  integer :: index_i2x_Fioi_sp         ! ice flagellates
+  integer :: index_i2x_Fioi_phaeo      ! ice Phaeocystis
+  integer :: index_i2x_Fioi_doc        ! ice DOC -- saccharids
+  integer :: index_i2x_Fioi_doc2       ! ice DOC -- lipids
+  integer :: index_i2x_Fioi_doc3       ! ice DOC
+  integer :: index_i2x_Fioi_dic        ! ice DIC
+  integer :: index_i2x_Fioi_don        ! ice DON -- proteins
+  integer :: index_i2x_Fioi_no3        ! ice nitrate
+  integer :: index_i2x_Fioi_sio3       ! ice silicate
+  integer :: index_i2x_Fioi_nh4        ! ice ammonium
+  integer :: index_i2x_Fioi_dms        ! ice DMS
+  integer :: index_i2x_Fioi_dmspp      ! ice DMSP -- particulate
+  integer :: index_i2x_Fioi_dmsp       ! ice DMSP -- dissolved
+  integer :: index_i2x_Fioi_donr       ! ice humics -- refractory DOC
+  integer :: index_i2x_Fioi_fep1       ! ice iron -- particulate
+  integer :: index_i2x_Fioi_fep2       ! ice iron -- particulate
+  integer :: index_i2x_Fioi_fed        ! ice iron -- dissolved
+  integer :: index_i2x_Fioi_fed2       ! ice iron -- dissolved
+  integer :: index_i2x_Fioi_dust       ! ice dust -- total (1+2+3+4)
+
   ! drv -> ice
 
   integer :: index_x2i_So_t            ! ocn layer temperature
@@ -75,6 +98,33 @@ module ice_cpl_indices
   integer :: index_x2i_Faxa_dstdry3    ! flux: Size 3 dust -- dry deposition
   integer :: index_x2i_Faxa_dstdry4    ! flux: Size 4 dust -- dry deposition
 
+  ! drv -> ice (BGC)
+
+  integer :: index_x2i_So_diat         ! ocn diatoms
+  integer :: index_x2i_So_sp           ! ocn flagellates
+  integer :: index_x2i_So_phaeo        ! ocn Phaeocystis
+  integer :: index_x2i_So_doc          ! ocn DOC -- saccharids
+  integer :: index_x2i_So_doc2         ! ocn DOC -- lipids
+  integer :: index_x2i_So_doc3         ! ocn DOC
+  integer :: index_x2i_So_dic          ! ocn DIC
+  integer :: index_x2i_So_don          ! ocn DON -- proteins and amino acids
+  integer :: index_x2i_So_no3          ! ocn nitrate
+  integer :: index_x2i_So_sio3         ! ocn silicate
+  integer :: index_x2i_So_nh4          ! ocn ammonium
+  integer :: index_x2i_So_dms          ! ocn DMS
+  integer :: index_x2i_So_dmsp         ! ocn DMSP -- dissolved
+  integer :: index_x2i_So_donr         ! ocn humics -- refractory DOC
+  integer :: index_x2i_So_fep1         ! ocn particulate iron
+  integer :: index_x2i_So_fep2         ! ocn particulate iron
+  integer :: index_x2i_So_fed          ! ocn dissolved iron
+  integer :: index_x2i_So_fed2         ! ocn dissolved iron
+  integer :: index_x2i_So_zaer1        ! ocn aerosol (Black Carbon 1)
+  integer :: index_x2i_So_zaer2        ! ocn aerosol (Black Carbon 2)
+  integer :: index_x2i_So_zaer3        ! ocn aerosol (dust 1)
+  integer :: index_x2i_So_zaer4        ! ocn aerosol (dust 2)
+  integer :: index_x2i_So_zaer5        ! ocn aerosol (dust 3)
+  integer :: index_x2i_So_zaer6        ! ocn aerosol (dust 4)
+
 contains
 
   subroutine ice_cpl_indices_set( )
@@ -113,6 +163,27 @@ contains
     index_i2x_Fioi_taux     = mct_avect_indexra(i2x,'Fioi_taux')
     index_i2x_Fioi_tauy     = mct_avect_indexra(i2x,'Fioi_tauy')
 
+    index_i2x_Fioi_diat     = mct_avect_indexra(i2x,'Fioi_diat',perrWith='quiet') !optional
+    index_i2x_Fioi_sp       = mct_avect_indexra(i2x,'Fioi_sp',perrWith='quiet')
+    index_i2x_Fioi_phaeo    = mct_avect_indexra(i2x,'Fioi_phaeo',perrWith='quiet')
+    index_i2x_Fioi_doc      = mct_avect_indexra(i2x,'Fioi_doc',perrWith='quiet')
+    index_i2x_Fioi_doc2     = mct_avect_indexra(i2x,'Fioi_doc2',perrWith='quiet')
+    index_i2x_Fioi_doc3     = mct_avect_indexra(i2x,'Fioi_doc3',perrWith='quiet')
+    index_i2x_Fioi_dic      = mct_avect_indexra(i2x,'Fioi_dic',perrWith='quiet')
+    index_i2x_Fioi_don      = mct_avect_indexra(i2x,'Fioi_don',perrWith='quiet')
+    index_i2x_Fioi_no3      = mct_avect_indexra(i2x,'Fioi_no3',perrWith='quiet')
+    index_i2x_Fioi_sio3     = mct_avect_indexra(i2x,'Fioi_sio3',perrWith='quiet')
+    index_i2x_Fioi_nh4      = mct_avect_indexra(i2x,'Fioi_nh4',perrWith='quiet')
+    index_i2x_Fioi_dms      = mct_avect_indexra(i2x,'Fioi_dms',perrWith='quiet')
+    index_i2x_Fioi_dmspp    = mct_avect_indexra(i2x,'Fioi_dmspp',perrWith='quiet')
+    index_i2x_Fioi_dmsp     = mct_avect_indexra(i2x,'Fioi_dmsp',perrWith='quiet')
+    index_i2x_Fioi_donr     = mct_avect_indexra(i2x,'Fioi_donr',perrWith='quiet')
+    index_i2x_Fioi_fep1     = mct_avect_indexra(i2x,'Fioi_fep1',perrWith='quiet')
+    index_i2x_Fioi_fep2     = mct_avect_indexra(i2x,'Fioi_fep2',perrWith='quiet')
+    index_i2x_Fioi_fed      = mct_avect_indexra(i2x,'Fioi_fed',perrWith='quiet')
+    index_i2x_Fioi_fed2     = mct_avect_indexra(i2x,'Fioi_fed2',perrWith='quiet')
+    index_i2x_Fioi_dust     = mct_avect_indexra(i2x,'Fioi_dust',perrWith='quiet')
+
     index_x2i_So_t          = mct_avect_indexra(x2i,'So_t')
     index_x2i_So_s          = mct_avect_indexra(x2i,'So_s')
     index_x2i_So_u          = mct_avect_indexra(x2i,'So_u')
@@ -149,6 +220,31 @@ contains
     index_x2i_Faxa_dstwet2  = mct_avect_indexra(x2i,'Faxa_dstwet2')
     index_x2i_Faxa_dstwet3  = mct_avect_indexra(x2i,'Faxa_dstwet3')
     index_x2i_Faxa_dstwet4  = mct_avect_indexra(x2i,'Faxa_dstwet4')
+
+    index_x2i_So_diat       = mct_avect_indexra(x2i,'So_diat',perrWith='quiet')
+    index_x2i_So_sp         = mct_avect_indexra(x2i,'So_sp',perrWith='quiet')
+    index_x2i_So_phaeo      = mct_avect_indexra(x2i,'So_phaeo',perrWith='quiet')
+    index_x2i_So_doc        = mct_avect_indexra(x2i,'So_doc',perrWith='quiet')
+    index_x2i_So_doc2       = mct_avect_indexra(x2i,'So_doc2',perrWith='quiet')
+    index_x2i_So_doc3       = mct_avect_indexra(x2i,'So_doc3',perrWith='quiet')
+    index_x2i_So_dic        = mct_avect_indexra(x2i,'So_dic',perrWith='quiet')
+    index_x2i_So_don        = mct_avect_indexra(x2i,'So_don',perrWith='quiet')
+    index_x2i_So_no3        = mct_avect_indexra(x2i,'So_no3',perrWith='quiet')
+    index_x2i_So_sio3       = mct_avect_indexra(x2i,'So_sio3',perrWith='quiet')
+    index_x2i_So_nh4        = mct_avect_indexra(x2i,'So_nh4',perrWith='quiet')
+    index_x2i_So_dms        = mct_avect_indexra(x2i,'So_dms',perrWith='quiet')
+    index_x2i_So_dmsp       = mct_avect_indexra(x2i,'So_dmsp',perrWith='quiet')
+    index_x2i_So_donr       = mct_avect_indexra(x2i,'So_donr',perrWith='quiet')
+    index_x2i_So_fep1       = mct_avect_indexra(x2i,'So_fep1',perrWith='quiet')
+    index_x2i_So_fep2       = mct_avect_indexra(x2i,'So_fep2',perrWith='quiet')
+    index_x2i_So_fed        = mct_avect_indexra(x2i,'So_fed',perrWith='quiet')
+    index_x2i_So_fed2       = mct_avect_indexra(x2i,'So_fed2',perrWith='quiet')
+    index_x2i_So_zaer1      = mct_avect_indexra(x2i,'So_zaer1',perrWith='quiet')
+    index_x2i_So_zaer2      = mct_avect_indexra(x2i,'So_zaer2',perrWith='quiet')
+    index_x2i_So_zaer3      = mct_avect_indexra(x2i,'So_zaer3',perrWith='quiet')
+    index_x2i_So_zaer4      = mct_avect_indexra(x2i,'So_zaer4',perrWith='quiet')
+    index_x2i_So_zaer5      = mct_avect_indexra(x2i,'So_zaer5',perrWith='quiet')
+    index_x2i_So_zaer6      = mct_avect_indexra(x2i,'So_zaer6',perrWith='quiet')
 
     call mct_aVect_clean(x2i)
     call mct_aVect_clean(i2x)

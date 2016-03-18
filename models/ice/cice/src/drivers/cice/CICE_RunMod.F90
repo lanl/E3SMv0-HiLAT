@@ -79,8 +79,8 @@
          ! if (tr_aero) call faero_data       ! aerosols
          if (tr_aero .or. tr_zaero)  call faero_default     ! aerosols
          if (skl_bgc .or. z_tracers) call get_forcing_bgc  ! biogeochemistry
-         if (z_tracers) call get_atm_bgc      ! biogeochemistry
          !if (tr_zaero)  call fzaero_data      ! zaerosols, gx1
+         if (z_tracers)  call get_atm_bgc      ! biogeochemistry
          call ice_timer_stop(timer_couple)    ! atm/ocn coupling
 #endif
 

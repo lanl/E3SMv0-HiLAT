@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_history.F90 1107 2016-02-15 23:24:14Z eclare $
 !=======================================================================
 
 ! Driver for core history output
@@ -264,6 +264,7 @@
       call broadcast_scalar (f_fresh_ai, master_task)
       call broadcast_scalar (f_fsalt, master_task)
       call broadcast_scalar (f_fsalt_ai, master_task)
+      call broadcast_scalar (f_fbot, master_task)
       call broadcast_scalar (f_fhocn, master_task)
       call broadcast_scalar (f_fhocn_ai, master_task)
       call broadcast_scalar (f_fswthru, master_task)
@@ -650,13 +651,18 @@
              "weighted by ice area", c1, c0,                                  &
              ns1, f_fsalt_ai)
       
+         call define_hist_field(n_fbot,"fbot","W/m^2",tstr2D, tcstr, &
+             "heat flux ice to ocean (fbot)",                        &
+             "if positive, ocean gains heat", c1, c0,                &
+             ns1, f_fbot)
+      
          call define_hist_field(n_fhocn,"fhocn","W/m^2",tstr2D, tcstr, &
              "heat flux ice to ocn (cpl)",                           &
              "if positive, ocean gains heat", c1, c0,                &
              ns1, f_fhocn)
       
          call define_hist_field(n_fhocn_ai,"fhocn_ai","W/m^2",tstr2D, tcstr, &
-             "heat flux ice to ocean",                                     &
+             "heat flux ice to ocean (fhocn_ai)",                          &
              "weighted by ice area", c1, c0,                               &
              ns1, f_fhocn_ai)
       
@@ -1167,7 +1173,7 @@
           albice, albsno, albpnd, coszen, flat, fsens, flwout, evap, &
           Tair, Tref, Qref, congel, frazil, snoice, dsnow, &
           melts, meltb, meltt, meltl, fresh, fsalt, fresh_ai, fsalt_ai, &
-          fhocn, fhocn_ai, uatm, vatm, &
+          fhocn, fhocn_ai, uatm, vatm, fbot, &
           fswthru_ai, strairx, strairy, strtltx, strtlty, strintx, strinty, &
           strocnx, strocny, fm, daidtt, dvidtt, daidtd, dvidtd, fsurf, &
           fcondtop, fsurfn, fcondtopn, flatn, fsensn, albcnt, prs_sig, &
@@ -1444,6 +1450,8 @@
          if (f_fsalt_ai(1:1)/= 'x') &
              call accum_hist_field(n_fsalt_ai,iblk, fsalt_ai(:,:,iblk), a2D)
 
+         if (f_fbot(1:1)/= 'x') &
+             call accum_hist_field(n_fbot,iblk, fbot(:,:,iblk), a2D)
          if (f_fhocn  (1:1) /= 'x') &
              call accum_hist_field(n_fhocn,   iblk, fhocn(:,:,iblk), a2D)
          if (f_fhocn_ai(1:1)/= 'x') &

@@ -564,6 +564,7 @@
 
             if (z_tracers) then                   !  z_bgc
                call broadcast_array (pN_tot           (n,:),   pmloc(n))    
+               call broadcast_array (pflux_zaero      (n,:),   pmloc(n)) 
                call broadcast_array (pflux_atm_zaero_s(n,:),   pmloc(n)) 
                call broadcast_array (pflux_atm_zaero  (n,:),   pmloc(n)) 
                call broadcast_array (pflux_snow_zaero (n,:),   pmloc(n))

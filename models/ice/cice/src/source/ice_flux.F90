@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_flux.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_flux.F90 1108 2016-03-07 18:42:44Z njeffery $
 !=======================================================================
 
 ! Flux variable declarations; these include fields sent from the coupler
@@ -183,11 +183,16 @@
          alvdf_ai, & ! visible, diffuse  (fraction)
          alidf_ai, & ! near-ir, diffuse  (fraction)
          ! components for history
-         albice   , & ! bare ice albedo
-         albsno   , & ! snow albedo
-         albpnd   , & ! melt pond albedo
-         apeff_ai , & ! effective pond area used for radiation calculation
-         snowfrac     ! snow fraction used in radiation
+         albice    , & ! bare ice albedo
+         albsno    , & ! snow albedo
+         albpnd    , & ! melt pond albedo
+         apeff_ai  , & ! effective pond area used for radiation calculation
+         snowfrac  , & ! snow fraction used in radiation
+         ! components for diagnostic
+         alvdr_init, & ! visible, direct   (fraction)
+         alidr_init, & ! near-ir, direct   (fraction)
+         alvdf_init, & ! visible, diffuse  (fraction)
+         alidf_init    ! near-ir, diffuse  (fraction)
 
       real (kind=dbl_kind), &
          dimension(nx_block,ny_block,max_blocks,max_nstrm), public :: &
@@ -248,6 +253,7 @@
       real (kind=dbl_kind), dimension (nx_block,ny_block,max_blocks), public :: &
          fsurf , & ! net surface heat flux (excluding fcondtop)(W/m^2)
          fcondtop,&! top surface conductive flux        (W/m^2)
+         fbot,   & ! heat flux at bottom surface of ice (excluding excess) (W/m^2)
          congel, & ! basal ice growth         (m/step-->cm/day)
          frazil, & ! frazil ice growth        (m/step-->cm/day)
          snoice, & ! snow-ice formation       (m/step-->cm/day)
@@ -318,7 +324,9 @@
       use ice_arrays_column, only: Cdn_atm
       use ice_colpkg, only: colpkg_liquidus_temperature
       use ice_constants, only: p001,vonkar,zref,iceruf
-      use ice_flux_bgc, only: flux_bio_atm, flux_bio, faero_atm
+      use ice_flux_bgc, only: flux_bio_atm, flux_bio, faero_atm, &
+           fnit, famm, fsil, fdmsp, fdms, fhum, fdust, falgalN, &
+           fdoc, fdon, fdic, ffed, ffep
 
       integer (kind=int_kind) :: n
 
@@ -467,7 +475,20 @@
       fresh_da(:,:,:) = c0    ! data assimilation
       fsalt_da(:,:,:) = c0
       flux_bio (:,:,:,:) = c0 ! bgc
-
+      fnit    (:,:,:) = c0
+      fsil    (:,:,:) = c0
+      famm    (:,:,:) = c0
+      fdmsp   (:,:,:) = c0
+      fdms    (:,:,:) = c0
+      fhum    (:,:,:) = c0
+      fdust   (:,:,:) = c0
+      falgalN(:,:,:,:)= c0
+      fdoc   (:,:,:,:)= c0
+      fdic   (:,:,:,:)= c0
+      fdon   (:,:,:,:)= c0
+      ffep   (:,:,:,:)= c0
+      ffed   (:,:,:,:)= c0
+      
       !-----------------------------------------------------------------
       ! derived or computed fields
       !-----------------------------------------------------------------
