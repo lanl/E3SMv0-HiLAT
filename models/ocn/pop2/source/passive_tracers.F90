@@ -51,12 +51,12 @@
        ecosys_set_interior,        &
        ecosys_write_restart
 
-   use tracegas_mod, only:           &
-       tracegas_tracer_cnt,          &
-       tracegas_init,                &
-       tracegas_tracer_ref_val,      &
-       tracegas_set_sflux,           &
-       tracegas_tavg_forcing,        &
+   use tracegas_mod, only:         &
+       tracegas_tracer_cnt,        &
+       tracegas_init,              &
+       tracegas_tracer_ref_val,    &
+       tracegas_set_sflux,         &
+       tracegas_tavg_forcing,      &
        tracegas_set_interior
 
    use cfc_mod, only:              &
@@ -70,6 +70,16 @@
        iage_init,                  &
        iage_set_interior,          &
        iage_reset
+
+   use sectdyes_mod, only:             &
+       sectdyes_tracer_cnt,            &
+       sectdyes_init,                  &
+       sectdyes_reset
+
+   use surfdyes_mod, only:             &
+       surfdyes_tracer_cnt,            &
+       surfdyes_init,                  &
+       surfdyes_set_sflux
 
    use moby_mod, only:             &
        moby_init,                  &
@@ -116,10 +126,12 @@
       tavg_var,                 & ! tracer
       tavg_var_sqr,             & ! tracer square
       tavg_var_surf,            & ! tracer surface value
+      tavg_var_zint,            & ! integral of tracer
       tavg_var_zint_100m,       & ! 0-100m integral of tracer
       tavg_var_J,               & ! tracer source sink term
       tavg_var_Jint,            & ! vertically integrated tracer source sink term
       tavg_var_Jint_100m,       & ! vertically integrated tracer source sink term, 0-100m
+      tavg_var_tend_zint,       & ! vertically integrated tracer tendency
       tavg_var_tend_zint_100m,  & ! vertically integrated tracer tendency, 0-100m
       tavg_var_stf,             & ! tracer surface flux
       tavg_var_resid,           & ! tracer residual surface flux
@@ -147,10 +159,10 @@
 !-----------------------------------------------------------------------
 
    logical (kind=log_kind) ::  &
-      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on
+      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, surfdyes_on
 
    namelist /passive_tracers_on_nml/  &
-      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on
+      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, surfdyes_on
 
 !-----------------------------------------------------------------------
 !     index bounds of passive tracer module variables in TRACER
@@ -160,6 +172,8 @@
       ecosys_ind_begin,     ecosys_ind_end,         &
       tracegas_ind_begin,   tracegas_ind_end,       &
       iage_ind_begin,       iage_ind_end,           &
+      sectdyes_ind_begin,   sectdyes_ind_end,       &
+      surfdyes_ind_begin,   surfdyes_ind_end,       &
       cfc_ind_begin,        cfc_ind_end,            &
       moby_ind_begin,       moby_ind_end
 
@@ -236,6 +250,8 @@
    tracegas_on       = .false.
    cfc_on            = .false.
    iage_on           = .false.
+   sectdyes_on       = .false.
+   surfdyes_on       = .false.
    moby_on           = .false.
 
    if (my_task == master_task) then
@@ -273,6 +289,8 @@
    call broadcast_scalar(tracegas_on,       master_task)
    call broadcast_scalar(cfc_on,            master_task)
    call broadcast_scalar(iage_on,           master_task)
+   call broadcast_scalar(sectdyes_on,       master_task)
+   call broadcast_scalar(surfdyes_on,       master_task)
    call broadcast_scalar(moby_on,           master_task)
 
 !-----------------------------------------------------------------------
@@ -313,6 +331,16 @@
    if (iage_on) then
       call set_tracer_indices('IAGE', iage_tracer_cnt, cumulative_nt,  &
                               iage_ind_begin, iage_ind_end)
+   end if
+
+   if (sectdyes_on) then
+      call set_tracer_indices('SECTDYES', sectdyes_tracer_cnt, cumulative_nt,  &
+                              sectdyes_ind_begin, sectdyes_ind_end)
+   end if
+
+   if (surfdyes_on) then
+      call set_tracer_indices('SURFDYES', surfdyes_tracer_cnt, cumulative_nt,  &
+                              surfdyes_ind_begin, surfdyes_ind_end)
    end if
 
    if (moby_on) then
@@ -414,6 +442,45 @@
    end if
 
 !-----------------------------------------------------------------------
+!  Interior Dye Tracers (SECTDYES) block
+!-----------------------------------------------------------------------
+
+   if (sectdyes_on) then
+      call sectdyes_init(init_ts_file_fmt, read_restart_filename, &
+                     tracer_d(sectdyes_ind_begin:sectdyes_ind_end), &
+                     TRACER(:,:,:,sectdyes_ind_begin:sectdyes_ind_end,:,:), &
+                     tadvect_ctype_passive_tracers(sectdyes_ind_begin:sectdyes_ind_end), &
+                     errorCode)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'init_passive_tracers: error in sectdyes_init')
+         return
+      endif
+
+   end if
+
+!-----------------------------------------------------------------------
+!  Surface Dye Tracers (SURFDYES) block
+!-----------------------------------------------------------------------
+
+   if (surfdyes_on) then
+      call surfdyes_init(init_ts_file_fmt, read_restart_filename, &
+                     tracer_d(surfdyes_ind_begin:surfdyes_ind_end), &
+                     TRACER(:,:,:,surfdyes_ind_begin:surfdyes_ind_end,:,:), &
+                     tadvect_ctype_passive_tracers(surfdyes_ind_begin:surfdyes_ind_end), &
+                     errorCode)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'init_passive_tracers: error in surfdyes_init')
+         return
+      endif
+
+   end if
+
+
+!-----------------------------------------------------------------------
 !  MOBY block
 !-----------------------------------------------------------------------
 
@@ -496,6 +563,18 @@
                              coordinates='TLONG TLAT time')
 
       sname = trim(tracer_d(n)%short_name) /&
+                                            &/ '_zint'
+      lname = trim(tracer_d(n)%long_name) /&
+                                           &/ ' Vertical Integral'
+      units = trim(tracer_d(n)%units) /&
+                                       &/ ' cm'
+      call define_tavg_field(tavg_var_zint(n),                 &
+                             sname, 2, long_name=lname,             &
+                             units=units, grid_loc='2110',          &
+                             scale_factor=tracer_d(n)%scale_factor, &
+                             coordinates='TLONG TLAT time')
+
+      sname = trim(tracer_d(n)%short_name) /&
                                             &/ '_zint_100m'
       lname = trim(tracer_d(n)%long_name) /&
                                            &/ ' 0-100m Vertical Integral'
@@ -535,6 +614,17 @@
                                            &/ ' Source Sink Term Vertical Integral, 0-100m'
       units = tracer_d(n)%flux_units
       call define_tavg_field(tavg_var_Jint_100m(n),                 &
+                             sname, 2, long_name=lname,             &
+                             units=units, grid_loc='2110',          &
+                             scale_factor=tracer_d(n)%scale_factor, &
+                             coordinates='TLONG TLAT time')
+
+      sname = 'tend_zint_' /&
+                            &/ trim(tracer_d(n)%short_name)
+      lname = trim(tracer_d(n)%long_name) /&
+                                           &/ ' Tendency Vertical Integral'
+      units = tracer_d(n)%flux_units
+      call define_tavg_field(tavg_var_tend_zint(n),            &
                              sname, 2, long_name=lname,             &
                              units=units, grid_loc='2110',          &
                              scale_factor=tracer_d(n)%scale_factor, &
@@ -631,7 +721,7 @@
 
 ! !DESCRIPTION:
 !  call subroutines for each tracer module that compute source-sink terms
-!  accumulate commnon tavg fields related to source-sink terms
+!  accumulate common tavg fields related to source-sink terms
 !
 ! !REVISION HISTORY:
 !  same as module
@@ -699,6 +789,21 @@
 
 !-----------------------------------------------------------------------
 !  CFC does not have source-sink terms
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!  Section Dye tracers (SECTDYES) block
+!-----------------------------------------------------------------------
+
+!  if (sectdyes_on) then
+!     call sectdyes_set_interior(k,                                        &
+!        TRACER(:,:,k,sectdyes_ind_begin:sectdyes_ind_end,curtime,bid),        &
+!        TRACER_SOURCE(:,:,sectdyes_ind_begin:sectdyes_ind_end),               &
+!        this_block)
+!  end if
+
+!-----------------------------------------------------------------------
+!  Surface Dye tracers (SURFDYES) do not have source/sink terms
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
@@ -771,7 +876,7 @@
 
 ! !DESCRIPTION:
 !  call subroutines for each tracer module that computes 3D source-sink terms
-!  accumulate commnon tavg fields related to source-sink terms
+!  accumulate common tavg fields related to source-sink terms
 !
 ! !REVISION HISTORY:
 !  same as module
@@ -794,15 +899,21 @@
 !  ECOSYS does not compute and store 3D source-sink terms
 !-----------------------------------------------------------------------
 
-
 !-----------------------------------------------------------------------
 !  CFC does not compute and store 3D source-sink terms
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
-!  Ideal Age (IAGE) does not compute and store 3D source-sink terms
+!  Section Dye tracers (SECTDYES) do not compute and store 3D source-sink terms
 !-----------------------------------------------------------------------
 
+!-----------------------------------------------------------------------
+!  Surface Dye tracers (SURFDYES) do not compute and store 3D source-sink terms
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!  Ideal Age (IAGE) does not compute and store 3D source-sink terms
+!-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
 !  MOBY block
@@ -831,7 +942,8 @@
 ! !IROUTINE: set_sflux_passive_tracers
 ! !INTERFACE:
 
- subroutine set_sflux_passive_tracers(U10_SQR,ICE_FRAC,PRESS,STF)
+ subroutine set_sflux_passive_tracers(U10_SQR,ICE_FRAC,PRESS,STF, &
+                                    EVAP_F,PREC_F,MELT_F,ROFF_F,IOFF_F)
 
 ! !DESCRIPTION:
 !  call subroutines for each tracer module that compute surface fluxes
@@ -844,7 +956,13 @@
    real (r8), dimension(nx_block,ny_block,max_blocks_clinic), intent(in) ::   &
       U10_SQR,  & ! 10m wind speed squared
       ICE_FRAC, & ! sea ice fraction (non-dimensional)
-      PRESS       ! sea level atmospheric pressure (Pascals)
+      PRESS,    & ! sea level atmospheric pressure (Pascals)
+      EVAP_F,   & ! evaporative   flux kg/m^2/s  fw
+      PREC_F,   & ! precipitation flux kg/m^2/s  fw
+      MELT_F,   & ! snow&ice melt flux kg/m^2/s  fw
+      ROFF_F,   & ! river runoff  flux kg/m^2/s  fw
+      IOFF_F      ! ice   runoff  flux kg/m^2/s  fw
+
 
 ! !INPUT/OUTPUT PARAMETERS:
 
@@ -861,6 +979,8 @@
    real (r8)          :: ref_val
    integer (int_kind) :: iblock, n
 
+   real (r8), dimension(nx_block,ny_block,max_blocks_clinic) :: &
+      FWF   ! surface freshwater flux
 
 !-----------------------------------------------------------------------
 
@@ -927,6 +1047,21 @@
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
+!  SECTDYES does not have surface fluxes
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!  SURFDYES block
+!-----------------------------------------------------------------------
+
+    if (surfdyes_on) then
+       call surfdyes_set_sflux( &
+           TRACER(:,:,1,surfdyes_ind_begin:surfdyes_ind_end,curtime,:), &
+           STF(:,:,surfdyes_ind_begin:surfdyes_ind_end,:),PREC_F,&
+           MELT_F,ROFF_F,IOFF_F)
+    end if
+
+!-----------------------------------------------------------------------
 !  MOBY block
 !-----------------------------------------------------------------------
 
@@ -952,6 +1087,33 @@
                (ref_val/(ocn_ref_salinity*ppt_to_salt)) * STF(:,:,2,iblock)
             STF(:,:,n,iblock) = STF(:,:,n,iblock) + FvPER(:,:,n,iblock)
          endif
+      end do
+   end do
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  add virtual fluxes for tracers that require proportionality with actual
+!  surface concentrations
+!-----------------------------------------------------------------------
+
+   FWF = EVAP_F + PREC_F + MELT_F + ROFF_F + IOFF_F
+
+!  !$OMP PARALLEL DO PRIVATE(iblock,n)
+!  do iblock = 1,nblocks_clinic
+!     do n=sectdyes_ind_begin,sectdyes_ind_end
+!        FvPER(:,:,n,iblock) = &
+!           - TRACER(:,:,1,n,curtime,iblock) * FWF(:,:,iblock) * 1e-1_r8
+!        STF(:,:,n,iblock) = STF(:,:,n,iblock) + FvPER(:,:,n,iblock)
+!     end do
+!  end do
+!  !$OMP END PARALLEL DO
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n)
+   do iblock = 1,nblocks_clinic
+      do n=surfdyes_ind_begin,surfdyes_ind_end
+         FvPER(:,:,n,iblock) = &
+            - TRACER(:,:,1,n,curtime,iblock) * FWF(:,:,iblock) * 1e-1_r8
+         STF(:,:,n,iblock) = STF(:,:,n,iblock) + FvPER(:,:,n,iblock)
       end do
    end do
    !$OMP END PARALLEL DO
@@ -1011,6 +1173,14 @@
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
+!  SECTDYES does not write additional restart fields
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!  SURFDYES does not write additional restart fields
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
 !  MOBY block
 !-----------------------------------------------------------------------
 
@@ -1028,7 +1198,7 @@
 ! !IROUTINE: reset_passive_tracers
 ! !INTERFACE:
 
- subroutine reset_passive_tracers(TRACER_NEW, bid)
+ subroutine reset_passive_tracers(TRACER_NEW, bid, this_block)
 
 ! !DESCRIPTION:
 !  call subroutines for each tracer module to reset tracer values
@@ -1039,6 +1209,9 @@
 ! !INPUT PARAMETERS:
 
    integer(int_kind), intent(in) :: bid
+
+   type (block) ::        &
+      this_block           ! block information for current block
 
 ! !INPUT/OUTPUT PARAMETERS:
 
@@ -1054,6 +1227,19 @@
 
 !-----------------------------------------------------------------------
 !  CFC does not reset values
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!  SECTDYES block
+!-----------------------------------------------------------------------
+
+   if (sectdyes_on) then
+      call sectdyes_reset(  &
+         TRACER_NEW(:,:,:,sectdyes_ind_begin:sectdyes_ind_end), this_block, bid)
+   end if
+
+!-----------------------------------------------------------------------
+!  SURFDYES does not reset values
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
@@ -1152,8 +1338,26 @@
             endif
          enddo
       endif
-   endif
 
+      do n = 3, nt
+         if (accumulate_tavg_now(tavg_var_zint(n))) then
+               if (sfc_layer_type == sfc_layer_varthick .and. k == 1) then
+                  WORK = merge((dz(k)+PSURF(:,:,curtime,bid)/grav) &
+                               * TRACER(:,:,k,n,curtime,bid), c0, k<=KMT(:,:,bid))
+               else
+                  if (partial_bottom_cells) then
+                     WORK = merge(DZT(:,:,k,bid) &
+                                  * TRACER(:,:,k,n,curtime,bid), c0, k<=KMT(:,:,bid))
+                  else
+                     WORK = merge(dz(k) &
+                                  * TRACER(:,:,k,n,curtime,bid), c0, k<=KMT(:,:,bid))
+                  endif
+               endif
+               call accumulate_tavg_field(WORK,tavg_var_zint(n),bid,k)
+         endif
+      enddo
+
+   endif
 !-----------------------------------------------------------------------
 !EOC
 
@@ -1195,6 +1399,30 @@
 !-----------------------------------------------------------------------
 
    do n = 3, nt
+      if (accumulate_tavg_now(tavg_var_tend_zint(n))) then
+            do k=1,km
+               if (sfc_layer_type == sfc_layer_varthick .and. k == 1) then
+                  WORK = merge( &
+                     ((dz(k)+PSURF(:,:,newtime,bid)/grav) &
+                      * TRACER(:,:,k,n,newtime,bid) - &
+                      (dz(k)+PSURF(:,:,oldtime,bid)/grav) &
+                      * TRACER(:,:,k,n,oldtime,bid)) / c2dtt(k), c0, k<=KMT(:,:,bid))
+               else
+                  if (partial_bottom_cells) then
+                     WORK = merge(DZT(:,:,k,bid) &
+                                  * (TRACER(:,:,k,n,newtime,bid) &
+                                     - TRACER(:,:,k,n,oldtime,bid)) / c2dtt(k), &
+                                  c0, k<=KMT(:,:,bid))
+                  else
+                     WORK = merge(dz(k) &
+                                  * (TRACER(:,:,k,n,newtime,bid) &
+                                     - TRACER(:,:,k,n,oldtime,bid)) / c2dtt(k), &
+                                  c0, k<=KMT(:,:,bid))
+                  endif
+               endif
+               call accumulate_tavg_field(WORK,tavg_var_tend_zint(n),bid,k)
+            end do
+      endif
       if (accumulate_tavg_now(tavg_var_tend_zint_100m(n))) then
             ztop = c0
             do k=1,km
@@ -1210,18 +1438,19 @@
                   if (partial_bottom_cells) then
                      WORK = merge(min(100.0e2_r8 - ztop, DZT(:,:,k,bid)) &
                                   * (TRACER(:,:,k,n,newtime,bid) &
-                                     - TRACER(:,:,k,n,oldtime,bid)) / c2dtt(k), &
+                                     - TRACER(:,:,k,n,oldtime,bid)) / c2dtt(k),&
                                   c0, k<=KMT(:,:,bid))
                   else
                      WORK = merge(min(100.0e2_r8 - ztop, dz(k)) &
                                   * (TRACER(:,:,k,n,newtime,bid) &
-                                     - TRACER(:,:,k,n,oldtime,bid)) / c2dtt(k), &
+                                     - TRACER(:,:,k,n,oldtime,bid)) / c2dtt(k),&
                                   c0, k<=KMT(:,:,bid))
                   endif
                endif
                call accumulate_tavg_field(WORK,tavg_var_tend_zint_100m(n),bid,k)
             end do
       endif
+
    enddo
 
 !-----------------------------------------------------------------------
@@ -1504,6 +1733,16 @@
 
 !-----------------------------------------------------------------------
 !  IAGE does not use virtual fluxes
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!  SECTDYES uses virtual fluxes, but fixed reference value is replaced 
+!  by local value and dealt with in the surface flux routine.
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!  SURFDYES uses virtual fluxes, but fixed reference value is replaced 
+!  by local value and dealt with in the surface flux routine.
 !-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------

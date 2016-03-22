@@ -1152,6 +1152,27 @@ if (any(\@OCN_TRACER_MODULES, "iage")) {
 }
 
 ##########################################
+# namelist group: sectdyes_nml           #
+##########################################
+
+if (any(\@OCN_TRACER_MODULES, "sectdyes")) {
+    add_default($nl, 'init_sectdyes_option',    'val'=>"ccsm_${RUN_TYPE}");
+    add_default($nl, 'init_sectdyes_init_file', 'val'=>'same_as_TS', 'noprepend'=>1);
+    add_default($nl, 'sectdyes_sections_file',  'val'=>"${RUNDIR}/${OCN_GRID}_sectdyes_contents");
+    add_default($nl, 'sectdyes_tadvect_ctype',  'val'=>'lw_lim');
+}
+
+##########################################
+# namelist group: surfdyes_nml           #
+##########################################
+
+if (any(\@OCN_TRACER_MODULES, "surfdyes")) {
+    add_default($nl, 'init_surfdyes_option',    'val'=>"ccsm_${RUN_TYPE}");
+    add_default($nl, 'init_surfdyes_init_file', 'val'=>'same_as_TS', 'noprepend'=>1);
+    add_default($nl, 'surfdyes_tadvect_ctype',  'val'=>'lw_lim');
+}
+
+##########################################
 # namelist group: cfc_nml                #
 ##########################################
 
@@ -1581,6 +1602,9 @@ push @copy_files_to_input,"${OCN_GRID}_region_ids";
 push @copy_files_to_input,"${OCN_GRID}_history_contents";
 push @copy_files_to_input,"${OCN_GRID}_movie_contents";
 push @copy_files_to_input,"${OCN_GRID}_transport_contents";
+if (any(\@OCN_TRACER_MODULES, "sectdyes")) {
+   push @copy_files_to_input,"${OCN_GRID}_sectdyes_contents";
+}
 push @copy_files_to_input,"${OCN_GRID}_depth_accel";
 if ($OCN_GRID =~ /^gx*/) { push @copy_files_to_input,"${OCN_GRID}_overflow"; }
 
@@ -1812,6 +1836,12 @@ my @groups = qw(domain_nml
 if (any(\@OCN_TRACER_MODULES, "iage")) {
     push @groups, qw(iage_nml);
 }    
+if (any(\@OCN_TRACER_MODULES, "sectdyes")) {
+    push @groups, qw(sectdyes_nml);
+}    
+if (any(\@OCN_TRACER_MODULES, "surfdyes")) {
+    push @groups, qw(surfdyes_nml);
+}    
 if (any(\@OCN_TRACER_MODULES, "cfc")) {
     push @groups, qw(cfc_nml);
 }    
@@ -2024,6 +2054,18 @@ sub check_input_files {
 
       # init_iage_file could be 'same_as_TS'
       if (($var eq 'init_iage_init_file') and 
+          ($pathname eq 'same_as_TS')) {
+        $is_a_file = 0;
+      }
+
+      # init_sectdyes_file could be 'same_as_TS'
+      if (($var eq 'init_sectdyes_init_file') and 
+          ($pathname eq 'same_as_TS')) {
+        $is_a_file = 0;
+      }
+
+      # init_surfdyes_file could be 'same_as_TS'
+      if (($var eq 'init_surfdyes_init_file') and 
           ($pathname eq 'same_as_TS')) {
         $is_a_file = 0;
       }
