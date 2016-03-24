@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_colpkg.F90 1108 2016-03-07 18:42:44Z njeffery $
+!  SVN:$Id: ice_colpkg.F90 1111 2016-03-24 19:23:34Z njeffery $
 !=========================================================================
 !
 ! flags and interface routines for the column package
@@ -4654,7 +4654,7 @@
        amm      , & ! ammonium
        dmsp     , & ! DMSPp
        dms      , & ! DMS
-       hum      , & ! humic material carbon
+       hum      , & ! humic material
        nit      , & ! nitrate
        sil          ! silicate
 
@@ -4828,11 +4828,11 @@
       integer (kind=int_kind) :: &
          k, ks           ! tracer indices
 
+      ocean_bio_all(:) = c0
+
       do k = 1, max_algae           
          ocean_bio_all(k)      = algalN(k)           ! N
-         ks = max_algae + 1
-         ocean_bio_all(ks + k) = R_C2N(k)*algalN(k)  ! C
-         ks = ks + max_doc + max_dic
+         ks = max_algae + max_doc + max_dic + 1
          ocean_bio_all(ks + k) = R_chl2N(k)*algalN(k)!chl
       enddo   
 
@@ -4844,6 +4844,11 @@
       do k = 1, max_dic
          ocean_bio_all(ks + k) = dic(k)              ! dic
       enddo 
+
+      ks = 2*max_algae + max_doc + max_dic + 7
+      do k = 1, max_don
+         ocean_bio_all(ks + k) = don(k)              ! don
+      enddo  
 
       ks = max_algae + 1
       ocean_bio_all(ks) = nit                        ! nit
@@ -4862,11 +4867,6 @@
       ocean_bio_all(ks) = dms                        ! DMS
       ks = ks + 1
       ocean_bio_all(ks) = nit                        ! PON
-      ks = 2*max_algae + max_doc + max_dic + 7
-      do k = 1, max_don
-         ocean_bio_all(ks + k) = don(k)              ! don
-      enddo  
-
       ks = 2*max_algae + max_doc + 7 + max_dic + max_don
       do k = 1, max_fe
          ocean_bio_all(ks + k) = fed(k)              ! fed

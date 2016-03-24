@@ -1,4 +1,4 @@
-!  SVN:$Id: CICE_InitMod.F90 1106 2016-02-05 18:49:17Z njeffery $
+!  SVN:$Id: CICE_InitMod.F90 1111 2016-03-24 19:23:34Z njeffery $
 !=======================================================================
 !
 !  This module contains the CICE initialization routine that sets model

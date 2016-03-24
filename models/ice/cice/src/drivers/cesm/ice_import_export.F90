@@ -622,9 +622,9 @@ contains
 
                 ! export biogeochemistry fields, if configured
                 ! convert from mmol N/m^3 to mmol C/m^3
-                i2x(index_i2x_Fioi_diat,n) = falgalN(i,j,1,iblk) * R_C2N(1)
-                i2x(index_i2x_Fioi_sp,n) = falgalN(i,j,2,iblk) * R_C2N(2)
-                i2x(index_i2x_Fioi_phaeo,n) = falgalN(i,j,3,iblk) * R_C2N(3)
+                i2x(index_i2x_Fioi_diat,n)   = falgalN(i,j,1,iblk) * R_C2N(1)
+                i2x(index_i2x_Fioi_sp,n)     = falgalN(i,j,2,iblk) * R_C2N(2)
+                i2x(index_i2x_Fioi_phaeo,n)  = falgalN(i,j,3,iblk) * R_C2N(3)
                 i2x(index_i2x_Fioi_doc   ,n) = fdoc(i,j,1,iblk) + fdoc(i,j,2,iblk)  
                 i2x(index_i2x_Fioi_doc2  ,n) = c0 !fdoc(i,j,2,iblk) 
                 i2x(index_i2x_Fioi_doc3  ,n) = c0 !fdoc(i,j,3,iblk)

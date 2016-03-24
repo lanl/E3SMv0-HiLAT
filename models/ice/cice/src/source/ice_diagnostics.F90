@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_diagnostics.F90 1108 2016-03-07 18:42:44Z njeffery $
+!  SVN:$Id: ice_diagnostics.F90 1111 2016-03-24 19:23:34Z njeffery $
 !=======================================================================
 
 ! Diagnostic information output during run

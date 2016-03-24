@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_algae.F90 1109 2016-03-07 20:24:24Z njeffery $
+!  SVN:$Id: ice_algae.F90 1111 2016-03-24 19:23:34Z njeffery $
 !=======================================================================
 !
 ! Compute sea ice biogeochemistry (vertical or skeletal layer)
@@ -909,6 +909,8 @@
          dust_Fe(nlt_bgc_Fed(1)) = dust_Fe(nlt_bgc_Fed(1)) + &
               (zbgc_snow(nlt_zaero(m)) + zbgc_atm(nlt_zaero(m))) * &
                R_dFe2dust * dustFe_sol
+         dust_Fe(nlt_zaero(m)) = -(zbgc_snow(nlt_zaero(m)) + zbgc_atm(nlt_zaero(m))) * &
+               dustFe_sol
        enddo  
       endif
 

@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_restart_column.F90 1095 2015-12-09 20:26:12Z njeffery $
+!  SVN:$Id: ice_restart_column.F90 1111 2016-03-24 19:23:34Z njeffery $
 !=========================================================================
 !
 ! Restart routines for the column package.
@@ -529,7 +529,7 @@
                               'first_ice',ncat,diag,field_loc_center,field_type_scalar)
 
       !$OMP PARALLEL DO PRIVATE(iblk,i,j,n,ilo,ihi,jlo,jhi,this_block)
-      do iblk = 1, max_blocks
+      do iblk = 1, nblocks
 
          this_block = get_block(blocks_ice(iblk),iblk)         
          ilo = this_block%ilo
@@ -581,7 +581,7 @@
       diag = .true.
 
       !$OMP PARALLEL DO PRIVATE(iblk,i,j,n,ilo,ihi,jlo,jhi,this_block)
-      do iblk = 1, max_blocks
+      do iblk = 1, nblocks
 
         this_block = get_block(blocks_ice(iblk),iblk)         
         ilo = this_block%ilo
@@ -1046,7 +1046,7 @@
       call read_restart_field(nu_restart_bgc,0,Rayleigh_real,'ruf8','Rayleigh',1,diag)
 
       !$OMP PARALLEL DO PRIVATE(iblk,i,j,ilo,ihi,jlo,jhi,this_block)
-      do iblk = 1, max_blocks
+      do iblk = 1, nblocks
          this_block = get_block(blocks_ice(iblk),iblk)         
          ilo = this_block%ilo
          ihi = this_block%ihi

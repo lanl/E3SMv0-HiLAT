@@ -50,6 +50,7 @@ module ice_comp_mct
                               calendar_type, nextsw_cday, days_per_year, &
                               nyr, new_year, time2sec, year_init
   use ice_constants_colpkg, only : eccen, obliqr, lambm0, mvelpp
+  use ice_colpkg_tracers, only: tr_zaero, tr_aero
   use ice_timers
 
   use ice_kinds_mod,   only : int_kind, dbl_kind, char_len_long, log_kind
@@ -402,8 +403,8 @@ contains
     call t_stopf ('cice_mct_init')
 
     ! Error check
-    if (tr_aero .and. .not. atm_aero) then
-       write(nu_diag,*) 'ice_import ERROR: atm_aero must be set for tr_aero' 
+    if ((tr_aero .or. tr_zaero) .and. .not. atm_aero) then
+       write(nu_diag,*) 'ice_import ERROR: atm_aero must be set for tr_aero/tr_zaero' 
        call shr_sys_abort()
     end if
 

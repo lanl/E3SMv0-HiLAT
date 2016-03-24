@@ -111,14 +111,14 @@
                                   f_don,    f_fep,    &
                                   f_fed)
 
-      use ice_colpkg_shared, only: max_algae, max_dic, max_doc, max_don, max_fe, &
-          skl_bgc, solve_zbgc, max_aero
+      use ice_colpkg_shared, only: skl_bgc, solve_zbgc
       use ice_colpkg_tracers, only: nlt_bgc_N, nlt_bgc_C, nlt_bgc_DOC, nlt_bgc_DON, &
           nlt_bgc_DIC, nlt_bgc_Fed, nlt_bgc_Fep, nlt_zaero, nlt_bgc_Nit, nlt_bgc_Am, &
           nlt_bgc_Sil, nlt_bgc_DMSPd, nlt_bgc_DMS, nlt_bgc_hum, tr_bgc_Nit, tr_bgc_N, &
           tr_bgc_DON, tr_bgc_C, tr_bgc_Am, tr_bgc_Sil, tr_bgc_DMS, tr_bgc_Fe, &
           tr_bgc_hum, tr_zaero
       use ice_constants, only: c0
+      use ice_domain_size, only: n_zaero, n_algae, n_doc, n_dic, n_don, n_fed, n_fep
     
       real(kind=dbl_kind), dimension(:,:,:), intent(in) :: flux_bio
       real(kind=dbl_kind), dimension(:,:), intent(out):: &
@@ -165,26 +165,28 @@
       do j = 1, ny_block
       do i = 1, nx_block
          if (skl_bgc .or. solve_zbgc) then
-            do k = 1, max_algae
+            do k = 1, n_algae
                f_algalN(i,j,k) = flux_bio(i,j,nlt_bgc_N(k))
             enddo
          endif
          if (tr_bgc_C) then
-            do k = 1, max_doc
+            do k = 1, n_doc
                f_doc(i,j,k) = flux_bio(i,j,nlt_bgc_DOC(k))
             enddo
-            do k = 1, max_dic
+            do k = 1, n_dic
                f_dic(i,j,k) = flux_bio(i,j,nlt_bgc_DIC(k))
             enddo
          endif
          if (tr_bgc_DON) then
-            do k = 1, max_don
+            do k = 1, n_don
                f_don(i,j,k) = flux_bio(i,j,nlt_bgc_DON(k))
             enddo
          endif
          if (tr_bgc_Fe) then
-            do k = 1, max_fe
+            do k = 1, n_fep
                f_fep(i,j,k) = flux_bio(i,j,nlt_bgc_Fep(k))
+            enddo
+            do k = 1, n_fed
                f_fed(i,j,k) = flux_bio(i,j,nlt_bgc_Fed(k))
             enddo
          endif
@@ -197,7 +199,7 @@
             f_dmsp(i,j) = flux_bio(i,j,nlt_bgc_DMSPd)
          endif
          if (tr_zaero) then
-            do k = 2, max_aero
+            do k = 3, n_zaero
                 f_dust(i,j) = f_dust(i,j) + flux_bio(i,j,nlt_zaero(k))
             enddo
          endif
