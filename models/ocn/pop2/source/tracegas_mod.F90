@@ -288,7 +288,10 @@
    integer (int_kind) :: &
       surf_dms_nf_ind   = 0,    & ! surface DMS
       surf_dmsp_nf_ind  = 0,    & ! surface DMSP
-      sflux_dms_nf_ind  = 0       ! dms flux
+      sflux_dms_nf_ind  = 0,    & ! dms flux
+      sflux_dmspp_nf_ind= 0,    & ! ice dmspp flux
+      sflux_idms_nf_ind = 0,    & ! ice dms flux
+      sflux_idmsp_nf_ind= 0       ! ice dmsp flux
 
 !-----------------------------------------------------------------------
 
@@ -2128,6 +2131,14 @@ contains
    endif
 
 !-----------------------------------------------------------------------
+!  register and set fluxes from sea ice  (swang)
+!-----------------------------------------------------------------------
+
+      call named_field_get_index('SFLUX_iDMS', sflux_idms_nf_ind)
+      call named_field_get_index('SFLUX_iDMSP', sflux_idmsp_nf_ind)
+      call named_field_get_index('SFLUX_DMSPP', sflux_dmspp_nf_ind)
+
+!-----------------------------------------------------------------------
 !EOC
 
  end subroutine tracegas_init_sflux
@@ -2179,7 +2190,9 @@ contains
       IFRAC_USED,   & ! used ice fraction (non-dimensional)
       XKW_USED,     & ! portion of piston velocity (cm/s)
       XKW,          & ! compromise between the two per H04
-      AP_USED         ! used atm pressure (converted from dyne/cm**2 to atm)
+      AP_USED,      & ! used atm pressure (converted from dyne/cm**2 to atm)
+      idms_FLUX_IN, & ! dms flux from ice
+      idmsp_FLUX_IN   ! dmsp flux from ice
 
    real (r8), dimension(nx_block,ny_block) :: &
       XKW_ICE,      & ! common portion of piston vel., (1-fice)*xkw (cm/s)
@@ -2234,6 +2247,7 @@ contains
 !-----------------------------------------------------------------------
 
    !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   WORK1 = c0
    do iblock = 1, nblocks_clinic
 
       WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,dms_ind,iblock) + &
@@ -2249,6 +2263,7 @@ contains
 !-----------------------------------------------------------------------
 
    !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   WORK1 = c0
    do iblock = 1, nblocks_clinic
 
       WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,dmsp_ind,iblock) + &
@@ -2495,6 +2510,18 @@ SCHMIDT_USED = max(SCHMIDT_USED,1.)
        enddo
 
     endif  ! lflux_gas_dms
+
+!-----------------------------------------------------------------------
+!  if sea ice-ocean bgc coupled, then add ice flux to STF (swang)
+!-----------------------------------------------------------------------
+ 
+       call named_field_get(sflux_idms_nf_ind, idms_FLUX_IN)
+      STF_MODULE(:,:,dms_ind,:) = STF_MODULE(:,:,dms_ind,:) + idms_FLUX_IN
+
+      call named_field_get(sflux_idmsp_nf_ind, idmsp_FLUX_IN)
+      STF_MODULE(:,:,dmsp_ind,:) = STF_MODULE(:,:,dmsp_ind,:) + idmsp_FLUX_IN
+
+!-----------------------------------------------------------------------
 
    call timer_stop(tracegas_sflux_timer)
 

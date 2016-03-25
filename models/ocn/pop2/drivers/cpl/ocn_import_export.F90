@@ -317,6 +317,563 @@ contains
 
       call named_field_set(ATM_CO2_DIAG_nf_ind, WORK1)
    endif
+
+!-----------------------------------------------------------------------
+!
+!  unpack sea ice fluxes (swang)
+!
+!-----------------------------------------------------------------------
+
+   if (index_x2o_Fioi_diat > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_diat,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_diat halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s, as POP needs the latter
+      call named_field_set(sflux_diat_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_sp > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_sp,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_sp halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_sp_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_phaeo > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_phaeo,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_phaeo halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_phaeo_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_fed > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_fed,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_dFe halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_dFe_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_no3 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_no3,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_NO3 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_NO3_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_nh4 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_nh4,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_NH4 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_NH4_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_sio3 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_sio3,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_SiO3 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_SiO3_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_doc > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_doc,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_DOC halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_DOC_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_don > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_don,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_DON halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_DON_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_donr > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_donr,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_DONr halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_DONr_nf_ind, WORK1 * cmperm)
+   endif
+
+
+   if (index_x2o_Fioi_dms > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_dms,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_idms halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_idms_nf_ind, WORK1 * cmperm)
+   endif
+
+   if (index_x2o_Fioi_dmsp > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_dmsp,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_idmsp halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_idmsp_nf_ind, WORK1 * cmperm)
+   endif
+
+   if (index_x2o_Fioi_dic1 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_dic1,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_dic1 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_dic1_nf_ind, WORK1 * cmperm)
+   endif
+
+   if (index_x2o_Fioi_doc2 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_doc2,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_doc2 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_doc2_nf_ind, WORK1 * cmperm)
+   endif
+
+   if (index_x2o_Fioi_doc3 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_doc3,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_doc3 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_doc3_nf_ind, WORK1 * cmperm)
+   endif
+
+   if (index_x2o_Fioi_dmspp > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_dmspp,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_dmspp halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_dmspp_nf_ind, WORK1 * cmperm)
+   endif
+
+   if (index_x2o_Fioi_fed2 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_fed2,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_fed2 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_fed2_nf_ind, WORK1 * cmperm)
+   endif
+
+   if (index_x2o_Fioi_fep1 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_fep1,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_fep1 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_fep1_nf_ind, WORK1 * cmperm)
+   endif
+   
+      if (index_x2o_Fioi_fep2 > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_fep2,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_fep2 halo')
+         return
+      endif
+! convert flux unit from mmol/m^2/s to mmol/m^3 cm/s
+      call named_field_set(sflux_fep2_nf_ind, WORK1 * cmperm)
+   endif
+
+   if (index_x2o_Fioi_dust > 0) then
+      n = 0
+      do iblock = 1, nblocks_clinic
+         this_block = get_block(blocks_clinic(iblock),iblock)
+
+         do j=this_block%jb,this_block%je
+         do i=this_block%ib,this_block%ie
+            n = n + 1
+            WORK1(i,j,iblock) = x2o(index_x2o_Fioi_dust,n)
+         enddo
+         enddo
+      enddo
+
+      call POP_HaloUpdate(WORK1,POP_haloClinic,          &
+                       POP_gridHorzLocCenter,          &
+                       POP_fieldKindScalar, errorCode, &
+                       fillValue = 0.0_POP_r8)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'ocn_import_mct: error updating sflux_dust halo')
+         return
+      endif
+! NOTE: Current dust is in kg/m^2/s, 'cmperm' should be changed to the correct
+! factor (swang)
+      call named_field_set(sflux_dust_nf_ind, WORK1 * cmperm)
+   endif
  
 !-----------------------------------------------------------------------
 !
@@ -565,7 +1122,7 @@ contains
 !-----------------------------------------------------------------------
 
 !maltrud debug
-   write(stdout,*) 'pjc: ocn_export_mct: ', my_task, index_o2x_Faoo_fdms_ocn
+!   write(stdout,*) 'pjc: ocn_export_mct: ', my_task, index_o2x_Faoo_fdms_ocn
 
    if (index_o2x_Faoo_fdms_ocn > 0) then
       n = 0
@@ -585,6 +1142,8 @@ contains
 !-----------------------------------------------------------------------
 !     pack surf_dms, NOTE: unit is mmol/m^3 (SW)
 !-----------------------------------------------------------------------
+
+!   write(stdout,*) 'swang: ocn_export_mct: ', my_task, index_o2x_So_dms
 
    if (index_o2x_So_dms > 0) then
       n = 0
@@ -907,7 +1466,7 @@ contains
 
    integer (int_kind) :: &
       iblock,           & ! block index
-      sflux_co2_nf_ind = 0, &! named field index of fco2
+      sflux_co2_nf_ind = 0, & ! named field index of fco2
       sflux_dms_nf_ind = 0, & ! named field index of fDMS
       surf_dms_nf_ind  = 0, & ! named field index of DMS
       surf_dmsp_nf_ind = 0, & ! named field index of DMSP
