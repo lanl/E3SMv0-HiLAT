@@ -339,7 +339,7 @@ contains
 ! !IROUTINE: surfdyes_set_sflux
 ! !INTERFACE:
 
- subroutine surfdyes_set_sflux(SCONC,STF_MODULE,PREC_F,MELT_F,ROFF_F,IOFF_F)
+ subroutine surfdyes_set_sflux(STF_MODULE,PREC_F,MELT_F,ROFF_F,IOFF_F)
 
 ! !DESCRIPTION:
 !  Compute surface fluxes for surfdyes tracer module.
@@ -354,9 +354,6 @@ contains
       MELT_F,   & ! snow&ice melt flux kg/m^2/s  fw
       ROFF_F,   & ! river runoff  flux kg/m^2/s  fw
       IOFF_F      ! ice   runoff  flux kg/m^2/s  fw
-
-   real (r8), dimension(nx_block,ny_block,surfdyes_tracer_cnt,max_blocks_clinic), intent(in) :: &
-      SCONC       ! Surface concentrations of dye tracers
 
 ! !INPUT/OUTPUT PARAMETERS:
 

@@ -1056,7 +1056,6 @@
 
     if (surfdyes_on) then
        call surfdyes_set_sflux( &
-           TRACER(:,:,1,surfdyes_ind_begin:surfdyes_ind_end,curtime,:), &
            STF(:,:,surfdyes_ind_begin:surfdyes_ind_end,:),PREC_F,&
            MELT_F,ROFF_F,IOFF_F)
     end if
@@ -1098,6 +1097,7 @@
 
    FWF = EVAP_F + PREC_F + MELT_F + ROFF_F + IOFF_F
 
+!  if (sectdyes_on) then
 !  !$OMP PARALLEL DO PRIVATE(iblock,n)
 !  do iblock = 1,nblocks_clinic
 !     do n=sectdyes_ind_begin,sectdyes_ind_end
@@ -1107,16 +1107,19 @@
 !     end do
 !  end do
 !  !$OMP END PARALLEL DO
+!  endif
 
+   if (surfdyes_on) then
    !$OMP PARALLEL DO PRIVATE(iblock,n)
-   do iblock = 1,nblocks_clinic
-      do n=surfdyes_ind_begin,surfdyes_ind_end
-         FvPER(:,:,n,iblock) = &
-            - TRACER(:,:,1,n,curtime,iblock) * FWF(:,:,iblock) * 1e-1_r8
-         STF(:,:,n,iblock) = STF(:,:,n,iblock) + FvPER(:,:,n,iblock)
-      end do
-   end do
+     do iblock = 1,nblocks_clinic
+        do n=surfdyes_ind_begin,surfdyes_ind_end
+           FvPER(:,:,n,iblock) = &
+              - TRACER(:,:,1,n,curtime,iblock) * FWF(:,:,iblock) * 1e-1_r8
+           STF(:,:,n,iblock) = STF(:,:,n,iblock) + FvPER(:,:,n,iblock)
+        end do
+     end do
    !$OMP END PARALLEL DO
+   endif
 
 !-----------------------------------------------------------------------
 
@@ -1198,7 +1201,7 @@
 ! !IROUTINE: reset_passive_tracers
 ! !INTERFACE:
 
- subroutine reset_passive_tracers(TRACER_NEW, bid, this_block)
+ subroutine reset_passive_tracers(TRACER_NEW, bid)
 
 ! !DESCRIPTION:
 !  call subroutines for each tracer module to reset tracer values
@@ -1209,9 +1212,6 @@
 ! !INPUT PARAMETERS:
 
    integer(int_kind), intent(in) :: bid
-
-   type (block) ::        &
-      this_block           ! block information for current block
 
 ! !INPUT/OUTPUT PARAMETERS:
 
@@ -1235,7 +1235,7 @@
 
    if (sectdyes_on) then
       call sectdyes_reset(  &
-         TRACER_NEW(:,:,:,sectdyes_ind_begin:sectdyes_ind_end), this_block, bid)
+         TRACER_NEW(:,:,:,sectdyes_ind_begin:sectdyes_ind_end), bid)
    end if
 
 !-----------------------------------------------------------------------

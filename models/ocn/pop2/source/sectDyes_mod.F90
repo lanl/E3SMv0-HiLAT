@@ -494,7 +494,7 @@ contains
 ! !IROUTINE: sectdyes_reset
 ! !INTERFACE:
 
- subroutine sectdyes_reset(TRACER_MODULE, this_block, iblock)
+ subroutine sectdyes_reset(TRACER_MODULE, iblock)
 
 ! !DESCRIPTION:
 !  reset internal value for dye tracers at 'seeding' sections
@@ -509,9 +509,6 @@ contains
    real(r8), dimension(nx_block,ny_block,km,sectdyes_tracer_cnt), intent(inout) :: &
       TRACER_MODULE      ! dye tracers
 
-   type (block), intent(in) :: &
-      this_block             ! block info for the current block
-
    integer(int_kind), intent(in) :: iblock
 
 
@@ -525,11 +522,16 @@ contains
    integer (int_kind) :: &
       n, m, ib, ie, jb, je, i, j, k
 
+   type (block) ::        &
+      this_block           ! block information for current block
+
 !-----------------------------------------------------------------------
 !  Reset dye tracer values at the specified sections.
 !  The dye will be reset to 1 on its assigned sections, and to 0
 !  on every other section. 
 !-----------------------------------------------------------------------
+
+      this_block = get_block(blocks_clinic(iblock),iblock)
 
       ib = this_block%ib
       ie = this_block%ie
