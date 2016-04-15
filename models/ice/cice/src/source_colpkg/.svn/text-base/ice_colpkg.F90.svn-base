@@ -365,9 +365,7 @@
       use ice_constants_colpkg, only: iyear_AD, eccen, obliqr, lambm0, &
          mvelpp, obliq, mvelp, decln, eccf, log_print
 
-#ifdef CCSMCOUPLED
-      use shr_orb_mod, only: shr_orb_params
-#else
+#ifndef CCSMCOUPLED
       use ice_orbital, only: shr_orb_params
 #endif
 
@@ -384,10 +382,7 @@
       iyear_AD  = 1950
       log_print = .false.   ! if true, write out orbital parameters
 
-#ifdef CCSMCOUPLED
-      call shr_orb_params( iyear_AD, eccen , obliq , mvelp    , &
-                           obliqr  , lambm0, mvelpp, log_print)
-#else
+#ifndef CCSMCOUPLED
       call shr_orb_params( iyear_AD, eccen , obliq , mvelp    , &
                            obliqr  , lambm0, mvelpp, log_print, &
                            nu_diag , l_stop, stop_label)
@@ -1480,6 +1475,7 @@
                                     potT        , sst         , &
                                     sss         , Tf          , &
                                     strocnxT    , strocnyT    , &
+                                    fbot        ,               &
                                     frzmlt      , rside       , &
                                     fsnow       , frain       , &
                                     fpond       ,               &
@@ -1603,6 +1599,7 @@
          strairyT    , & ! stress on ice by air, y-direction
          strocnxT    , & ! ice-ocean stress, x-direction
          strocnyT    , & ! ice-ocean stress, y-direction
+         fbot        , & ! ice-ocean heat flux at bottom surface (W/m^2)
          frzmlt      , & ! freezing/melting potential (W/m^2)
          rside       , & ! fraction of ice that melts laterally
          sst         , & ! sea surface temperature (C)
@@ -1666,10 +1663,10 @@
       logical (kind=log_kind), intent(out) :: &
          l_stop          ! if true, abort model
 
-      character (len=char_len), intent(out) :: &
-         stop_label
+      character (char_len), intent(out) :: &
+         stop_label      ! abort error message
 
-    integer (kind=int_kind), intent(in) :: &
+      integer (kind=int_kind), intent(in) :: &
          nu_diag         ! file unit number (diagnostic only)
 
       ! local variables
@@ -1695,7 +1692,6 @@
          Urefn       , & ! air speed reference level            (m/s)
          Qrefn       , & ! air sp hum reference level         (kg/kg)
          Tbot        , & ! ice bottom surface temperature (deg C)
-         fbot        , & ! ice-ocean heat flux at bottom surface (W/m^2)
          shcoef      , & ! transfer coefficient for sensible heat
          lhcoef      , & ! transfer coefficient for latent heat
          rfrac           ! water fraction retained for melt ponds
@@ -1862,10 +1858,10 @@
                                  mlt_onset,    frz_onset,    &
                                  yday,         dsnown   (n), &
                                  l_stop,       nu_diag,      &
-                                 prescribed_ice)
+                                 stop_label,   prescribed_ice)
                
             if (l_stop) then
-               stop_label = 'ice: Vertical thermo error'
+               stop_label = 'ice: Vertical thermo error: '//trim(stop_label)
                return
             endif
                
@@ -4686,7 +4682,7 @@
        amm  = c1 ! ISPOL < 1 mmol/m^3 
        dmsp = p1  
        dms  = p1    
-       algalN(1) = 0.0026_dbl_kind ! ISPOL, Lannuzel 2013(pennate) 
+       algalN(1) = c1  !0.0026_dbl_kind ! ISPOL, Lannuzel 2013(pennate) 
        algalN(2) = 0.0027_dbl_kind ! ISPOL, Lannuzel 2013(Phaeocystis)
        algalN(3) = 0.0057_dbl_kind ! ISPOL, Lannuzel 2013(flagellates)  
                                      ! 0.024_dbl_kind ! 5% of 1 mgchl/m^3 
@@ -4703,8 +4699,9 @@
        !ki = 1
        !if (trim(fe_data_type) == 'clim') ki = 2
        do k = 1, max_fe ! ki, max_fe
-            fed(k) = c1 ! (nM) Lannuzel2007 DFe, 
-                        ! range 0.14-2.6 (nM) van der Merwe 2011
+            fed(k) = 0.4_dbl_kind ! c1 (nM) Lannuzel2007 DFe, 
+                                  ! range 0.14-2.6 (nM) van der Merwe 2011
+                                  ! Tagliabue 2012 (0.4 nM)
             fep(k) = c2 ! (nM) van der Merwe 2011
                         ! (0.6 to 2.9 nM ocean)
        enddo 
@@ -4826,11 +4823,11 @@
       integer (kind=int_kind) :: &
          k, ks           ! tracer indices
 
+      ocean_bio_all(:) = c0
+
       do k = 1, max_algae           
          ocean_bio_all(k)      = algalN(k)           ! N
-         ks = max_algae + 1
-         ocean_bio_all(ks + k) = R_C2N(k)*algalN(k)  ! C
-         ks = ks + max_doc + max_dic
+         ks = max_algae + max_doc + max_dic + 1
          ocean_bio_all(ks + k) = R_chl2N(k)*algalN(k)!chl
       enddo   
 
@@ -4865,7 +4862,7 @@
       ocean_bio_all(ks) = dms                        ! DMS
       ks = ks + 1
       ocean_bio_all(ks) = nit                        ! PON
-      ks = ks + 1
+      ks = 2*max_algae + max_doc + 7 + max_dic + max_don
       do k = 1, max_fe
          ocean_bio_all(ks + k) = fed(k)              ! fed
       enddo  

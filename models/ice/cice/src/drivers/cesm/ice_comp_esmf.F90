@@ -146,6 +146,7 @@ end subroutine
     use ice_restart_shared, only: runid, runtype, restart_dir, restart_format
     use ice_history,        only: accum_hist
     use ice_history_shared, only: history_dir, history_file
+    use ice_colpkg_tracers, only: tr_aero, tr_zaero
 !
 ! !ARGUMENTS:
     type(ESMF_GridComp)          :: comp
@@ -572,8 +573,8 @@ end subroutine
     call t_stopf ('cice_esmf_init')
 
     ! Error check
-    if (tr_aero .and. .not. atm_aero) then
-       write(nu_diag,*) 'ice_import ERROR: atm_aero must be set for tr_aero' 
+    if ((tr_aero .and. .not. atm_aero) .or. (tr_zaero .and. .not. atm_aero)) then
+       write(nu_diag,*) 'ice_import ERROR: atm_aero must be set for tr_aero or tr_zaero' 
        call shr_sys_abort()
     end if
 

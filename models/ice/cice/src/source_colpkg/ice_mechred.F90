@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_mechred.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_mechred.F90 1118 2016-04-08 20:53:47Z eclare $
 !=======================================================================
 
 ! Driver for ice mechanical redistribution (ridging)
@@ -407,6 +407,7 @@
             write(nu_diag,*) 'Exceeded max number of ridging iterations'
             write(nu_diag,*) 'max =',nitermax
             l_stop = .true.
+            stop_label = "ridge_ice: Exceeded max number of ridging iterations"
             return
          endif
 
@@ -565,6 +566,7 @@
 
       if (abs(asum - c1) > puny) then
          l_stop = .true.
+         stop_label = "ridge_ice: total area > 1"
 
          write(nu_diag,*) ' '
          write(nu_diag,*) 'Ridging error: total area > 1'

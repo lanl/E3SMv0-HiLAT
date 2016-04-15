@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_shortwave.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_shortwave.F90 1118 2016-04-08 20:53:47Z eclare $
 !=======================================================================
 !
 ! The albedo and absorbed/transmitted flux parameterizations for
@@ -972,10 +972,12 @@
                      hpn = hp * tmp
                      fpn = fpn * tmp
                   endif
-                  fsn = min(fsn, c1-fpn)
-                  
                endif ! hp > puny
-               
+
+               ! Zero out fraction of thin ponds for radiation only
+               if (hpn < hpmin) fpn = c0
+               fsn = min(fsn, c1-fpn)
+
                ! endif    ! masking by lid ice
                apeffn(n) = fpn ! for history
 
@@ -1371,8 +1373,10 @@
             coszen = max(puny,coszen)
 !echmod         if (coszen > puny) then ! sun above horizon
             hi  = vice / aice
-            ! if non-zero pond fraction and sufficient pond depth
-            if( fp > puny .and. hp > hpmin ) then
+            ! if nonzero pond fraction and sufficient pond depth
+            ! if( fp > puny .and. hp > hpmin ) then
+            if (fp > puny) then
+               
                ! calculate ponded ice
 
                srftyp = 2

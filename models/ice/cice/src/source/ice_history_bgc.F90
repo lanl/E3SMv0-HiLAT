@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_bgc.F90 1072 2015-10-29 15:36:55Z njeffery $
+!  SVN:$Id: ice_history_bgc.F90 1111 2016-03-24 19:23:34Z njeffery $
 !=======================================================================
 ! Biogeochemistry history output
 !
@@ -1157,7 +1157,7 @@
          call define_hist_field(n_fPON,"fPON","mmol/m^2/s",tstr2D, tcstr, &
              "PON flux ice to ocean",                                        &
              "positive into ocean", c1, c0,                                  &
-             ns, f_fPON_ai)
+             ns, f_fPON)
 
       if (f_fPON_ai(1:1) /= 'x') &
          call define_hist_field(n_fPON_ai,"fPON_ai","mmol/m^2/s",tstr2D, tcstr, &
@@ -1169,7 +1169,7 @@
          call define_hist_field(n_fDMS,"fDMS","mmol/m^2/s",tstr2D, tcstr, &
              "DMS flux ice to ocean",                                        &
              "positive into ocean", c1, c0,                                  &
-             ns, f_fDMS_ai)
+             ns, f_fDMS)
 
       if (f_fDMS_ai(1:1) /= 'x') &
          call define_hist_field(n_fDMS_ai,"fDMS_ai","mmol/m^2/s",tstr2D, tcstr, &
@@ -1181,7 +1181,7 @@
          call define_hist_field(n_fDMSPd,"fDMSPd","mmol/m^2/s",tstr2D, tcstr, &
              "DMSPd flux ice to ocean",                                        &
              "positive into ocean", c1, c0,                                  &
-             ns, f_fDMSPd_ai)
+             ns, f_fDMSPd)
 
       if (f_fDMSPd_ai(1:1) /= 'x') &
          call define_hist_field(n_fDMSPd_ai,"fDMSPd_ai","mmol/m^2/s",tstr2D, tcstr, &
@@ -1193,7 +1193,7 @@
          call define_hist_field(n_fDMSPp,"fDMSPp","mmol/m^2/s",tstr2D, tcstr, &
              "DMSPp flux ice to ocean",                                        &
              "positive into ocean", c1, c0,                                  &
-             ns, f_fDMSPp_ai)
+             ns, f_fDMSPp)
 
       if (f_fDMSPp_ai(1:1) /= 'x') &
          call define_hist_field(n_fDMSPp_ai,"fDMSPp_ai","mmol/m^2/s",tstr2D, tcstr, &
@@ -1979,7 +1979,7 @@
                ocean_bio(:,:,nlt_bgc_hum,     iblk), a2D)  
       if (f_bgc_DMSP_ml(1:1)/= 'x') &
          call accum_hist_field(n_bgc_DMSP_ml, iblk, &
-               ocean_bio(:,:,nlt_bgc_DMSPp,   iblk), a2D)  
+               ocean_bio(:,:,nlt_bgc_DMSPd,   iblk), a2D)  
       if (f_bgc_DMS_ml(1:1)/= 'x') &
          call accum_hist_field(n_bgc_DMS_ml,  iblk, &
                ocean_bio(:,:,nlt_bgc_DMS,     iblk), a2D) 
@@ -2986,7 +2986,9 @@
       use ice_arrays_column, only: PP_net, grow_net, hbri, &
           ice_bio_net, snow_bio_net, fbio_snoice, fbio_atmice, &
           fzsal, fzsal_g, zfswin 
-      use ice_flux_bgc, only: flux_bio, flux_bio_ai
+      use ice_flux_bgc, only: flux_bio, flux_bio_ai, fnit, fsil, &
+          famm, fdmsp, fdms, fhum, fdust, falgalN, fdoc, fdic, &
+          fdon, ffep, ffed
 
       PP_net        (:,:,:) = c0
       grow_net      (:,:,:) = c0
@@ -3000,6 +3002,19 @@
       fzsal         (:,:,:) = c0
       fzsal_g       (:,:,:) = c0
       zfswin    (:,:,:,:,:) = c0
+      fnit          (:,:,:) = c0
+      fsil          (:,:,:) = c0
+      famm          (:,:,:) = c0
+      fdmsp         (:,:,:) = c0
+      fdms          (:,:,:) = c0
+      fhum          (:,:,:) = c0
+      fdust         (:,:,:) = c0
+      falgalN     (:,:,:,:) = c0
+      fdoc        (:,:,:,:) = c0
+      fdic        (:,:,:,:) = c0
+      fdon        (:,:,:,:) = c0
+      ffep        (:,:,:,:) = c0
+      ffed        (:,:,:,:) = c0
 
       end subroutine init_history_bgc
 
