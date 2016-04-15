@@ -3929,6 +3929,26 @@ Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
 </entry>
 
 <entry 
+id="sectdyes_on"
+type="logical" 
+category="passive_tracers"
+group="passive_tracers_on_nml" >
+Flag for using sectdyes module.
+
+Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
+</entry>
+
+<entry 
+id="surfdyes_on"
+type="logical" 
+category="passive_tracers"
+group="passive_tracers_on_nml" >
+Flag for using surfdyes module.
+
+Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
+</entry>
+
+<entry 
 id="moby_on"
 type="logical" 
 category="passive_tracers"
@@ -4034,6 +4054,210 @@ init_iage_init_file format (binary or netCDF).
 
 Valid Values: 'bin', 'nc'
 Default: 'bin'
+</entry>
+
+<!-- - - - - - - - - - - - - - - - - - -->
+<!-- Group: sectdyes_nml             - -->
+<!-- - - - - - - - - - - - - - - - - - -->
+
+<entry 
+id="init_sectdyes_option"
+type="char*256"
+category="passive_tracers"
+group="sectdyes_nml"
+valid_values="ccsm_startup,zero,ccsm_startup_spunup,restart,ccsm_continue,ccsm_branch,ccsm_hybrid,file" >
+Option for initialization of sectdyes.
+
+Valid Values: 'ccsm_startup', 'zero', 'ccsm_startup_spunup', 'restart', 'ccsm_continue', 'ccsm_branch', 'ccsm_hybrid', 'file'
+Default: 'ccsm_$RUNTYPE'
+</entry>
+
+<entry 
+id="init_sectdyes_init_file"
+type="char*256" 
+category="passive_tracers"
+group="sectdyes_nml"
+input_pathname="abs" >
+Filename for initializing sectdyes (if init_sectdyes_option='file').
+
+Default: 'same_as_TS'
+</entry>
+
+<entry 
+id="sectdyes_sections_file"
+type="char*256" 
+category="passive_tracers"
+group="sectdyes_nml"
+input_pathname="abs" >
+Filename for defining sectdyes sections (if init_sectdyes_option='file').
+
+Default: ''
+</entry>
+
+<entry 
+id="tracer_init_ext%mod_varname&sectdyes_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%filename&sectdyes_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived"
+input_pathname="abs" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%file_varname&sectdyes_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%file_fmt&sectdyes_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%scale_factor&sectdyes_nml"
+type="dtype(1)%real" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%default_val&sectdyes_nml"
+type="dtype(1)%real" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="init_sectdyes_init_file_fmt"
+type="char*256" 
+category="passive_tracers"
+group="sectdyes_nml"
+valid_values="bin,nc" >
+init_sectdyes_init_file format (binary or netCDF).
+
+Valid Values: 'bin', 'nc'
+Default: 'bin'
+</entry>
+
+<entry 
+id="sectdyes_tadvect_ctype"
+type="char*256" 
+category="passive_tracers"
+group="sectdyes_nml" >
+Default: 'base_model'
+</entry>
+
+
+<!-- - - - - - - - - - - - - - - - - - -->
+<!-- Group: surfdyes_nml             - -->
+<!-- - - - - - - - - - - - - - - - - - -->
+
+<entry 
+id="init_surfdyes_option"
+type="char*256"
+category="passive_tracers"
+group="surfdyes_nml"
+valid_values="ccsm_startup,zero,ccsm_startup_spunup,restart,ccsm_continue,ccsm_branch,ccsm_hybrid,file" >
+Option for initialization of surfdyes.
+
+Valid Values: 'ccsm_startup', 'zero', 'ccsm_startup_spunup', 'restart', 'ccsm_continue', 'ccsm_branch', 'ccsm_hybrid', 'file'
+Default: 'ccsm_$RUNTYPE'
+</entry>
+
+<entry 
+id="init_surfdyes_init_file"
+type="char*256" 
+category="passive_tracers"
+group="surfdyes_nml"
+input_pathname="abs" >
+Filename for initializing surfdyes (if init_surfdyes_option='file').
+
+Default: 'same_as_TS'
+</entry>
+
+<entry 
+id="tracer_init_ext%mod_varname&surfdyes_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%filename&surfdyes_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived"
+input_pathname="abs" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%file_varname&surfdyes_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%file_fmt&surfdyes_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%scale_factor&surfdyes_nml"
+type="dtype(1)%real" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%default_val&surfdyes_nml"
+type="dtype(1)%real" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="init_surfdyes_init_file_fmt"
+type="char*256" 
+category="passive_tracers"
+group="surfdyes_nml"
+valid_values="bin,nc" >
+init_surfdyes_init_file format (binary or netCDF).
+
+Valid Values: 'bin', 'nc'
+Default: 'bin'
+</entry>
+
+<entry 
+id="surfdyes_tadvect_ctype"
+type="char*256" 
+category="passive_tracers"
+group="surfdyes_nml" >
+Default: 'base_model'
 </entry>
 
 <!-- - - - - - - - - - - - - - - - - - -->

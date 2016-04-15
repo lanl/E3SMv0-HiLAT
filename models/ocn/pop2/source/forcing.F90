@@ -25,6 +25,7 @@
    use forcing_ws
    use forcing_shf
    use forcing_sfwf
+   use forcing_fields
    use forcing_pt_interior
    use forcing_s_interior
    use forcing_ap
@@ -391,7 +392,8 @@
    call set_ap(ATM_PRESS)
 
    if (nt > 2)  &
-      call set_sflux_passive_tracers(U10_SQR,IFRAC,ATM_PRESS,STF)
+      call set_sflux_passive_tracers(U10_SQR,IFRAC,ATM_PRESS,STF, &
+                   EVAP_F,PREC_F,MELT_F,ROFF_F,IOFF_F)
 
    call set_chl   
 

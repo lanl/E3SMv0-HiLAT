@@ -1,0 +1,23 @@
+22
+ 301  320   93   93    1   40  1 South Atlantic 30S West Shallow
+ 301  320   93   93   41   60  2 South Atlantic 30S West Deep
+   1   55   93   93    1   40  1 South Atlantic 30S East Shallow
+   1   55   93   93   41   60  2 South Atlantic 30S East Deep
+  56  150   93   93    1   40  3 South Indian 30S Shallow
+  56  150   93   93   41   60  4 South Indian 30S Deep
+ 151  300   93   93    1   40  5 South Pacific 30S Shallow
+ 151  300   93   93   41   60  6 South Pacific 30S Deep
+ 198  202  333  333    1   60  1 Bering Strait
+ 234  234  373  380    1   60  2 Nares Strait
+ 242  248  372  372    1   60  3 Northwest Passage
+  95   95  370  384    1   60  4 Fram Strait
+  69   71  359  359    1   60  5 Barents Sea Opening Section 1
+  71   71  359  361    1   60  5 Barents Sea Opening Section 2
+  71   74  361  361    1   60  5 Barents Sea Opening Section 3
+  74   74  361  363    1   60  5 Barents Sea Opening Section 4
+  74   77  363  363    1   60  5 Barents Sea Opening Section 5
+  77   77  363  365    1   60  5 Barents Sea Opening Section 6
+  77   80  365  365    1   60  5 Barents Sea Opening Section 7
+  80   82  366  366    1   60  5 Barents Sea Opening Section 8
+  82   84  367  367    1   60  5 Barents Sea Opening Section 9
+  84   85  368  368    1   60  5 Barents Sea Opening Section 10
