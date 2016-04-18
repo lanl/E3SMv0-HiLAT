@@ -64,17 +64,22 @@
          istep1 = istep1 + 1
          time = time + dt       ! determine the time and date
 
-#ifndef coupled
          call ice_timer_start(timer_couple)  ! atm/ocn coupling
+
+#ifndef coupled
+#ifndef CCSMCOUPLED
          call get_forcing_atmo     ! atmospheric forcing from data
          call get_forcing_ocn(dt)  ! ocean forcing from data
-         ! if (tr_aero) call faero_data       ! aerosols
-         !if (tr_aero .or. tr_zaero)  call faero_default     ! aerosols
-         !if (skl_bgc .or. z_tracers) call get_forcing_bgc  ! biogeochemistry
-         !if (tr_zaero)  call fzaero_data      ! zaerosols, gx1
-         if (z_tracers)  call get_atm_bgc      ! biogeochemistry
-         call ice_timer_stop(timer_couple)    ! atm/ocn coupling
+
+         ! aerosols
+         ! if (tr_aero)  call faero_data                   ! data file
+         ! if (tr_zaero) call fzaero_data                  ! data file (gx1)
+         if (tr_aero .or. tr_zaero)  call faero_default    ! default values
+
+         if (skl_bgc .or. z_tracers) call get_forcing_bgc  ! biogeochemistry
 #endif
+#endif
+         if (z_tracers) call get_atm_bgc                   ! biogeochemistry
 
          call init_flux_atm     ! initialize atmosphere fluxes sent to coupler
          call init_flux_ocn     ! initialize ocean fluxes sent to coupler

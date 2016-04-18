@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_shared.F90 1107 2016-02-15 23:24:14Z eclare $
+!  SVN:$Id: ice_history_shared.F90 1118 2016-04-08 20:53:47Z eclare $
 !=======================================================================
 !
 ! Output files: netCDF or binary data, Fortran unformatted dumps

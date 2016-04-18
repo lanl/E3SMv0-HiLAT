@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_colpkg.F90 1111 2016-03-24 19:23:34Z njeffery $
+!  SVN:$Id: ice_colpkg.F90 1118 2016-04-08 20:53:47Z eclare $
 !=========================================================================
 !
 ! flags and interface routines for the column package
@@ -365,9 +365,7 @@
       use ice_constants_colpkg, only: iyear_AD, eccen, obliqr, lambm0, &
          mvelpp, obliq, mvelp, decln, eccf, log_print
 
-#ifdef CCSMCOUPLED
-      use shr_orb_mod, only: shr_orb_params
-#else
+#ifndef CCSMCOUPLED
       use ice_orbital, only: shr_orb_params
 #endif
 
@@ -384,10 +382,7 @@
       iyear_AD  = 1950
       log_print = .false.   ! if true, write out orbital parameters
 
-#ifdef CCSMCOUPLED
-      call shr_orb_params( iyear_AD, eccen , obliq , mvelp    , &
-                           obliqr  , lambm0, mvelpp, log_print)
-#else
+#ifndef CCSMCOUPLED
       call shr_orb_params( iyear_AD, eccen , obliq , mvelp    , &
                            obliqr  , lambm0, mvelpp, log_print, &
                            nu_diag , l_stop, stop_label)
@@ -1668,8 +1663,8 @@
       logical (kind=log_kind), intent(out) :: &
          l_stop          ! if true, abort model
 
-      character (len=char_len), intent(out) :: &
-         stop_label
+      character (char_len), intent(out) :: &
+         stop_label      ! abort error message
 
       integer (kind=int_kind), intent(in) :: &
          nu_diag         ! file unit number (diagnostic only)
@@ -1863,10 +1858,10 @@
                                  mlt_onset,    frz_onset,    &
                                  yday,         dsnown   (n), &
                                  l_stop,       nu_diag,      &
-                                 prescribed_ice)
+                                 stop_label,   prescribed_ice)
                
             if (l_stop) then
-               stop_label = 'ice: Vertical thermo error'
+               stop_label = 'ice: Vertical thermo error: '//trim(stop_label)
                return
             endif
                

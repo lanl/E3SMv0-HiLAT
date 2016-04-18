@@ -1,4 +1,4 @@
-!  SVN:$Id: CICE_RunMod.F90 1111 2016-03-24 19:23:34Z njeffery $
+!  SVN:$Id: CICE_RunMod.F90 1118 2016-04-08 20:53:47Z eclare $
 !=======================================================================
 !
 !  Main driver for time stepping of CICE.
@@ -72,20 +72,27 @@
          if (stop_now >= 1) exit timeLoop
 #endif
 
-#ifndef coupled
          call ice_timer_start(timer_couple)  ! atm/ocn coupling
+
+#ifndef coupled
+#ifndef CCSMCOUPLED
          call get_forcing_atmo     ! atmospheric forcing from data
          call get_forcing_ocn(dt)  ! ocean forcing from data
-         ! if (tr_aero) call faero_data       ! aerosols
-         if (tr_aero .or. tr_zaero)  call faero_default     ! aerosols
+
+         ! aerosols
+         ! if (tr_aero)  call faero_data                   ! data file
+         ! if (tr_zaero) call fzaero_data                  ! data file (gx1)
+         if (tr_aero .or. tr_zaero)  call faero_default    ! default values
+
          if (skl_bgc .or. z_tracers) call get_forcing_bgc  ! biogeochemistry
-         !if (tr_zaero)  call fzaero_data      ! zaerosols, gx1
-         if (z_tracers)  call get_atm_bgc      ! biogeochemistry
-         call ice_timer_stop(timer_couple)    ! atm/ocn coupling
 #endif
+#endif
+         if (z_tracers) call get_atm_bgc                   ! biogeochemistry
 
          call init_flux_atm     ! initialize atmosphere fluxes sent to coupler
          call init_flux_ocn     ! initialize ocean fluxes sent to coupler
+
+         call ice_timer_stop(timer_couple)    ! atm/ocn coupling
 
 #ifndef CICE_IN_NEMO
       enddo timeLoop
@@ -404,7 +411,7 @@
 
          do j = 1, ny_block
          do i = 1, nx_block
- 
+
       !-----------------------------------------------------------------
       ! reduce fresh by fpond for coupling
       !-----------------------------------------------------------------

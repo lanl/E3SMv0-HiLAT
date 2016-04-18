@@ -145,14 +145,19 @@
       call init_forcing_atmo    ! initialize atmospheric forcing (standalone)
 
 #ifndef coupled
+#ifndef CCSMCOUPLED
       call get_forcing_atmo     ! atmospheric forcing from data
       call get_forcing_ocn(dt)  ! ocean forcing from data
-     ! if (tr_aero) call faero_data          ! aerosols
-      if (tr_aero .or. tr_zaero) call faero_default ! aerosols
-     ! if (skl_bgc .or. z_tracers) call get_forcing_bgc
-     ! if (tr_zaero) call fzaero_data ! zaerosols
-      if (z_tracers) call get_atm_bgc 
+
+      ! aerosols
+      ! if (tr_aero)  call faero_data                   ! data file
+      ! if (tr_zaero) call fzaero_data                  ! data file (gx1)
+      if (tr_aero .or. tr_zaero)  call faero_default    ! default values
+
+      if (skl_bgc .or. z_tracers) call get_forcing_bgc  ! biogeochemistry
 #endif
+#endif
+      if (z_tracers) call get_atm_bgc                   ! biogeochemistry
 
       if (runtype == 'initial' .and. .not. restart) &
          call init_shortwave    ! initialize radiative transfer using current swdn

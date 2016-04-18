@@ -115,7 +115,6 @@
    use time_management
    use ecosys_parms
    use registry
-   use named_field_mod
    use co2calc
 #ifdef CCSMCOUPLED
    use POP_MCT_vars_mod

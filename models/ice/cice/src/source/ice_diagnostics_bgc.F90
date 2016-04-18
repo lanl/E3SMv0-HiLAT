@@ -851,15 +851,15 @@
 
       ! fields at diagnostic points
       real (kind=dbl_kind), dimension(npnt) :: &
-         phinS, phinS1, phinS2,&
-         phbrn,pdh_top1,pdh_bot1, pdh_top2,pdh_bot2, psice_rho, pfzsal, & 
-         pfzsal_g, pdarcy_V1, pdarcy_V2 
+         phinS, phinS1,&
+         phbrn,pdh_top1,pdh_bot1, psice_rho, pfzsal, & 
+         pfzsal_g, pdarcy_V1 
 
       ! vertical  fields of category 1 at diagnostic points for bgc layer model
       real (kind=dbl_kind), dimension(npnt,nblyr+2) :: &
          pphin, pgrid, pphin1
       real (kind=dbl_kind), dimension(npnt,nblyr) :: &
-         pSin, pSice, pSin1, pSin2
+         pSin, pSice, pSin1
 
       real (kind=dbl_kind), dimension(npnt,nblyr+1) :: &
          pbTiz, piDin
@@ -887,16 +887,12 @@
                pfzsal(n) = fzsal(i,j,iblk)   
                pfzsal_g(n) = fzsal_g(i,j,iblk)            
                phinS(n) = c0            
-               phinS1(n) = c0            
-               phinS2(n) = c0
+               phinS1(n) = c0 
                phbrn(n) = c0
                psice_rho(n) = c0
                pdh_top1(n) = c0
                pdh_bot1(n) = c0
-               pdh_top2(n) = c0
-               pdh_bot2(n) = c0
                pdarcy_V1(n) = c0
-               pdarcy_V2(n) = c0
                do nn = 1,ncat
                   psice_rho(n) = psice_rho(n) + sice_rho(i,j,nn,iblk)*aicen(i,j,nn,iblk)
                enddo
@@ -912,13 +908,6 @@
                   pdh_bot1(n) = dhbr_bot(i,j,1,iblk)
                   pdarcy_V1(n) = darcy_V(i,j,1,iblk)
                endif  
-               if (aicen(i,j,2,iblk)> c0) then
-                  if (tr_brine) phinS2(n) = trcrn(i,j,nt_fbri,2,iblk) &
-                                          * vicen(i,j,2,iblk)/aicen(i,j,2,iblk)
-                  pdh_top2(n) = dhbr_top(i,j,2,iblk)
-                  pdh_bot2(n) = dhbr_bot(i,j,2,iblk)
-                  pdarcy_V2(n) = darcy_V(i,j,2,iblk)
-               endif
                if (tr_brine .AND. aice(i,j,iblk) > c0) &
                   phbrn(n) = (c1 - rhosi/rhow)*vice(i,j,iblk)/aice(i,j,iblk) &
                                  - rhos/rhow  *vsno(i,j,iblk)/aice(i,j,iblk)
@@ -947,11 +936,9 @@
                enddo
                do k = 1,nblyr
                   pSin(n,k) = c0
-                  pSin1(n,k) = c0
-                  pSin2(n,k) = c0                      
+                  pSin1(n,k) = c0                    
                   pSin(n,k)= trcr(i,j,nt_bgc_S+k-1,iblk)     
                   if (aicen(i,j,1,iblk) > c0) pSin1(n,k) = trcrn(i,j,nt_bgc_S+k-1,1,iblk)
-                  if (aicen(i,j,2,iblk) > c0) pSin2(n,k) = trcrn(i,j,nt_bgc_S+k-1,2,iblk)
                enddo 
                do k = 1,nilyr
                   pSice(n,k) = trcr(i,j,nt_sice+k-1,iblk)
@@ -960,16 +947,12 @@
 
             call broadcast_scalar(phinS    (n),   pmloc(n)) 
             call broadcast_scalar(phinS1   (n),   pmloc(n)) 
-            call broadcast_scalar(phinS2   (n),   pmloc(n)) 
             call broadcast_scalar(phbrn    (n),   pmloc(n)) 
             call broadcast_scalar(pdh_top1 (n),   pmloc(n)) 
             call broadcast_scalar(pdh_bot1 (n),   pmloc(n)) 
-            call broadcast_scalar(pdh_top2 (n),   pmloc(n)) 
-            call broadcast_scalar(pdh_bot2 (n),   pmloc(n)) 
             call broadcast_scalar(psice_rho(n),   pmloc(n))  
             call broadcast_scalar(pfzsal_g (n),   pmloc(n))  
-            call broadcast_scalar(pdarcy_V1(n),   pmloc(n))  
-            call broadcast_scalar(pdarcy_V2(n),   pmloc(n)) 
+            call broadcast_scalar(pdarcy_V1(n),   pmloc(n)) 
             call broadcast_scalar(pfzsal   (n),   pmloc(n)) 
             call broadcast_array (pbTiz    (n,:), pmloc(n))
             call broadcast_array (piDin    (n,:), pmloc(n))
@@ -977,7 +960,6 @@
             call broadcast_array (pphin1   (n,:), pmloc(n))
             call broadcast_array (pSin     (n,:), pmloc(n))
             call broadcast_array (pSin1    (n,:), pmloc(n))
-            call broadcast_array (pSin2    (n,:), pmloc(n))
             call broadcast_array (pSice    (n,:), pmloc(n))
          enddo                  ! npnt
       endif                     ! print_points
@@ -1000,19 +982,15 @@
         write(nu_diag,902) '      Brine height       '
         write(nu_diag,900) 'hbrin                   = ',phinS(1),phinS(2)
         write(nu_diag,900) 'hbrin cat 1             = ',phinS1(1),phinS1(2)
-        write(nu_diag,900) 'hbrin cat 2             = ',phinS2(1),phinS2(2)
         write(nu_diag,900) 'Freeboard               = ',phbrn(1),phbrn(2)
         write(nu_diag,900) 'dhbrin cat 1 top        = ',pdh_top1(1),pdh_top1(2)
         write(nu_diag,900) 'dhbrin cat 1 bottom     = ',pdh_bot1(1),pdh_bot1(2)
-        write(nu_diag,900) 'dhbrin cat 2 top        = ',pdh_top2(1),pdh_top2(2)
-        write(nu_diag,900) 'dhbrin cat 2 bottom     = ',pdh_bot2(1),pdh_bot2(2)
         write(nu_diag,*) '                         '
         write(nu_diag,902) '     zSalinity         '
         write(nu_diag,900) 'Avg density (kg/m^3)   = ',psice_rho(1),psice_rho(2)
         write(nu_diag,900) 'Salt flux (kg/m^2/s)   = ',pfzsal(1),pfzsal(2)
         write(nu_diag,900) 'Grav. Drain. Salt flux = ',pfzsal_g(1),pfzsal_g(2)
         write(nu_diag,900) 'Darcy V cat 1 (m/s)    = ',pdarcy_V1(1),pdarcy_V1(2)
-        write(nu_diag,900) 'Darcy V cat 2 (m/s)    = ',pdarcy_V2(1),pdarcy_V2(2)
         write(nu_diag,*) '                         '
         write(nu_diag,*) ' Top down bgc Layer Model'
         write(nu_diag,*) '                         '
@@ -1035,10 +1013,6 @@
         write(nu_diag,803) 'zsal(1) cat 1 ','zsal(2) cat 1 '
         write(nu_diag,*) '---------------------------------------------------'
         write(nu_diag,802) ((pSin1(n,k),n=1,2), k = 1,nblyr)                         
-        write(nu_diag,*) '                         '
-        write(nu_diag,803) 'zsal(1) cat 2 ','zsal(2) cat 2'
-        write(nu_diag,*) '---------------------------------------------------'
-        write(nu_diag,802) ((pSin2(n,k),n=1,2), k = 1,nblyr)                         
         write(nu_diag,*) '                         '
         write(nu_diag,803) 'zsal(1) Avg S ','zsal(2) Avg S '
         write(nu_diag,*) '---------------------------------------------------'
