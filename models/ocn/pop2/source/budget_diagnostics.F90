@@ -419,18 +419,28 @@
             if ( k == 1 ) then
               WORK1(:,:,iblock) = TRACER(:,:,k,n,curtime,iblock) * WORK2(:,:,iblock)
             else
-              WORK1(:,:,iblock) = TRACER(:,:,k,n,curtime,iblock)
+              if (partial_bottom_cells) then
+                WORK1(:,:,iblock) = TRACER(:,:,k,n,curtime,iblock) *   &
+                                                 DZT(:,:,k,iblock)
+              else
+                WORK1(:,:,iblock) = TRACER(:,:,k,n,curtime,iblock)
+              endif
             endif
           else
             if ( k == 1 ) then
               WORK1(:,:,iblock) = p5 * (TRACER(:,:,k,n,oldtime,iblock) * WORK4(:,:,iblock)  &
                           + TRACER(:,:,k,n,curtime,iblock) * WORK2(:,:,iblock))
             else
-              WORK1(:,:,iblock) = p5 * (TRACER(:,:,k,n,oldtime,iblock)  &
+              if (partial_bottom_cells) then
+                WORK1(:,:,iblock) = p5 * (TRACER(:,:,k,n,oldtime,iblock)  &
+                       + TRACER(:,:,k,n,curtime,iblock)) * DZT(:,:,k,iblock)
+              else
+                WORK1(:,:,iblock) = p5 * (TRACER(:,:,k,n,oldtime,iblock)  &
                        + TRACER(:,:,k,n,curtime,iblock))
+              endif
             endif
           endif
-     enddo ! iblock
+       enddo ! iblock
      !$OMP END PARALLEL DO
 
      if ( k == 1 ) then
@@ -439,7 +449,11 @@
      else
        WORK3(:,:,:) = merge (WORK1(:,:,:)*TAREA(:,:,:), c0, KMT(:,:,:) >= k)
        sum_tmp = global_sum(WORK3, distrb_clinic, field_loc_center)
-       tracer_mean(n) = tracer_mean(n) + sum_tmp * dz(k)
+       if (partial_bottom_cells) then
+         tracer_mean(n) = tracer_mean(n) + sum_tmp
+       else
+         tracer_mean(n) = tracer_mean(n) + sum_tmp * dz(k)
+       endif
      endif
 
    enddo ! k
