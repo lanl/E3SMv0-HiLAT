@@ -1295,6 +1295,8 @@
 <ah&hmix_gm_nml ocn_grid="tx1v1"   kappa_isop_choice="bfre"     kappa_thic_choice="bfre"    >3.0e7</ah&hmix_gm_nml>  
 <ah&hmix_gm_nml ocn_grid="tx0.1v2" kappa_isop_choice="constant" kappa_thic_choice="constant">0.6e7</ah&hmix_gm_nml>  
 <ah&hmix_gm_nml ocn_grid="tx0.1v2" kappa_isop_choice="bfre"     kappa_thic_choice="bfre"    >3.0e7</ah&hmix_gm_nml>  
+<ah&hmix_gm_nml ocn_grid="tx0.3v2" kappa_isop_choice="constant" kappa_thic_choice="constant">0.6e7</ah&hmix_gm_nml>  
+<ah&hmix_gm_nml ocn_grid="tx0.3v2" kappa_isop_choice="bfre"     kappa_thic_choice="bfre"    >3.0e7</ah&hmix_gm_nml>  
 
 <rich_mix&vmix_rich_nml>50.0</rich_mix&vmix_rich_nml>
 

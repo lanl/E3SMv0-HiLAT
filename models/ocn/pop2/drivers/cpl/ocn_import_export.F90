@@ -567,7 +567,7 @@ contains
 !-----------------------------------------------------------------------
 
 !maltrud debug
-   write(stdout,*) 'pjc: ocn_export_mct: ', my_task, index_o2x_Faoo_fdms_ocn
+!  write(stdout,*) 'pjc: ocn_export_mct: ', my_task, index_o2x_Faoo_fdms_ocn
 
    if (index_o2x_Faoo_fdms_ocn > 0) then
       n = 0
@@ -747,8 +747,8 @@ contains
    endif
 
 !maltrud debug
-   write(stdout,*) 'pjc: pop_sum_buffer1: ', my_task, &
-     index_o2x_Faoo_fdms_ocn, sflux_dms_nf_ind, delt_last
+!  write(stdout,*) 'pjc: pop_sum_buffer1: ', my_task, &
+!    index_o2x_Faoo_fdms_ocn, sflux_dms_nf_ind, delt_last
 
 !-----------------------------------------------------------------------
 !
