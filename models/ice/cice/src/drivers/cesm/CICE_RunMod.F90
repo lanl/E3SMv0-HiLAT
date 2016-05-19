@@ -64,17 +64,22 @@
          istep1 = istep1 + 1
          time = time + dt       ! determine the time and date
 
-#ifndef coupled
          call ice_timer_start(timer_couple)  ! atm/ocn coupling
+
+#ifndef coupled
+#ifndef CCSMCOUPLED
          call get_forcing_atmo     ! atmospheric forcing from data
          call get_forcing_ocn(dt)  ! ocean forcing from data
-         ! if (tr_aero) call faero_data       ! aerosols
-         if (tr_aero .or. tr_zaero)  call faero_default     ! aerosols
+
+         ! aerosols
+         ! if (tr_aero)  call faero_data                   ! data file
+         ! if (tr_zaero) call fzaero_data                  ! data file (gx1)
+         if (tr_aero .or. tr_zaero)  call faero_default    ! default values
+
          if (skl_bgc .or. z_tracers) call get_forcing_bgc  ! biogeochemistry
-         if (z_tracers) call get_atm_bgc      ! biogeochemistry
-         !if (tr_zaero)  call fzaero_data      ! zaerosols, gx1
-         call ice_timer_stop(timer_couple)    ! atm/ocn coupling
 #endif
+#endif
+         if (z_tracers) call get_atm_bgc                   ! biogeochemistry
 
          call init_flux_atm     ! initialize atmosphere fluxes sent to coupler
          call init_flux_ocn     ! initialize ocean fluxes sent to coupler
@@ -300,7 +305,7 @@
           albicen, albsnon, albpndn, apeffn, fzsal_g, fzsal, snowfracn
       use ice_blocks, only: block, nx_block, ny_block
       use ice_calendar, only: dt, nstreams
-      use ice_colpkg_shared, only: calc_Tsfc, oceanmixed_ice, max_aero
+      use ice_colpkg_shared, only: calc_Tsfc, oceanmixed_ice, max_aero, skl_bgc
       use ice_colpkg_tracers, only: nbtrcr
       use ice_constants, only: c0, c1, puny, rhofresh
       use ice_domain_size, only: ncat
@@ -312,7 +317,10 @@
           swvdr, swidr, swvdf, swidf, Tf, Tair, Qa, strairxT, strairyt, &
           fsens, flat, fswabs, flwout, evap, Tref, Qref, Uref, &
           fsurfn_f, flatn_f, scale_fluxes, frzmlt_init, frzmlt, wind
-      use ice_flux_bgc, only: faero_ocn, fzsal_ai, fzsal_g_ai, flux_bio, flux_bio_ai
+      use ice_flux_bgc, only: bgcflux_ice_to_ocn, &
+          faero_ocn, fzsal_ai, fzsal_g_ai, flux_bio, flux_bio_ai, &
+          fnit, fsil, famm, fdmsp, fdms, fhum, fdust, falgalN, fdoc, &
+          fdic, fdon, ffep, ffed
       use ice_grid, only: tmask
       use ice_state, only: aicen, aice, aice_init
       use ice_step_mod, only: ocean_mixed_layer
@@ -436,7 +444,7 @@
             fzsal_ai  (i,j,iblk) = fzsal  (i,j,iblk) 
             fzsal_g_ai(i,j,iblk) = fzsal_g(i,j,iblk)  
 
-            if (nbtrcr > 0) then
+            if (nbtrcr > 0 .or. skl_bgc) then
             do k = 1, nbtrcr
               flux_bio_ai  (i,j,k,iblk) = flux_bio  (i,j,k,iblk)
             enddo
@@ -478,6 +486,22 @@
                             flux_bio(:,:,1:nbtrcr,iblk),             &
                             Uref=Uref(:,:,iblk), wind=wind(:,:,iblk) )
  
+      !-----------------------------------------------------------------
+      ! Define ice-ocean bgc fluxes
+      !-----------------------------------------------------------------
+
+         if (nbtrcr > 0 .or. skl_bgc) then
+            call bgcflux_ice_to_ocn (nx_block,       ny_block,           &
+                                  flux_bio(:,:,1:nbtrcr,iblk),            &
+                                  fnit(:,:,iblk),    fsil(:,:,iblk),      &
+                                  famm(:,:,iblk),    fdmsp(:,:,iblk),     &
+                                  fdms(:,:,iblk),    fhum(:,:,iblk),      &
+                                  fdust(:,:,iblk),   falgalN(:,:,:,iblk), &
+                                  fdoc(:,:,:,iblk),  fdic(:,:,:,iblk),    &
+                                  fdon(:,:,:,iblk),  ffep(:,:,:,iblk),    &
+                                  ffed(:,:,:,iblk))
+         endif
+
 !echmod - comment this out for efficiency, if .not. calc_Tsfc
          if (.not. calc_Tsfc) then
 

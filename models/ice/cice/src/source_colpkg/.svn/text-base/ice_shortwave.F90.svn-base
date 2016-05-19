@@ -972,10 +972,12 @@
                      hpn = hp * tmp
                      fpn = fpn * tmp
                   endif
-                  fsn = min(fsn, c1-fpn)
-                  
                endif ! hp > puny
-               
+
+               ! Zero out fraction of thin ponds for radiation only
+               if (hpn < hpmin) fpn = c0
+               fsn = min(fsn, c1-fpn)
+
                ! endif    ! masking by lid ice
                apeffn(n) = fpn ! for history
 
@@ -1371,8 +1373,10 @@
             coszen = max(puny,coszen)
 !echmod         if (coszen > puny) then ! sun above horizon
             hi  = vice / aice
-            ! if non-zero pond fraction and sufficient pond depth
-            if( fp > puny .and. hp > hpmin ) then
+            ! if nonzero pond fraction and sufficient pond depth
+            ! if( fp > puny .and. hp > hpmin ) then
+            if (fp > puny) then
+               
                ! calculate ponded ice
 
                srftyp = 2

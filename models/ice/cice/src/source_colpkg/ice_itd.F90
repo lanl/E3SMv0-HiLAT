@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_itd.F90 1099 2015-12-12 18:12:30Z eclare $
+!  SVN:$Id: ice_itd.F90 1118 2016-04-08 20:53:47Z eclare $
 !=======================================================================
 
 ! Routines to initialize the ice thickness distribution and

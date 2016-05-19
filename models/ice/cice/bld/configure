@@ -324,7 +324,7 @@ if (defined $opts{'ntr_aero'}) {
     if ($cice_mode eq 'prescribed') {
         $cfg_ref->set('ntr_aero', 0);
     } else {
-        $cfg_ref->set('ntr_aero', 3);
+        $cfg_ref->set('ntr_aero', 0);
     }
 }
 

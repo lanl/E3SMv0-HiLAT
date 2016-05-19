@@ -296,7 +296,7 @@
 
 <restart_pond_topo> .false. </restart_pond_topo>
 
-<tr_aero                 > .true. </tr_aero>
+<tr_aero                 > .false. </tr_aero>
 
 <restart_aero> .false. </restart_aero>
 
