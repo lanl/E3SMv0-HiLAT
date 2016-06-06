@@ -162,6 +162,7 @@
      lsource_sink, &
      lflux_gas_o2, &
      lflux_gas_co2,&
+     iflux_cpl, &
      locmip_k1_k2_bug_fix
 
   logical (log_kind), dimension(:,:,:), allocatable :: &
@@ -783,7 +784,7 @@ contains
       comp_surf_avg_freq_opt, comp_surf_avg_freq,  &
       use_nml_surf_vals, surf_avg_dic_const, surf_avg_alk_const, &
       ecosys_qsw_distrb_const, lmarginal_seas, &
-      lsource_sink, lflux_gas_o2, lflux_gas_co2, locmip_k1_k2_bug_fix, &
+      lsource_sink, lflux_gas_o2, lflux_gas_co2, iflux_cpl, locmip_k1_k2_bug_fix, &
       lnutr_variable_restore, nutr_variable_rest_file,  &
       nutr_variable_rest_file_fmt,atm_co2_opt,atm_co2_const, &
       atm_alt_co2_opt, atm_alt_co2_const, &
@@ -1174,6 +1175,7 @@ contains
    lsource_sink          = .true.
    lflux_gas_o2          = .true.
    lflux_gas_co2         = .true.
+   iflux_cpl             = .true.
    locmip_k1_k2_bug_fix  = .true.
 
    comp_surf_avg_freq_opt        = 'never'
@@ -1447,6 +1449,7 @@ contains
    call broadcast_scalar(lsource_sink, master_task)
    call broadcast_scalar(lflux_gas_o2, master_task)
    call broadcast_scalar(lflux_gas_co2, master_task)
+   call broadcast_scalar(iflux_cpl, master_task)
    call broadcast_scalar(locmip_k1_k2_bug_fix, master_task)
 
    call broadcast_scalar(liron_patch, master_task)
@@ -5983,6 +5986,7 @@ contains
 !  register and set fluxes from sea ice (swang)
 !-----------------------------------------------------------------------
 
+  if (iflux_cpl) then
       call document(subname, 'sea ice fluxes coming from driver')
       call named_field_get_index('SFLUX_dFe', sflux_dFe_nf_ind)
 
@@ -6011,6 +6015,7 @@ contains
       call named_field_get_index('SFLUX_fep1', sflux_fep1_nf_ind)
       call named_field_get_index('SFLUX_fep2', sflux_fep2_nf_ind)
       call named_field_get_index('SFLUX_dust', sflux_dust_nf_ind)
+  endif
 
 !-----------------------------------------------------------------------
 !EOC
@@ -7277,7 +7282,8 @@ contains
 !-----------------------------------------------------------------------
 !  if sea ice-ocean bgc coupled, then add ice flux to STF (swang)
 !-----------------------------------------------------------------------
-      call named_field_get(sflux_dFe_nf_ind, ifed_FLUX_IN)
+  if (iflux_cpl) then
+     call named_field_get(sflux_dFe_nf_ind, ifed_FLUX_IN)
 ! NOTE: IRON_FLUX_IN should be fractionated by ice fraction!! (swang : can be considered later)   
       STF_MODULE(:,:,fe_ind,:) = STF_MODULE(:,:,fe_ind,:) + ifed_FLUX_IN
 
@@ -7316,6 +7322,7 @@ contains
       elsewhere (TLAT(:,:,:) < 0.0_r8)
          STF_MODULE(:,:,n,:) = STF_MODULE(:,:,n,:) + iphaeo_FLUX_IN
       end where
+  endif
 
 !-----------------------------------------------------------------------
 !  Apply NO & NH fluxes to alkalinity
