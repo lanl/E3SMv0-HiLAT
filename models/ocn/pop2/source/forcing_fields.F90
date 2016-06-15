@@ -43,7 +43,27 @@ module forcing_fields
 
    integer(kind=int_kind), public :: &
       ATM_CO2_PROG_nf_ind = 0, & ! bottom atm level prognostic co2
-      ATM_CO2_DIAG_nf_ind = 0    ! bottom atm level diagnostic co2
+      ATM_CO2_DIAG_nf_ind = 0, & ! bottom atm level diagnostic co2
+      sflux_diat_nf_ind   = 0, & ! ice -> ocn diat flux
+      sflux_sp_nf_ind     = 0, & ! ice -> ocn sp flux
+      sflux_phaeo_nf_ind  = 0, & ! ice -> ocn phaeo flux
+      sflux_dFe_nf_ind    = 0, & ! ice -> ocn fed flux
+      sflux_NO3_nf_ind    = 0, & ! ice -> ocn NO3 flux
+      sflux_NH4_nf_ind    = 0, & ! ice -> ocn NH4 flux
+      sflux_SiO3_nf_ind   = 0, & ! ice -> ocn SiO3 flux
+      sflux_DOC_nf_ind    = 0, & ! ice -> ocn DOC flux
+      sflux_DON_nf_ind    = 0, & ! ice -> ocn DON flux
+      sflux_DONr_nf_ind   = 0, & ! ice -> ocn DONr flux
+      sflux_idms_nf_ind   = 0, & ! ice -> ocn idms flux
+      sflux_idmsp_nf_ind  = 0, & ! ice -> ocn idmsp flux
+      sflux_dic1_nf_ind   = 0, & ! ice -> ocn dic1 flux
+      sflux_doc2_nf_ind   = 0, & ! ice -> ocn doc2 flux
+      sflux_doc3_nf_ind   = 0, & ! ice -> ocn doc3 flux
+      sflux_fed2_nf_ind   = 0, & ! ice -> ocn fed2 flux
+      sflux_fep1_nf_ind   = 0, & ! ice -> ocn fep1 flux
+      sflux_fep2_nf_ind   = 0, & ! ice -> ocn fep2 flux
+      sflux_dust_nf_ind   = 0, & ! ice -> ocn dust flux
+      sflux_dmspp_nf_ind  = 0    ! ice -> ocn dmspp flux
 
 
    real (r8), dimension(nx_block,ny_block,2,max_blocks_clinic), &

@@ -865,6 +865,7 @@
 
 <lflux_gas_o2 >.true.</lflux_gas_o2>
 <lflux_gas_co2>.true.</lflux_gas_co2>
+<iflux_cpl>.true.</iflux_cpl>
 
 <ecosys_tadvect_ctype>base_model</ecosys_tadvect_ctype>
 
@@ -1314,6 +1315,7 @@
 <tracer_init_ext(2)%mod_varname&tracegas_nml>DMSP</tracer_init_ext(2)%mod_varname&tracegas_nml>
 
 <lflux_gas_dms >.true.</lflux_gas_dms>
+<iflux_cpl_dms >.true.</iflux_cpl_dms>
 
 <tracegas_tadvect_ctype>lw_lim</tracegas_tadvect_ctype>
 

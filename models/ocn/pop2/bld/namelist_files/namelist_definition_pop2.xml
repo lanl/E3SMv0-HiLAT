@@ -5623,6 +5623,14 @@ Default: .true.
 </entry>
 
 <entry 
+id="iflux_cpl"
+type="logical" 
+category="ecosys"
+group="ecosys_nml" >
+Default: .true.
+</entry>
+
+<entry 
 id="locmip_k1_k2_bug_fix"
 type="logical" 
 category="ecosys"
@@ -6477,6 +6485,14 @@ type="logical"
 category="tracegas"
 group="tracegas_nml" >
 Default: 
+</entry>
+
+<entry 
+id="iflux_cpl_dms"
+type="logical" 
+category="tracegas"
+group="tracegas_nml" >
+Default:
 </entry>
 
 <entry 

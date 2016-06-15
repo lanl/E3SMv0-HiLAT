@@ -115,7 +115,6 @@
    use time_management
    use ecosys_parms
    use registry
-   use named_field_mod
    use co2calc
 #ifdef CCSMCOUPLED
    use POP_MCT_vars_mod
@@ -163,6 +162,7 @@
      lsource_sink, &
      lflux_gas_o2, &
      lflux_gas_co2,&
+     iflux_cpl, &
      locmip_k1_k2_bug_fix
 
   logical (log_kind), dimension(:,:,:), allocatable :: &
@@ -601,7 +601,35 @@
    integer (int_kind) :: &
       totChl_surf_nf_ind = 0,    & ! total chlorophyll in surface layer
       sflux_co2_nf_ind   = 0,    & ! air-sea co2 gas flux
-      atm_co2_nf_ind     = 0       ! atmospheric co2
+      atm_co2_nf_ind     = 0,    & ! atmospheric co2
+      surf_dFe_nf_ind    = 0,    & ! dissolved iron
+      surf_NH4_nf_ind    = 0,    & ! surface NH4
+      surf_NO3_nf_ind    = 0,    & ! surface NO3
+      surf_SiO3_nf_ind   = 0,    & ! surface SiO3
+      surf_DIC_nf_ind    = 0,    & ! surface DIC
+      surf_DOC_nf_ind    = 0,    & ! surface DOC
+      surf_DON_nf_ind    = 0,    & ! surface DON
+      surf_DONr_nf_ind   = 0,    & ! surface DONr
+      surf_diat_nf_ind   = 0,    & ! surface diat
+      surf_sp_nf_ind     = 0,    & ! surface small phyto
+      surf_phaeo_nf_ind  = 0,    & ! surface phaeo and phaeon
+      sflux_dFe_nf_ind   = 0,    & ! ice-ocn flux of iron
+      sflux_NH4_nf_ind   = 0,    & ! ice-ocn flux of NH4
+      sflux_NO3_nf_ind   = 0,    & ! ice-ocn flux of NO3
+      sflux_SiO3_nf_ind  = 0,    & ! ice-ocn flux of SiO3
+      sflux_DOC_nf_ind   = 0,    & ! ice-ocn flux of DOC
+      sflux_DON_nf_ind   = 0,    & ! ice-ocn flux of DON
+      sflux_DONr_nf_ind  = 0,    & ! ice-ocn flux of DONr
+      sflux_diat_nf_ind  = 0,    & ! ice-ocn flux of diat
+      sflux_sp_nf_ind    = 0,    & ! ice-ocn flux of small phyto
+      sflux_phaeo_nf_ind = 0,    & ! ice-ocn flux of phaeo and phaeon
+      sflux_dic1_nf_ind  = 0,    & ! ice-ocn flux of DIC1
+      sflux_doc2_nf_ind  = 0,    & ! ice-ocn flux of doc2
+      sflux_doc3_nf_ind  = 0,    & ! ice-ocn flux of doc3
+      sflux_fed2_nf_ind  = 0,    & ! ice-ocn flux of fed2
+      sflux_fep1_nf_ind  = 0,    & ! ice-ocn flux of fep1
+      sflux_fep2_nf_ind  = 0,    & ! ice-ocn flux of fep2
+      sflux_dust_nf_ind  = 0       ! ice-ocn flux of dust
 
 !-----------------------------------------------------------------------
 
@@ -612,7 +640,7 @@
 
 ! (swang) make public for use with tracegas
    integer (int_kind), public :: &
-      auto_ind			! autotroph functional group index   
+      auto_ind           ! autotroph functional group index   
 !-----------------------------------------------------------------------
 
    real (r8), parameter :: &
@@ -712,7 +740,7 @@ contains
    integer (int_kind) :: &
       non_autotroph_ecosys_tracer_cnt, & ! number of non-autotroph ecosystem tracers
 !      auto_ind,                  & ! autotroph functional group index (swang for tracegas)
-      n,                         & ! index for looping over tracers
+      n,m,                       & ! index for looping over tracers (swang for coupling)
       k,                         & ! index for looping over depth levels
       l,                         & ! index for looping over time levels
       ind,                       & ! tracer index for tracer name from namelist
@@ -756,7 +784,7 @@ contains
       comp_surf_avg_freq_opt, comp_surf_avg_freq,  &
       use_nml_surf_vals, surf_avg_dic_const, surf_avg_alk_const, &
       ecosys_qsw_distrb_const, lmarginal_seas, &
-      lsource_sink, lflux_gas_o2, lflux_gas_co2, locmip_k1_k2_bug_fix, &
+      lsource_sink, lflux_gas_o2, lflux_gas_co2, iflux_cpl, locmip_k1_k2_bug_fix, &
       lnutr_variable_restore, nutr_variable_rest_file,  &
       nutr_variable_rest_file_fmt,atm_co2_opt,atm_co2_const, &
       atm_alt_co2_opt, atm_alt_co2_const, &
@@ -1147,6 +1175,7 @@ contains
    lsource_sink          = .true.
    lflux_gas_o2          = .true.
    lflux_gas_co2         = .true.
+   iflux_cpl             = .true.
    locmip_k1_k2_bug_fix  = .true.
 
    comp_surf_avg_freq_opt        = 'never'
@@ -1420,6 +1449,7 @@ contains
    call broadcast_scalar(lsource_sink, master_task)
    call broadcast_scalar(lflux_gas_o2, master_task)
    call broadcast_scalar(lflux_gas_co2, master_task)
+   call broadcast_scalar(iflux_cpl, master_task)
    call broadcast_scalar(locmip_k1_k2_bug_fix, master_task)
 
    call broadcast_scalar(liron_patch, master_task)
@@ -1657,6 +1687,290 @@ contains
       call named_field_set(totChl_surf_nf_ind, iblock, WORK)
    enddo
    !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_diat field for passing to ice module; set surf_diat field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDiatomCarbon', surf_diat_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      n = autotrophs(diat_ind)%C_ind
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,n,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,n,curtime,iblock)))
+                         
+      call named_field_set(surf_diat_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_sp field for passing to ice module; set surf_sp field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceSmallPhytoCarbon', surf_sp_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      n = autotrophs(sp_ind)%C_ind
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,n,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,n,curtime,iblock)))
+                         
+      call named_field_set(surf_sp_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_phaeo field for passing to ice module; set surf_phaeo field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfacePhaeoCarbon', surf_phaeo_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      n = autotrophs(phaeo_ind)%C_ind
+      m = autotrophs(phaeon_ind)%C_ind
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,n,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,n,curtime,iblock))) + &
+             max(c0,p5*(TRACER_MODULE(:,:,1,m,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,m,curtime,iblock)))            
+
+      call named_field_set(surf_phaeo_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_dFe field for passing to ice module
+!  apply land mask to tracers
+!  set surf_dFe field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceFeBioavailable', surf_dFe_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,fe_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,fe_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_dFe_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_NH4 field for passing to ice module; set surf_NH4 field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceNH4', surf_NH4_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,nh4_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,nh4_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_NH4_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_NH4 field for passing to ice module; set surf_NH4 field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceNO3', surf_NO3_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,no3_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,no3_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_NO3_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_SiO3 field for passing to ice module; set surf_SiO3 field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceSiO3', surf_SiO3_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,sio3_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,sio3_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_SiO3_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_DIC field for passing to ice module; set surf_DIC field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDIC', surf_DIC_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,dic_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,dic_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_DIC_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_DOC field for passing to ice module; set surf_DOC field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDOC', surf_DOC_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,doc_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,doc_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_DOC_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_DON field for passing to ice module; set surf_DON field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDON', surf_DON_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,don_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,don_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_DON_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_DONr field for passing to ice module; set surf_DONr field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDONr', surf_DONr_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,ecosys_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,donr_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,donr_ind,curtime,iblock)))
+
+      call named_field_set(surf_DONr_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
 
 !-----------------------------------------------------------------------
 !  timer init
@@ -2703,7 +3017,7 @@ contains
    real (r8), dimension(nx_block,ny_block) :: &
       TEMP,           & ! local copy of model TEMP
       SALT,           & ! local copy of model SALT
-      tlatd,          & ! local copy of lat
+!      tlatd,          & ! local copy of lat
       DIC_loc,        & ! local copy of model DIC
       DIC_ALT_CO2_loc,& ! local copy of model DIC_ALT_CO2
       ALK_loc,        & ! local copy of model ALK
@@ -3211,18 +3525,18 @@ contains
 !  Compute Pprime for all autotrophs, used for loss terms
 !  temp_thres for phaeo is the upper limit for growth (swang)
 !-----------------------------------------------------------------------
-   tlatd = TLAT(:,:,bid)
+!   tlatd = TLAT(:,:,bid)
    do auto_ind = 1, autotroph_cnt
       C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres
       where (TEMP < autotrophs(auto_ind)%temp_thres .or. TEMP > autotrophs(auto_ind)%temp_thres2) 
-      		C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
+            C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
       end where
 
-      where (tlatd > c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeo' )
+      where (TLAT(:,:,bid) > c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeo' )
             C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
-      elsewhere (tlatd < c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeon' )  
-	    C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
-      end where	  
+      elsewhere (TLAT(:,:,bid) < c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeon' )  
+            C_loss_thres = f_loss_thres * autotrophs(auto_ind)%loss_thres2
+      end where  
 
       Pprime(:,:,auto_ind) = max(autotrophC_loc(:,:,auto_ind) - C_loss_thres, c0)
    end do
@@ -3274,22 +3588,22 @@ contains
 
       case (tfnc_q10)
 
-	    PCmax = PCmax
+            PCmax = PCmax
 
       case (tfnc_quasi_mmrt)
 
-	    PCmax = PCmax * min(c1,((autotrophs(auto_ind)%temp_thres2 - TEMP) / &
+            PCmax = PCmax * min(c1,((autotrophs(auto_ind)%temp_thres2 - TEMP) / &
             (autotrophs(auto_ind)%temp_thres2 - (autotrophs(auto_ind)%temp_opt))))
     end select
     
       where (TEMP < autotrophs(auto_ind)%temp_thres .or. TEMP > autotrophs(auto_ind)%temp_thres2) PCmax = c0
         ! swang: phaeo and phaeon only grow in SH and NH, respectively	  
 
-    where (tlatd > c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeo' ) 
+    where (TLAT(:,:,bid) > c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeo' ) 
          PCmax=c0
-    elsewhere (tlatd < c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeon' )  
-	 PCmax=c0
-    end where	  
+    elsewhere (TLAT(:,:,bid) < c0 .and. trim(autotrophs(auto_ind)%sname) == 'phaeon' )  
+         PCmax=c0
+    end where  
 
       light_lim = (c1 - exp((-c1 * autotrophs(auto_ind)%alphaPI * thetaC(:,:,auto_ind) * PAR_avg(:,:,bid)) / &
                             (PCmax + epsTinv)))
@@ -3420,9 +3734,9 @@ contains
 
 ! decrease grazing pressure on diat, when phaeo growth decreases with temperature (swang)
       if ((WORK5 /= c0) .and. (WORK6 /= c0) .and. (autotrophs(auto_ind)%sname == 'diat')) then
-        where ((tlatd < 0.0_r8) .and. (TEMP > autotrophs(4)%temp_opt)) 
+        where ((TLAT(:,:,bid) < 0.0_r8) .and. (TEMP > autotrophs(4)%temp_opt)) 
             z_umax = z_umax * max((WORK5 - TEMP) / (WORK5 - autotrophs(4)%temp_opt), 0.95_r8)
-        elsewhere ((tlatd > 0.0_r8) .and. (TEMP > autotrophs(5)%temp_opt)) 
+        elsewhere ((TLAT(:,:,bid) > 0.0_r8) .and. (TEMP > autotrophs(5)%temp_opt)) 
             z_umax = z_umax * max((WORK6 - TEMP) / (WORK6 - autotrophs(5)%temp_opt), 0.95_r8)
         end where
       endif        
@@ -5669,6 +5983,41 @@ contains
    endif
 
 !-----------------------------------------------------------------------
+!  register and set fluxes from sea ice (swang)
+!-----------------------------------------------------------------------
+
+  if (iflux_cpl) then
+      call document(subname, 'sea ice fluxes coming from driver')
+      call named_field_get_index('SFLUX_dFe', sflux_dFe_nf_ind)
+
+      call named_field_get_index('SFLUX_NH4', sflux_NH4_nf_ind)
+
+      call named_field_get_index('SFLUX_NO3', sflux_NO3_nf_ind)
+
+      call named_field_get_index('SFLUX_SiO3', sflux_SiO3_nf_ind)
+
+      call named_field_get_index('SFLUX_DOC', sflux_DOC_nf_ind)
+
+      call named_field_get_index('SFLUX_DON', sflux_DON_nf_ind)
+
+      call named_field_get_index('SFLUX_DONr', sflux_DONr_nf_ind)
+
+      call named_field_get_index('SFLUX_diat', sflux_diat_nf_ind)
+
+      call named_field_get_index('SFLUX_sp', sflux_sp_nf_ind)
+
+      call named_field_get_index('SFLUX_phaeo', sflux_phaeo_nf_ind)
+
+      call named_field_get_index('SFLUX_dic1', sflux_dic1_nf_ind)
+      call named_field_get_index('SFLUX_doc2', sflux_doc2_nf_ind)
+      call named_field_get_index('SFLUX_doc3', sflux_doc3_nf_ind)
+      call named_field_get_index('SFLUX_fed2', sflux_fed2_nf_ind)
+      call named_field_get_index('SFLUX_fep1', sflux_fep1_nf_ind)
+      call named_field_get_index('SFLUX_fep2', sflux_fep2_nf_ind)
+      call named_field_get_index('SFLUX_dust', sflux_dust_nf_ind)
+  endif
+
+!-----------------------------------------------------------------------
 !EOC
 
  end subroutine ecosys_init_sflux
@@ -5897,16 +6246,26 @@ contains
       this_block      ! block info for the current block
 
    integer (int_kind) :: &
-      i,j,iblock,n, & ! loop indices
-      auto_ind,     & ! autotroph functional group index
-      mcdate,sec,   & ! date vals for shr_strdata_advance
-      errorCode       ! errorCode from HaloUpdate call
+      i,j,iblock,n,m, & ! loop indices
+      auto_ind,       & ! autotroph functional group index
+      mcdate,sec,     & ! date vals for shr_strdata_advance
+      errorCode         ! errorCode from HaloUpdate call
 
    real (r8), dimension(nx_block,ny_block,max_blocks_clinic) :: &
       IFRAC_USED,   & ! used ice fraction (non-dimensional)
       XKW_USED,     & ! portion of piston velocity (cm/s)
       AP_USED,      & ! used atm pressure (converted from dyne/cm**2 to atm)
-      IRON_FLUX_IN    ! iron flux
+      IRON_FLUX_IN, & ! iron flux
+      ifed_FLUX_IN, & ! iron flux from ice
+      iNH4_FLUX_IN, & ! NH4 flux from ice
+      iNO3_FLUX_IN, & ! NO3 flux from ice
+      iSiO3_FLUX_IN, & ! SiO3 flux from ice
+      iDOC_FLUX_IN, & ! DOC flux from ice
+      iDON_FLUX_IN, & ! DON flux from ice
+      iDONr_FLUX_IN, & ! DONr flux from ice
+      idiat_FLUX_IN, & ! diat flux from ice
+      isp_FLUX_IN, & ! sp flux from ice
+      iphaeo_FLUX_IN   ! phaeo flux from ice
 
    real (r8), dimension(nx_block,ny_block,max_blocks_clinic) :: &
       SHR_STREAM_WORK
@@ -5998,6 +6357,169 @@ contains
       elsewhere
          PAR_out(:,:,iblock) = c0
       end where
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set bioC field for passing to ice(SW) 
+!  NOTE: auto_ind is hard coded, which needs to be modified if change ordering
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+      n = autotrophs(diat_ind)%C_ind
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,n,iblock) + &
+                         SURF_VALS_CUR(:,:,n,iblock))) 
+
+      call named_field_set(surf_diat_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+      n = autotrophs(sp_ind)%C_ind
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,n,iblock) + &
+                         SURF_VALS_CUR(:,:,n,iblock))) 
+
+      call named_field_set(surf_sp_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+      n = autotrophs(phaeo_ind)%C_ind
+      m = autotrophs(phaeon_ind)%C_ind
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,n,iblock) + &
+                         SURF_VALS_CUR(:,:,n,iblock))) + &
+            max(c0,p5*(SURF_VALS_OLD(:,:,m,iblock) + &
+                         SURF_VALS_CUR(:,:,m,iblock))) 
+
+      call named_field_set(surf_phaeo_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  fluxes initially set to 0 --no need
+!  set surf_dFe field for passing to ice(SW) 
+!  This part is during run time, get updated each timestep
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,fe_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,fe_ind,iblock))) 
+
+      call named_field_set(surf_dFe_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set NH4 field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,nh4_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,nh4_ind,iblock))) 
+
+      call named_field_set(surf_NH4_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set NO3 field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,no3_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,no3_ind,iblock))) 
+
+      call named_field_set(surf_NO3_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set SiO3 field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,sio3_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,sio3_ind,iblock))) 
+
+      call named_field_set(surf_SiO3_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set DIC field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,dic_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,dic_ind,iblock))) 
+
+      call named_field_set(surf_DIC_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set DOC field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,doc_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,doc_ind,iblock))) 
+
+      call named_field_set(surf_DOC_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set DON field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,don_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,don_ind,iblock))) 
+
+      call named_field_set(surf_DON_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set DONr field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,donr_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,donr_ind,iblock)))
+
+      call named_field_set(surf_DONr_nf_ind, iblock, WORK1)
+
    enddo
    !$OMP END PARALLEL DO
 
@@ -6756,6 +7278,51 @@ contains
          doc_riv_flux%interp_last,       0)
       STF_MODULE(:,:,doc_ind,:) = STF_MODULE(:,:,doc_ind,:) + INTERP_WORK(:,:,:,1)
    endif
+
+!-----------------------------------------------------------------------
+!  if sea ice-ocean bgc coupled, then add ice flux to STF (swang)
+!-----------------------------------------------------------------------
+  if (iflux_cpl) then
+     call named_field_get(sflux_dFe_nf_ind, ifed_FLUX_IN)
+! NOTE: IRON_FLUX_IN should be fractionated by ice fraction!! (swang : can be considered later)   
+      STF_MODULE(:,:,fe_ind,:) = STF_MODULE(:,:,fe_ind,:) + ifed_FLUX_IN
+
+      call named_field_get(sflux_NH4_nf_ind, iNH4_FLUX_IN)
+      STF_MODULE(:,:,nh4_ind,:) = STF_MODULE(:,:,nh4_ind,:) + iNH4_FLUX_IN
+
+      call named_field_get(sflux_NO3_nf_ind, iNO3_FLUX_IN)
+      STF_MODULE(:,:,no3_ind,:) = STF_MODULE(:,:,no3_ind,:) + iNO3_FLUX_IN
+
+      call named_field_get(sflux_SiO3_nf_ind, iSiO3_FLUX_IN)
+      STF_MODULE(:,:,sio3_ind,:) = STF_MODULE(:,:,sio3_ind,:) + iSiO3_FLUX_IN 
+   
+      call named_field_get(sflux_DOC_nf_ind, iDOC_FLUX_IN)
+      STF_MODULE(:,:,doc_ind,:) = STF_MODULE(:,:,doc_ind,:) + iDOC_FLUX_IN
+
+      call named_field_get(sflux_DON_nf_ind, iDON_FLUX_IN)
+      STF_MODULE(:,:,don_ind,:) = STF_MODULE(:,:,don_ind,:) + iDON_FLUX_IN
+
+      call named_field_get(sflux_DONr_nf_ind, iDONr_FLUX_IN)
+      STF_MODULE(:,:,donr_ind,:) = STF_MODULE(:,:,donr_ind,:) + iDONr_FLUX_IN
+
+      n = autotrophs(diat_ind)%C_ind
+      call named_field_get(sflux_diat_nf_ind, idiat_FLUX_IN)
+      STF_MODULE(:,:,n,:) = STF_MODULE(:,:,n,:) + idiat_FLUX_IN
+
+      n = autotrophs(sp_ind)%C_ind
+      call named_field_get(sflux_sp_nf_ind, isp_FLUX_IN)
+      STF_MODULE(:,:,n,:) = STF_MODULE(:,:,n,:) + isp_FLUX_IN
+
+! separate based on tlatd = TLAT(:,:,iblock) : swang
+      n = autotrophs(phaeo_ind)%C_ind
+      m = autotrophs(phaeon_ind)%C_ind
+      call named_field_get(sflux_phaeo_nf_ind, iphaeo_FLUX_IN)
+      where (TLAT(:,:,:) > 0.0_r8)
+         STF_MODULE(:,:,m,:) = STF_MODULE(:,:,m,:) + iphaeo_FLUX_IN
+      elsewhere (TLAT(:,:,:) < 0.0_r8)
+         STF_MODULE(:,:,n,:) = STF_MODULE(:,:,n,:) + iphaeo_FLUX_IN
+      end where
+  endif
 
 !-----------------------------------------------------------------------
 !  Apply NO & NH fluxes to alkalinity

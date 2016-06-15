@@ -265,6 +265,66 @@ contains
    if (index_x2o_Sa_co2diag > 0) then
       call named_field_register('ATM_CO2_DIAG', ATM_CO2_DIAG_nf_ind)
    endif
+   if (index_x2o_Fioi_diat > 0) then
+      call named_field_register('SFLUX_diat', sflux_diat_nf_ind)
+   endif
+   if (index_x2o_Fioi_sp > 0) then
+      call named_field_register('SFLUX_sp', sflux_sp_nf_ind)
+   endif
+   if (index_x2o_Fioi_phaeo > 0) then
+      call named_field_register('SFLUX_phaeo', sflux_phaeo_nf_ind)
+   endif
+   if (index_x2o_Fioi_fed > 0) then
+      call named_field_register('SFLUX_dFe', sflux_dFe_nf_ind)
+   endif
+   if (index_x2o_Fioi_no3 > 0) then
+      call named_field_register('SFLUX_NO3', sflux_NO3_nf_ind)
+   endif
+   if (index_x2o_Fioi_nh4 > 0) then
+      call named_field_register('SFLUX_NH4', sflux_NH4_nf_ind)
+   endif
+   if (index_x2o_Fioi_sio3 > 0) then
+      call named_field_register('SFLUX_SiO3', sflux_SiO3_nf_ind)
+   endif
+   if (index_x2o_Fioi_doc > 0) then
+      call named_field_register('SFLUX_DOC', sflux_DOC_nf_ind)
+   endif
+   if (index_x2o_Fioi_don > 0) then
+      call named_field_register('SFLUX_DON', sflux_DON_nf_ind)
+   endif
+   if (index_x2o_Fioi_donr > 0) then
+      call named_field_register('SFLUX_DONr', sflux_DONr_nf_ind)
+   endif
+   if (index_x2o_Fioi_dms > 0) then
+      call named_field_register('SFLUX_iDMS', sflux_idms_nf_ind)
+   endif
+   if (index_x2o_Fioi_dmsp > 0) then
+      call named_field_register('SFLUX_iDMSP', sflux_idmsp_nf_ind)
+   endif
+    if (index_x2o_Fioi_dmspp > 0) then
+      call named_field_register('SFLUX_DMSPP', sflux_dmspp_nf_ind)
+   endif
+   if (index_x2o_Fioi_dic1 > 0) then
+      call named_field_register('SFLUX_dic1', sflux_dic1_nf_ind)
+   endif
+   if (index_x2o_Fioi_doc2 > 0) then
+      call named_field_register('SFLUX_doc2', sflux_doc2_nf_ind)
+   endif
+   if (index_x2o_Fioi_doc3 > 0) then
+      call named_field_register('SFLUX_doc3', sflux_doc3_nf_ind)
+   endif
+   if (index_x2o_Fioi_fed2 > 0) then
+      call named_field_register('SFLUX_fed2', sflux_fed2_nf_ind)
+   endif
+   if (index_x2o_Fioi_fep1 > 0) then
+      call named_field_register('SFLUX_fep1', sflux_fep1_nf_ind)
+   endif
+   if (index_x2o_Fioi_fep2 > 0) then
+      call named_field_register('SFLUX_fep2', sflux_fep2_nf_ind)
+   endif
+   if (index_x2o_Fioi_dust > 0) then
+      call named_field_register('SFLUX_dust', sflux_dust_nf_ind)
+   endif
    call register_string('pop_init_coupled')
    call flushm (stdout)
 

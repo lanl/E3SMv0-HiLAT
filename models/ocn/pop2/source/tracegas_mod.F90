@@ -124,7 +124,8 @@
   logical (log_kind) :: &
      tracegas_diurnal_cycle, &
      lsource_sink, &
-     lflux_gas_dms
+     lflux_gas_dms, &
+     iflux_cpl_dms
    
   logical (log_kind), dimension(:,:,:), allocatable :: &
      LAND_MASK
@@ -286,7 +287,12 @@
 !-----------------------------------------------------------------------
 
    integer (int_kind) :: &
-      sflux_dms_nf_ind = 0       ! dms flux
+      surf_dms_nf_ind   = 0,    & ! surface DMS
+      surf_dmsp_nf_ind  = 0,    & ! surface DMSP
+      sflux_dms_nf_ind  = 0,    & ! dms flux
+      sflux_dmspp_nf_ind= 0,    & ! ice dmspp flux
+      sflux_idms_nf_ind = 0,    & ! ice dms flux
+      sflux_idmsp_nf_ind= 0       ! ice dmsp flux
 
 !-----------------------------------------------------------------------
 
@@ -390,7 +396,7 @@ contains
       comp_surf_avg_freq_opt, comp_surf_avg_freq,  &
       use_nml_surf_vals,   &
       lmarginal_seas, tracegas_diurnal_cycle, &
-      lsource_sink, lflux_gas_dms, &
+      lsource_sink, lflux_gas_dms,iflux_cpl_dms, &
 !      ldms_variable_restore, dms_variable_rest_file,  &
 !      dms_variable_rest_file_fmt, &
       tracegas_tadvect_ctype
@@ -488,6 +494,7 @@ contains
    tracegas_diurnal_cycle  = .false.
    lsource_sink          = .true.
    lflux_gas_dms         = .true.
+   iflux_cpl_dms         = .true.
 
    comp_surf_avg_freq_opt        = 'never'
    comp_surf_avg_freq            = 1
@@ -599,6 +606,7 @@ contains
    call broadcast_scalar(tracegas_diurnal_cycle, master_task)
    call broadcast_scalar(lsource_sink, master_task)
    call broadcast_scalar(lflux_gas_dms, master_task)
+   call broadcast_scalar(iflux_cpl_dms, master_task)
 
    call broadcast_scalar(tracegas_tadvect_ctype, master_task)
    tadvect_ctype = tracegas_tadvect_ctype
@@ -766,6 +774,56 @@ contains
       call exit_POP(sigAbort, 'unknown init_tracegas_option')
 
    end select
+
+!-----------------------------------------------------------------------
+!  register surf_dms field for passing to ice module; set surf_dms field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDMS', surf_dms_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,tracegas_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,dms_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,dms_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_dms_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  register surf_dmsp field for passing to ice module; set surf_dmsp field 
+!-----------------------------------------------------------------------
+
+   call named_field_register('oceanSurfaceDMSP', surf_dmsp_nf_ind)
+
+   !$OMP PARALLEL DO PRIVATE(iblock,n,k,WORK)
+   do iblock=1,nblocks_clinic
+      do n = 1,tracegas_tracer_cnt
+         do k = 1,km
+            where (.not. LAND_MASK(:,:,iblock) .or. k > KMT(:,:,iblock))
+               TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
+               TRACER_MODULE(:,:,k,n,oldtime,iblock) = c0
+            end where
+         end do
+      end do
+
+      WORK = c0
+      WORK = max(c0,p5*(TRACER_MODULE(:,:,1,dmsp_ind,oldtime,iblock) + &
+                        TRACER_MODULE(:,:,1,dmsp_ind,curtime,iblock)))
+                         
+      call named_field_set(surf_dmsp_nf_ind, iblock, WORK)
+   enddo
+   !$OMP END PARALLEL DO
 
 !-----------------------------------------------------------------------
 !  timer init
@@ -2076,6 +2134,14 @@ contains
    endif
 
 !-----------------------------------------------------------------------
+!  register and set fluxes from sea ice  (swang)
+!-----------------------------------------------------------------------
+   if (iflux_cpl_dms) then
+      call named_field_get_index('SFLUX_iDMS', sflux_idms_nf_ind)
+      call named_field_get_index('SFLUX_iDMSP', sflux_idmsp_nf_ind)
+      call named_field_get_index('SFLUX_DMSPP', sflux_dmspp_nf_ind)
+   endif
+!-----------------------------------------------------------------------
 !EOC
 
  end subroutine tracegas_init_sflux
@@ -2127,7 +2193,9 @@ contains
       IFRAC_USED,   & ! used ice fraction (non-dimensional)
       XKW_USED,     & ! portion of piston velocity (cm/s)
       XKW,          & ! compromise between the two per H04
-      AP_USED         ! used atm pressure (converted from dyne/cm**2 to atm)
+      AP_USED,      & ! used atm pressure (converted from dyne/cm**2 to atm)
+      idms_FLUX_IN, & ! dms flux from ice
+      idmsp_FLUX_IN   ! dmsp flux from ice
 
    real (r8), dimension(nx_block,ny_block) :: &
       XKW_ICE,      & ! common portion of piston vel., (1-fice)*xkw (cm/s)
@@ -2176,6 +2244,38 @@ contains
 
    if (check_time_flag(comp_surf_avg_flag))  &
       call comp_surf_avg(SURF_VALS_OLD,SURF_VALS_CUR)
+
+!-----------------------------------------------------------------------
+!  set DMS field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   WORK1 = c0
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,dms_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,dms_ind,iblock))) 
+
+      call named_field_set(surf_dms_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
+
+!-----------------------------------------------------------------------
+!  set DMSP field for passing to ice(SW) 
+!-----------------------------------------------------------------------
+
+   !$OMP PARALLEL DO PRIVATE(iblock,WORK1)
+   WORK1 = c0
+   do iblock = 1, nblocks_clinic
+
+      WORK1 = max(c0,p5*(SURF_VALS_OLD(:,:,dmsp_ind,iblock) + &
+                         SURF_VALS_CUR(:,:,dmsp_ind,iblock))) 
+
+      call named_field_set(surf_dmsp_nf_ind, iblock, WORK1)
+
+   enddo
+   !$OMP END PARALLEL DO
 
 !---------------------------------------------------------------------------
 !   Some k==1 initializations occur in this area.
@@ -2413,6 +2513,19 @@ SCHMIDT_USED = max(SCHMIDT_USED,1.)
        enddo
 
     endif  ! lflux_gas_dms
+
+!-----------------------------------------------------------------------
+!  if sea ice-ocean bgc coupled, then add ice flux to STF (swang)
+!-----------------------------------------------------------------------
+ 
+   if (iflux_cpl_dms) then 
+      call named_field_get(sflux_idms_nf_ind, idms_FLUX_IN)
+      STF_MODULE(:,:,dms_ind,:) = STF_MODULE(:,:,dms_ind,:) + idms_FLUX_IN
+
+      call named_field_get(sflux_idmsp_nf_ind, idmsp_FLUX_IN)
+      STF_MODULE(:,:,dmsp_ind,:) = STF_MODULE(:,:,dmsp_ind,:) + idmsp_FLUX_IN
+   endif
+!-----------------------------------------------------------------------
 
    call timer_stop(tracegas_sflux_timer)
 
