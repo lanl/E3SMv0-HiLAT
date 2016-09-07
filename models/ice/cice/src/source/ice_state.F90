@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_state.F90 1118 2016-04-08 20:53:47Z eclare $
+!  SVN:$Id: ice_state.F90 1135 2016-07-29 21:03:23Z eclare $
 !=======================================================================
 !
 ! Primary state variables in various configurations

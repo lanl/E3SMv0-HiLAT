@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_forcing.F90 1038 2015-08-05 19:27:34Z eclare $
+!  SVN:$Id: ice_forcing.F90 1124 2016-07-01 19:54:41Z eclare $
 !=======================================================================
 !
 ! Reads and interpolates forcing data for atmosphere and ocean quantities.
@@ -1250,6 +1250,8 @@
 
       do j = jlo, jhi
       do i = ilo, ihi
+
+         zlvl0 = c10 ! default
 
       !-----------------------------------------------------------------
       ! make sure interpolated values are physically realistic

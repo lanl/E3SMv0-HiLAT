@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_boundary.F90 1078 2015-11-12 00:56:52Z eclare $
+!  SVN:$Id: ice_boundary.F90 1129 2016-07-15 19:43:45Z eclare $
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
  module ice_boundary
@@ -5414,7 +5414,7 @@ contains
             !*** out of range and skipped
             !*** otherwise do the copy
 
-            if (jSrc <= nghost+1) then
+            if (jSrc <= nghost+1 .AND. jDst /= -1 ) then
                array1(iDst,jDst,dstBlock) = isign*bufTripoleR8(iSrc,jSrc)
             endif
 

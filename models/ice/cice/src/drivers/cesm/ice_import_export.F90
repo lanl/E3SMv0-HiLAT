@@ -274,53 +274,28 @@ contains
                               + x2i(index_x2i_Faxa_dstdry4,n)
                 endif
              endif
-             if ((z_tracers .and. tr_bgc_Nit) .or. skl_bgc) then       
-                if (index_x2i_So_diat >0) then
-                   aflds(i,j,4,iblk)      = x2i(index_x2i_So_diat, n)
-                endif
-                if (index_x2i_So_sp > 0) then               
-                   aflds(i,j,5,iblk)      = x2i(index_x2i_So_sp, n)
-                endif
-                if (index_x2i_So_phaeo > 0) then
-                   aflds(i,j,6,iblk)      = x2i(index_x2i_So_phaeo, n)
-                endif
-                if (index_x2i_So_doc > 0) then
-                   aflds(i,j,7,iblk)      = x2i(index_x2i_So_doc, n) * p5 ! split evenly for now
-                endif
-                if (index_x2i_So_doc > 0) then
-                   aflds(i,j,8,iblk)      = x2i(index_x2i_So_doc, n) * p5 !x2i(index_x2i_So_doc2, n)
-                endif
+             if ((z_tracers .and. tr_bgc_Nit) .or. skl_bgc) then      
+                if (index_x2i_So_diat  > 0) aflds(i,j,4,iblk)      = x2i(index_x2i_So_diat, n)
+                if (index_x2i_So_sp    > 0) aflds(i,j,5,iblk)      = x2i(index_x2i_So_sp, n)
+                if (index_x2i_So_phaeo > 0) aflds(i,j,6,iblk)      = x2i(index_x2i_So_phaeo, n)
+                if (index_x2i_So_doc   > 0) aflds(i,j,7,iblk)      = x2i(index_x2i_So_doc, n) * p5 ! split evenly for now
+                if (index_x2i_So_doc   > 0) aflds(i,j,8,iblk)      = x2i(index_x2i_So_doc, n) * p5 !x2i(index_x2i_So_doc2, n)
+
                 aflds(i,j,9,iblk)      = c0
                 aflds(i,j,10,iblk)     = c0  !x2i(index_x2i_So_dic, n) 
 
-                if (index_x2i_So_don > 0) then
-                   aflds(i,j,11,iblk)     = x2i(index_x2i_So_don, n)
-                endif
-                if (index_x2i_So_no3 > 0) then
-                   aflds(i,j,12,iblk)     = x2i(index_x2i_So_no3, n)
-                endif
-                if (index_x2i_So_sio3 > 0) then
-                   aflds(i,j,13,iblk)     = x2i(index_x2i_So_sio3, n)
-                endif
-                if (index_x2i_So_nh4 > 0) then
-                   aflds(i,j,14,iblk)     = x2i(index_x2i_So_nh4, n)
-                endif
-                if (index_x2i_So_dms > 0) then
-                   aflds(i,j,15,iblk)     = x2i(index_x2i_So_dms, n)
-                endif
-                if (index_x2i_So_dmsp > 0) then
-                   aflds(i,j,16,iblk)     = x2i(index_x2i_So_dmsp, n)
-                endif
-                if (index_x2i_So_donr > 0) then
-                   aflds(i,j,17,iblk)     = x2i(index_x2i_So_donr, n)
-                endif
+                if (index_x2i_So_don   > 0) aflds(i,j,11,iblk)     = x2i(index_x2i_So_don, n)
+                if (index_x2i_So_no3   > 0) aflds(i,j,12,iblk)     = x2i(index_x2i_So_no3, n)
+                if (index_x2i_So_sio3  > 0) aflds(i,j,13,iblk)     = x2i(index_x2i_So_sio3, n)
+                if (index_x2i_So_nh4   > 0) aflds(i,j,14,iblk)     = x2i(index_x2i_So_nh4, n)
+                if (index_x2i_So_dms   > 0) aflds(i,j,15,iblk)     = x2i(index_x2i_So_dms, n)
+                if (index_x2i_So_dmsp  > 0) aflds(i,j,16,iblk)     = x2i(index_x2i_So_dmsp, n)
+                if (index_x2i_So_donr  > 0) aflds(i,j,17,iblk)     = x2i(index_x2i_So_donr, n)
 
                 aflds(i,j,18,iblk)     = c0 !x2i(index_x2i_So_fep1, n)
                 aflds(i,j,19,iblk)     = c0 !x2i(index_x2i_So_fep2, n)
 
-                if (index_x2i_So_fed > 0) then
-                   aflds(i,j,20,iblk)     = x2i(index_x2i_So_fed, n)
-                endif
+                if (index_x2i_So_fed   > 0) aflds(i,j,20,iblk)     = x2i(index_x2i_So_fed, n)
 
                 aflds(i,j,21,iblk)     = c0 !x2i(index_x2i_So_fed2, n)
                 aflds(i,j,22,iblk)     = c0 !x2i(index_x2i_So_zaer1, n) 
@@ -329,7 +304,7 @@ contains
                 aflds(i,j,25,iblk)     = c0 !x2i(index_x2i_So_zaer4, n) 
                 aflds(i,j,26,iblk)     = c0 !x2i(index_x2i_So_zaer5, n) 
                 aflds(i,j,27,iblk)     = c0 !x2i(index_x2i_So_zaer6, n) 
-             endif
+             endif  
           enddo
        enddo
     enddo
@@ -652,68 +627,27 @@ contains
 
                 ! export biogeochemistry fields, if configured
                 ! convert from mmol N/m^3 to mmol C/m^3
-                ! swang: only when index is > 0, otherwise, fsalt gets overwritten.
-                if (index_i2x_Fioi_diat >0) then
-                   i2x(index_i2x_Fioi_diat,n)   = falgalN(i,j,1,iblk) * R_C2N(1)
-                endif
-                if (index_i2x_Fioi_sp >0) then
-                   i2x(index_i2x_Fioi_sp,n)     = falgalN(i,j,2,iblk) * R_C2N(2)
-                endif
-                if (index_i2x_Fioi_phaeo >0) then
-                   i2x(index_i2x_Fioi_phaeo,n)  = falgalN(i,j,3,iblk) * R_C2N(3)
-                endif
-                if (index_i2x_Fioi_doc >0) then
-                   i2x(index_i2x_Fioi_doc   ,n) = fdoc(i,j,1,iblk) + fdoc(i,j,2,iblk)  
-                endif
-                if (index_i2x_Fioi_doc2 >0) then
-                   i2x(index_i2x_Fioi_doc2  ,n) = c0 !fdoc(i,j,2,iblk) 
-                endif
-                if (index_i2x_Fioi_doc3 >0) then
-                   i2x(index_i2x_Fioi_doc3  ,n) = c0 !fdoc(i,j,3,iblk)
-                endif
-                if (index_i2x_Fioi_dic >0) then
-                   i2x(index_i2x_Fioi_dic   ,n) = c0 !fdic(i,j,1,iblk)
-                endif
-                if (index_i2x_Fioi_don >0) then
-                   i2x(index_i2x_Fioi_don   ,n) = fdon(i,j,1,iblk) 
-                endif
-                if (index_i2x_Fioi_no3 >0) then
-                   i2x(index_i2x_Fioi_no3   ,n) = fnit(i,j,iblk)      
-                endif
-                if (index_i2x_Fioi_sio3 >0) then
-                   i2x(index_i2x_Fioi_sio3  ,n) = fsil(i,j,iblk)      
-                endif
-                if (index_i2x_Fioi_nh4 >0) then
-                   i2x(index_i2x_Fioi_nh4   ,n) = famm(i,j,iblk)       
-                endif
-                if (index_i2x_Fioi_dms >0) then
-                   i2x(index_i2x_Fioi_dms   ,n) = fdms(i,j,iblk)  
-                endif
-                if (index_i2x_Fioi_dmspp >0) then
-                   i2x(index_i2x_Fioi_dmspp ,n) = c0                 
-                endif
-                if (index_i2x_Fioi_dmsp >0) then
-                   i2x(index_i2x_Fioi_dmsp  ,n) = fdmsp(i,j,iblk)   
-                endif
-                if (index_i2x_Fioi_donr >0) then
-                   i2x(index_i2x_Fioi_donr  ,n) = fhum(i,j,iblk)    
-                endif
-                if (index_i2x_Fioi_fep1 >0) then
+                if (index_i2x_Fioi_diat  > 0) i2x(index_i2x_Fioi_diat  ,n) = falgalN(i,j,1,iblk) * R_C2N(1)
+                if (index_i2x_Fioi_sp    > 0) i2x(index_i2x_Fioi_sp    ,n) = falgalN(i,j,2,iblk) * R_C2N(2)
+                if (index_i2x_Fioi_phaeo > 0) i2x(index_i2x_Fioi_phaeo ,n) = falgalN(i,j,3,iblk) * R_C2N(3)
+                if (index_i2x_Fioi_doc   > 0) i2x(index_i2x_Fioi_doc   ,n) = fdoc(i,j,1,iblk) + fdoc(i,j,2,iblk)  
+                if (index_i2x_Fioi_doc2  > 0) i2x(index_i2x_Fioi_doc2  ,n) = c0 !fdoc(i,j,2,iblk) 
+                if (index_i2x_Fioi_doc3  > 0) i2x(index_i2x_Fioi_doc3  ,n) = c0 !fdoc(i,j,3,iblk)
+                if (index_i2x_Fioi_dic   > 0) i2x(index_i2x_Fioi_dic   ,n) = c0 !fdic(i,j,1,iblk)
+                if (index_i2x_Fioi_don   > 0) i2x(index_i2x_Fioi_don   ,n) = fdon(i,j,1,iblk) 
+                if (index_i2x_Fioi_no3   > 0) i2x(index_i2x_Fioi_no3   ,n) = fnit(i,j,iblk)      
+                if (index_i2x_Fioi_sio3  > 0) i2x(index_i2x_Fioi_sio3  ,n) = fsil(i,j,iblk)      
+                if (index_i2x_Fioi_nh4   > 0) i2x(index_i2x_Fioi_nh4   ,n) = famm(i,j,iblk)       
+                if (index_i2x_Fioi_dms   > 0) i2x(index_i2x_Fioi_dms   ,n) = fdms(i,j,iblk)  
+                if (index_i2x_Fioi_dmspp > 0) i2x(index_i2x_Fioi_dmspp ,n) = c0                 
+                if (index_i2x_Fioi_dmsp  > 0) i2x(index_i2x_Fioi_dmsp  ,n) = fdmsp(i,j,iblk)   
+                if (index_i2x_Fioi_donr  > 0) i2x(index_i2x_Fioi_donr  ,n) = fhum(i,j,iblk)    
                 ! convert from umol Fe/m^3 to mmol Fe/m^3
-                   i2x(index_i2x_Fioi_fep1  ,n) = c0 !ffep(i,j,1,iblk) / 1000.0_dbl_kind
-                endif
-                if (index_i2x_Fioi_fep2 >0) then
-                   i2x(index_i2x_Fioi_fep2  ,n) = c0 !ffep(i,j,2,iblk) / 1000.0_dbl_kind
-                endif
-                if (index_i2x_Fioi_fed >0) then
-                   i2x(index_i2x_Fioi_fed   ,n) = ffed(i,j,1,iblk) / 1000.0_dbl_kind
-                endif
-                if (index_i2x_Fioi_fed2 >0) then
-                   i2x(index_i2x_Fioi_fed2  ,n) = c0 !ffed(i,j,2,iblk) / 1000.0_dbl_kind
-                endif
-                if (index_i2x_Fioi_dust >0) then
-                   i2x(index_i2x_Fioi_dust  ,n) = fdust(i,j,iblk)
-                endif
+                if (index_i2x_Fioi_fep1  > 0) i2x(index_i2x_Fioi_fep1  ,n) = c0 !ffep(i,j,1,iblk) / 1000.0_dbl_kind
+                if (index_i2x_Fioi_fep2  > 0) i2x(index_i2x_Fioi_fep2  ,n) = c0 !ffep(i,j,2,iblk) / 1000.0_dbl_kind
+                if (index_i2x_Fioi_fed   > 0) i2x(index_i2x_Fioi_fed   ,n) = ffed(i,j,1,iblk) / 1000.0_dbl_kind
+                if (index_i2x_Fioi_fed2  > 0) i2x(index_i2x_Fioi_fed2  ,n) = c0 !ffed(i,j,2,iblk) / 1000.0_dbl_kind
+                if (index_i2x_Fioi_dust  > 0) i2x(index_i2x_Fioi_dust  ,n) = fdust(i,j,iblk)
             endif
           enddo    !i
        enddo    !j

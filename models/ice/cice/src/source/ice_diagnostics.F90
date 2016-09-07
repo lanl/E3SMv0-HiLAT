@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_diagnostics.F90 1111 2016-03-24 19:23:34Z njeffery $
+!  SVN:$Id: ice_diagnostics.F90 1130 2016-07-15 21:10:00Z eclare $
 !=======================================================================
 
 ! Diagnostic information output during run
@@ -105,7 +105,7 @@
 
       use ice_blocks, only: nx_block, ny_block
       use ice_broadcast, only: broadcast_scalar
-      use ice_colpkg_shared, only: calc_Tsfc
+      use ice_colpkg_shared, only: calc_Tsfc, ktherm
       use ice_constants, only: c1, c1000, c2, p001, p5, puny, rhoi, rhos, rhow, &
           rhofresh, Tffresh, Lfresh, Lvap, ice_ref_salinity, field_loc_center, &
           m2_to_km2, awtvdr, awtidr, awtvdf, awtidf
@@ -114,7 +114,7 @@
       use ice_fileunits, only: flush_fileunit
       use ice_flux, only: alvdr, alidr, alvdf, alidf, evap, fsnow, frazil, &
           fswabs, fswthru, flw, flwout, fsens, fsurf, flat, frzmlt_init, frain, fpond, &
-          coszen, fhocn_ai, fsalt_ai, fresh_ai, &
+          coszen, fhocn_ai, fsalt_ai, fresh_ai, frazil_diag, &
           update_ocn_f, Tair, Qa, fsw, fcondtop, meltt, meltb, meltl, snoice, &
           dsnow, congel, sst, sss, Tf, fhocn, &
           swvdr, swvdf, swidr, swidf, &
@@ -572,6 +572,8 @@
          ! frazil ice growth !! should not be multiplied by aice
          ! m/step->kg/m^2/s
          work1(:,:,:) = frazil(:,:,:)*rhoi/dt
+         if (ktherm == 2 .and. .not.update_ocn_f) &
+            work1(:,:,:) = (frazil(:,:,:)-frazil_diag(:,:,:))*rhoi/dt
          frzn = global_sum(work1, distrb_info, &
                            field_loc_center, tarean)
          frzs = global_sum(work1, distrb_info, &

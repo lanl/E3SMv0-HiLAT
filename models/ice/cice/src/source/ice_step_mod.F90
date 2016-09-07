@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_step_mod.F90 1118 2016-04-08 20:53:47Z eclare $
+!  SVN:$Id: ice_step_mod.F90 1135 2016-07-29 21:03:23Z eclare $
 !=======================================================================
 !
 !  Contains CICE component driver routines common to all drivers.
@@ -361,7 +361,7 @@
       use ice_domain_size, only: ncat, nilyr, nslyr, n_aero, nblyr, nltrcr
       use ice_flux, only: fresh, frain, fpond, frzmlt, frazil, frz_onset, &
           update_ocn_f, fsalt, Tf, sss, salinz, fhocn, rside, &
-          meltl
+          meltl, frazil_diag
       use ice_flux_bgc, only: flux_bio, faero_ocn 
       use ice_fileunits, only: nu_diag
       use ice_grid, only: tmask
@@ -429,7 +429,7 @@
                            flux_bio  (i,j,1:nbtrcr,iblk),                  &
                            ocean_bio (i,j,1:nbtrcr,iblk),                  &
                            l_stop,                 stop_label,             &
-                           nu_diag,                                        &
+                           nu_diag,                frazil_diag(i,j, iblk), &
                            frz_onset (i,j,  iblk), yday)
 
          if (l_stop) call diagnostic_abort(i, j, iblk, istep1, stop_label)
