@@ -91,7 +91,8 @@
                      write(nu_diag,*) subname,' create file ',trim(filename)
                   end if
                else
-                  status = pio_openfile(ice_pio_subsystem, File, pio_iotype, trim(filename), pio_write)
+                  nmode = pio_write
+                  status = pio_openfile(ice_pio_subsystem, File, pio_iotype, trim(filename), nmode)
                   if (my_task == master_task) then
                      write(nu_diag,*) subname,' open file ',trim(filename)
                   end if

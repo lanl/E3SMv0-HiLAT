@@ -4,12 +4,12 @@ V 2
 Id
 K 13
 svn:mergeinfo
-V 562
+V 572
 /branches/acme_colpkg/source_colpkg/ice_therm_itd.F90:1117
 /branches/cesm_cice/cice/source/ice_therm_itd.F90:897-924
 /branches/hadgem/cice/source/ice_therm_itd.F90:343-401,620-624,912-917
 /branches/lvlponds/source/ice_therm_itd.F90:403-427,431-499
-/branches/rasm_colpkg/source_colpkg/ice_therm_itd.F90:1080-1098,1114
+/branches/rasm_colpkg/source_colpkg/ice_therm_itd.F90:1080-1098,1114,1123,1133
 /branches/ucl/cice/source/ice_therm_itd.F90:310-459,468-473,485-490,492-560,664-671,811,904
 /branches/zbgc/cice/source/ice_therm_itd.F90:607-679
 /trunk/cice/source/ice_therm_itd.F90:814-833,835-843,845-852,854-928,930-937,939-944,946-947,956-959

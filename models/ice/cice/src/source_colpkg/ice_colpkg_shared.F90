@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_colpkg_shared.F90 1109 2016-03-07 20:24:24Z njeffery $
+!  SVN:$Id: ice_colpkg_shared.F90 1147 2016-09-02 20:55:45Z njeffery $
 !=========================================================================
 !
 ! flags for the column package
@@ -88,7 +88,7 @@
          kalg         ! algae absorption coefficient for 0.5 m thick layer
 
       real (kind=dbl_kind), parameter, public :: &
-         hi_ssl = 0.050_dbl_kind, & ! ice surface scattering layer thickness (m)
+         hi_ssl = 0.020_dbl_kind, & ! ice surface scattering layer thickness (m) Jorge
          hs_ssl = 0.040_dbl_kind    ! snow surface scattering layer thickness (m)
 
 !-----------------------------------------------------------------------

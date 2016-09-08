@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_diagnostics.F90 1022 2015-07-01 18:15:05Z njeffery $
+!  SVN:$Id: ice_diagnostics_bgc.F90 1447 2016-04-28 18:09:53Z afrobert@nps.edu $
 !=======================================================================
 
 ! Diagnostic information output during run

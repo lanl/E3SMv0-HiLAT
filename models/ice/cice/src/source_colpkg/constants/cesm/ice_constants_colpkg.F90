@@ -22,20 +22,20 @@
       real (kind=dbl_kind), parameter :: &
          secday    = SHR_CONST_CDAY  ,&! seconds in calendar day
          rhos      = 330.0_dbl_kind   ,&! density of snow (kg/m^3)
-         rhoi      = SHR_CONST_RHOICE ,&! density of ice (kg/m^3)
+         rhoi      = 890.0_dbl_kind   ,&! density of ice (kg/m^3) ! Jorge
          rhow      = SHR_CONST_RHOSW  ,&! density of seawater (kg/m^3)
          cp_air    = SHR_CONST_CPDAIR ,&! specific heat of air (J/kg/K)
          ! (Briegleb JGR 97 11475-11485  July 1992)
-         emissivity= 0.95_dbl_kind    ,&! emissivity of snow and ice
+         emissivity= 0.98_dbl_kind    ,&! emissivity of snow and ice ! Jorge
          cp_ice    = SHR_CONST_CPICE  ,&! specific heat of fresh ice (J/kg/K)
          cp_ocn    = SHR_CONST_CPSW   ,&! specific heat of ocn    (J/kg/K)
                                         ! freshwater value needed for enthalpy
          depressT  = 0.054_dbl_kind   ,&! Tf:brine salinity ratio (C/ppt)
 
 #ifdef RASM_MODS
-         dragio    = 0.00962_dbl_kind ,&! ice-ocn drag coefficient for RASM as temporary measure
+         dragio    = 0.0114_dbl_kind ,&! ice-ocn drag coefficient ! Jorge
 #else
-         dragio    = 0.00536_dbl_kind ,&! ice-ocn drag coefficient
+         dragio    = 0.0114_dbl_kind ,&! ice-ocn drag coefficient ! Jorge
 #endif
 
          albocn    = 0.06_dbl_kind    ,&! ocean albedo
@@ -77,7 +77,7 @@
          ! kseaice is used only for zero-layer thermo
          kseaice= 2.00_dbl_kind  ,&! thermal conductivity of sea ice (W/m/deg)
                                    ! (used in zero layer thermodynamics option)
-         ksno   = 0.30_dbl_kind  ,&! thermal conductivity of snow  (W/m/deg)
+         ksno   = 0.357_dbl_kind  ,&! thermal conductivity of snow  (W/m/deg) ! Jorge
          zref   = 10._dbl_kind   ,&! reference height for stability (m)
          hs_min = 1.e-4_dbl_kind ,&! min snow thickness for computing zTsn (m)
          snowpatch = 0.005_dbl_kind     ! parameter for fractional snow area (m)

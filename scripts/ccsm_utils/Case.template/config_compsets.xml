@@ -89,6 +89,10 @@ value of RUN_STARTDATE will be date2.
 
 <!-- B compsets -->
 
+<!-- as per Catrin's instructions: -->
+<COMPSET sname="B_2000_CAM5_PLMOD_CLM45"           alias="B2000C5PLMODCLM45"       >2000_CAM5%MAM4%PLMOD_CLM45%SP_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
+<!-- -->
+
 <COMPSET sname="B_2000"                alias="B"         >2000_CAM4_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
 <COMPSET sname="B_2000_CN"             alias="BCN"       >2000_CAM4_CLM40%CN_CICE_POP2_RTM_SGLC_SWAV</COMPSET>
 <COMPSET sname="B_2000_CAM5"           alias="BC5"       >2000_CAM5_CLM40%SP_CICE_POP2_RTM_SGLC_SWAV</COMPSET>

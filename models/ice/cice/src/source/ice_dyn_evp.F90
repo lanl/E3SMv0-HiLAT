@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_dyn_evp.F90 1030 2015-07-27 15:05:32Z eclare $
+!  SVN:$Id: ice_dyn_evp.F90 1135 2016-07-29 21:03:23Z eclare $
 !=======================================================================
 !
 ! Elastic-viscous-plastic sea ice dynamics model
@@ -295,6 +295,7 @@
       ! velocities may have changed in evp_prep2
       call ice_HaloUpdate (fld2,               halo_info, &
                            field_loc_NEcorner, field_type_vector)
+      call ice_timer_stop(timer_bound)
 
       ! unload
       !$OMP PARALLEL DO PRIVATE(iblk)
@@ -304,9 +305,15 @@
       enddo
       !$OMP END PARALLEL DO
 
-      if (maskhalo_dyn) &
-         call ice_HaloMask(halo_info_mask, halo_info, icetmask)
-      call ice_timer_stop(timer_bound)
+      if (maskhalo_dyn) then
+         call ice_timer_start(timer_bound)
+         halomask = 0
+         where (iceumask) halomask = 1
+         call ice_HaloUpdate (halomask,          halo_info, &
+                              field_loc_center,  field_type_scalar)
+         call ice_timer_stop(timer_bound)
+         call ice_HaloMask(halo_info_mask, halo_info, halomask)
+      endif
 
       do ksub = 1,ndte        ! subcycling
 
@@ -372,6 +379,7 @@
             call ice_HaloUpdate (fld2,               halo_info, &
                                  field_loc_NEcorner, field_type_vector)
          endif
+         call ice_timer_stop(timer_bound)
 
          ! unload
          !$OMP PARALLEL DO PRIVATE(iblk)
@@ -380,7 +388,6 @@
             vvel(:,:,iblk) = fld2(:,:,2,iblk)
          enddo
          !$OMP END PARALLEL DO
-         call ice_timer_stop(timer_bound)
 
       enddo                     ! subcycling
 

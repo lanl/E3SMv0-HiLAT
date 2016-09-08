@@ -1,8 +1,8 @@
 10
 
 dir
-1121
-http://oceans11.lanl.gov/svn/CICE/branches/zbgc_colpkg/source_colpkg/constants/cice
+1146
+http://oceans11.lanl.gov/svn/CICE/branches/hilat_colpkg/source_colpkg/constants/cice
 http://oceans11.lanl.gov/svn/CICE
 
 
@@ -28,15 +28,15 @@ eclare
 
 ice_constants_colpkg.F90
 file
+1147
 
 
 
-
-2015-12-14T18:16:25.719367Z
-1e188b7bad552c6ad81eea9375961b5e
-2015-07-27T15:05:32.873898Z
-1030
-eclare
+2016-09-02T20:55:45.946767Z
+f4966c38f7889ea582696f6718e94e9e
+2016-09-02T20:55:45.588033Z
+1147
+njeffery
 has-props
 
 
@@ -58,5 +58,5 @@ has-props
 
 
 
-7682
+7714
 
