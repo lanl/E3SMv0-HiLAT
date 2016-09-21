@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_init_column.F90 1111 2016-03-24 19:23:34Z njeffery $
+!  SVN:$Id: ice_init_column.F90 1150 2016-09-08 16:41:28Z eclare $
 !=========================================================================
 !
 ! Initialization routines for the column package.
@@ -715,7 +715,7 @@
 
       use ice_broadcast, only: broadcast_scalar
       use ice_communicate, only: my_task, master_task
-      use ice_constants_colpkg, only: c1, p5, c0, c5, rhos, rhoi
+      use ice_constants_colpkg, only: c1, p5, c0, c5, rhos, rhoi, p1
       use ice_domain_size, only: max_ntrcr, nblyr, nilyr, nslyr, &
                            n_algae, n_zaero, n_doc, n_dic, n_don, &
                            n_fed, n_fep, max_nsw, n_bgc
@@ -756,7 +756,45 @@
           bgc_flux_type, grid_o, l_sk, grid_o_t, initbio_frac, &
           frazil_scav, grid_oS, l_skS, max_nbtrcr, max_algae, max_aero, &
           max_doc, max_dic, max_don, max_fe, restore_bgc, phi_snow, &
-          modal_aero
+          modal_aero, &
+          ratio_Si2N_diatoms , ratio_Si2N_sp      , ratio_Si2N_phaeo   ,  &
+          ratio_S2N_diatoms  , ratio_S2N_sp       , ratio_S2N_phaeo    ,  &
+          ratio_Fe2C_diatoms , ratio_Fe2C_sp      , ratio_Fe2C_phaeo   ,  &
+          ratio_Fe2N_diatoms , ratio_Fe2N_sp      , ratio_Fe2N_phaeo   ,  &
+          ratio_Fe2DON       , ratio_Fe2DOC_s     , ratio_Fe2DOC_l     ,  &
+          fr_resp            , tau_min            , tau_max            ,  &
+          algal_vel          , R_dFe2dust         , dustFe_sol         ,  &
+          chlabs_diatoms     , chlabs_sp          , chlabs_phaeo       ,  &
+          alpha2max_low_diatoms,alpha2max_low_sp  , alpha2max_low_phaeo,  &
+          beta2max_diatoms   , beta2max_sp        , beta2max_phaeo     ,  &
+          mu_max_diatoms     , mu_max_sp          , mu_max_phaeo       ,  &
+          grow_Tdep_diatoms  , grow_Tdep_sp       , grow_Tdep_phaeo    ,  &
+          fr_graze_diatoms   , fr_graze_sp        , fr_graze_phaeo     ,  &
+          mort_pre_diatoms   , mort_pre_sp        , mort_pre_phaeo     ,  &
+          mort_Tdep_diatoms  , mort_Tdep_sp       , mort_Tdep_phaeo    ,  &
+          k_exude_diatoms    , k_exude_sp         , k_exude_phaeo      ,  &
+          K_Nit_diatoms      , K_Nit_sp           , K_Nit_phaeo        ,  &
+          K_Am_diatoms       , K_Am_sp            , K_Am_phaeo         ,  &
+          K_Sil_diatoms      , K_Sil_sp           , K_Sil_phaeo        ,  &
+          K_Fe_diatoms       , K_Fe_sp            , K_Fe_phaeo         ,  &
+          f_don_protein      , kn_bac_protein     , f_don_Am_protein   ,  &
+          f_doc_s            , f_doc_l            , f_exude_s          ,  &
+          f_exude_l          , k_bac_s            , k_bac_l            ,  &
+          T_max              , fsal               , op_dep_min         ,  &
+          fr_graze_s         , fr_graze_e         , fr_mort2min        ,  &
+          fr_dFe             , k_nitrif           , t_iron_conv        ,  &
+          max_loss           , max_dfe_doc1       , fr_resp_s          ,  &
+          y_sk_DMS           , t_sk_conv          , t_sk_ox            ,  &
+          algaltype_diatoms  , algaltype_sp       , algaltype_phaeo    ,  &
+          nitratetype        , ammoniumtype       , silicatetype       ,  &
+          dmspptype          , dmspdtype          , humtype            ,  &
+          doctype_s          , doctype_l          , dontype_protein    ,  &
+          fedtype_1          , feptype_1          , zaerotype_bc1      ,  &
+          zaerotype_bc2      , zaerotype_dust1    , zaerotype_dust2    ,  &
+          zaerotype_dust3    , zaerotype_dust4    , ratio_C2N_diatoms  ,  &
+          ratio_C2N_sp       , ratio_C2N_phaeo    , ratio_chl2N_diatoms,  & 
+          ratio_chl2N_sp     , ratio_chl2N_phaeo  , F_abs_chl_diatoms  ,  &
+          F_abs_chl_sp       , F_abs_chl_phaeo    , ratio_C2N_proteins 
 
       integer (kind=int_kind) :: &
         nml_error, & ! namelist i/o error flag
@@ -786,7 +824,45 @@
         tr_bgc_Nit, tr_bgc_C, tr_bgc_chl, tr_bgc_Am, tr_bgc_Sil, &
         tr_bgc_DMS, tr_bgc_PON, tr_bgc_hum, tr_bgc_DON, tr_bgc_Fe, &
         grid_o, grid_o_t, l_sk, grid_oS, &   
-        l_skS, phi_snow,  initbio_frac, frazil_scav
+        l_skS, phi_snow,  initbio_frac, frazil_scav, &
+        ratio_Si2N_diatoms , ratio_Si2N_sp      , ratio_Si2N_phaeo   ,  &
+        ratio_S2N_diatoms  , ratio_S2N_sp       , ratio_S2N_phaeo    ,  &
+        ratio_Fe2C_diatoms , ratio_Fe2C_sp      , ratio_Fe2C_phaeo   ,  &
+        ratio_Fe2N_diatoms , ratio_Fe2N_sp      , ratio_Fe2N_phaeo   ,  &
+        ratio_Fe2DON       , ratio_Fe2DOC_s     , ratio_Fe2DOC_l     ,  &
+        fr_resp            , tau_min            , tau_max            ,  &
+        algal_vel          , R_dFe2dust         , dustFe_sol         ,  &
+        chlabs_diatoms     , chlabs_sp          , chlabs_phaeo       ,  &
+        alpha2max_low_diatoms,alpha2max_low_sp  , alpha2max_low_phaeo,  &
+        beta2max_diatoms   , beta2max_sp        , beta2max_phaeo     ,  &
+        mu_max_diatoms     , mu_max_sp          , mu_max_phaeo       ,  &
+        grow_Tdep_diatoms  , grow_Tdep_sp       , grow_Tdep_phaeo    ,  &
+        fr_graze_diatoms   , fr_graze_sp        , fr_graze_phaeo     ,  &
+        mort_pre_diatoms   , mort_pre_sp        , mort_pre_phaeo     ,  &
+        mort_Tdep_diatoms  , mort_Tdep_sp       , mort_Tdep_phaeo    ,  &
+        k_exude_diatoms    , k_exude_sp         , k_exude_phaeo      ,  &
+        K_Nit_diatoms      , K_Nit_sp           , K_Nit_phaeo        ,  &
+        K_Am_diatoms       , K_Am_sp            , K_Am_phaeo         ,  &
+        K_Sil_diatoms      , K_Sil_sp           , K_Sil_phaeo        ,  &
+        K_Fe_diatoms       , K_Fe_sp            , K_Fe_phaeo         ,  &
+        f_don_protein      , kn_bac_protein     , f_don_Am_protein   ,  &
+        f_doc_s            , f_doc_l            , f_exude_s          ,  &
+        f_exude_l          , k_bac_s            , k_bac_l            ,  &
+        T_max              , fsal               , op_dep_min         ,  &
+        fr_graze_s         , fr_graze_e         , fr_mort2min        ,  &
+        fr_dFe             , k_nitrif           , t_iron_conv        ,  &
+        max_loss           , max_dfe_doc1       , fr_resp_s          ,  &
+        y_sk_DMS           , t_sk_conv          , t_sk_ox            ,  &
+        algaltype_diatoms  , algaltype_sp       , algaltype_phaeo    ,  &
+        nitratetype        , ammoniumtype       , silicatetype       ,  &
+        dmspptype          , dmspdtype          , humtype            ,  &
+        doctype_s          , doctype_l          , dontype_protein    ,  &
+        fedtype_1          , feptype_1          , zaerotype_bc1      ,  &
+        zaerotype_bc2      , zaerotype_dust1    , zaerotype_dust2    ,  &
+        zaerotype_dust3    , zaerotype_dust4    , ratio_C2N_diatoms  ,  &
+        ratio_C2N_sp       , ratio_C2N_phaeo    , ratio_chl2N_diatoms,  & 
+        ratio_chl2N_sp     , ratio_chl2N_phaeo  , F_abs_chl_diatoms  ,  &
+        F_abs_chl_sp       , F_abs_chl_phaeo      , ratio_C2N_proteins 
 
       !-----------------------------------------------------------------
       ! default values
@@ -833,6 +909,122 @@
       l_sk            = 7.0_dbl_kind ! characteristic diffusive scale (m)   
       initbio_frac    = c1           ! fraction of ocean trcr concentration in bio trcrs
       frazil_scav     = c1           ! increase in initial bio tracer from ocean scavenging 
+      ratio_Si2N_diatoms = 1.8_dbl_kind    ! algal Si to N (mol/mol)                       
+      ratio_Si2N_sp      = c0              ! diatoms, small plankton, phaeocystis
+      ratio_Si2N_phaeo   = c0
+      ratio_S2N_diatoms  = 0.03_dbl_kind   ! algal S  to N (mol/mol)
+      ratio_S2N_sp       = 0.03_dbl_kind 
+      ratio_S2N_phaeo    = 0.03_dbl_kind
+      ratio_Fe2C_diatoms = 0.0033_dbl_kind ! algal Fe to C  (umol/mol)
+      ratio_Fe2C_sp      = 0.0033_dbl_kind
+      ratio_Fe2C_phaeo   = p1
+      ratio_Fe2N_diatoms = 0.023_dbl_kind  ! algal Fe to N  (umol/mol)
+      ratio_Fe2N_sp      = 0.023_dbl_kind
+      ratio_Fe2N_phaeo   = 0.7_dbl_kind
+      ratio_Fe2DON       = 0.023_dbl_kind  ! Fe to N of DON (nmol/umol)
+      ratio_Fe2DOC_s     = p1              ! Fe to C of DOC (nmol/umol) saccharids
+      ratio_Fe2DOC_l     = 0.033_dbl_kind  ! Fe to C of DOC (nmol/umol) lipids
+      fr_resp            = 0.05_dbl_kind   ! frac of algal growth lost due to respiration      
+      tau_min            = 5200.0_dbl_kind ! rapid mobile to stationary exchanges (s)
+      tau_max            = 1.73e5_dbl_kind ! long time mobile to stationary exchanges (s)
+      algal_vel          = 1.11e-8_dbl_kind! 0.5 cm/d(m/s) Lavoie 2005  1.5 cm/day
+      R_dFe2dust         = 0.035_dbl_kind  !  g/g (3.5% content) Tagliabue 2009
+      dustFe_sol         = 0.005_dbl_kind  ! solubility fraction
+      chlabs_diatoms     = 0.03_dbl_kind   ! chl absorption (1/m/(mg/m^3))
+      chlabs_sp          = 0.01_dbl_kind
+      chlabs_phaeo       = 0.05_dbl_kind
+      alpha2max_low_diatoms = 0.8_dbl_kind ! light limitation (1/(W/m^2))  
+      alpha2max_low_sp      = 0.67_dbl_kind
+      alpha2max_low_phaeo   = 0.67_dbl_kind
+      beta2max_diatoms   = 0.018_dbl_kind  ! light inhibition (1/(W/m^2))  
+      beta2max_sp        = 0.0025_dbl_kind
+      beta2max_phaeo     = 0.01_dbl_kind
+      mu_max_diatoms     = 1.2_dbl_kind    ! maximum growth rate (1/day) 
+      mu_max_sp          = 0.851_dbl_kind
+      mu_max_phaeo       = 0.851_dbl_kind
+      grow_Tdep_diatoms  = 0.06_dbl_kind ! Temperature dependence of growth (1/C)
+      grow_Tdep_sp       = 0.06_dbl_kind
+      grow_Tdep_phaeo    = 0.06_dbl_kind
+      fr_graze_diatoms   = 0.01_dbl_kind ! Fraction grazed
+      fr_graze_sp        = p1
+      fr_graze_phaeo     = p1
+      mort_pre_diatoms   = 0.007_dbl_kind! Mortality (1/day)
+      mort_pre_sp        = 0.007_dbl_kind
+      mort_pre_phaeo     = 0.007_dbl_kind
+      mort_Tdep_diatoms  = 0.03_dbl_kind ! T dependence of mortality (1/C)
+      mort_Tdep_sp       = 0.03_dbl_kind
+      mort_Tdep_phaeo    = 0.03_dbl_kind
+      k_exude_diatoms    = c0            ! algal exudation (1/d)
+      k_exude_sp         = c0
+      k_exude_phaeo      = c0
+      K_Nit_diatoms      = c1            ! nitrate half saturation (mmol/m^3)
+      K_Nit_sp           = c1
+      K_Nit_phaeo        = c1
+      K_Am_diatoms       = 0.3_dbl_kind  ! ammonium half saturation (mmol/m^3)
+      K_Am_sp            = 0.3_dbl_kind
+      K_Am_phaeo         = 0.3_dbl_kind
+      K_Sil_diatoms      = 4.0_dbl_kind  ! silicate half saturation (mmol/m^3)
+      K_Sil_sp           = c0
+      K_Sil_phaeo        = c0
+      K_Fe_diatoms       = c1            ! iron half saturation (nM)
+      K_Fe_sp            = 0.2_dbl_kind
+      K_Fe_phaeo         = p1
+      f_don_protein      = 0.6_dbl_kind  ! fraction of spilled grazing to proteins           
+      kn_bac_protein     = 0.03_dbl_kind ! Bacterial degredation of DON (1/d)                
+      f_don_Am_protein   = 0.25_dbl_kind ! fraction of remineralized DON to ammonium         
+      f_doc_s            = 0.4_dbl_kind  ! fraction of mortality to DOC 
+      f_doc_l            = 0.4_dbl_kind
+      f_exude_s          = c1            ! fraction of exudation to DOC
+      f_exude_l          = c1
+      k_bac_s            = 0.03_dbl_kind ! Bacterial degredation of DOC (1/d)
+      k_bac_l            = 0.03_dbl_kind
+      T_max              = c0            ! maximum temperature (C)
+      fsal               = c1            ! Salinity limitation (ppt)
+      op_dep_min         = p1            ! Light attenuates for optical depths exceeding min
+      fr_graze_s         = p5            ! fraction of grazing spilled or slopped
+      fr_graze_e         = p5            ! fraction of assimilation excreted 
+      fr_mort2min        = p5            ! fractionation of mortality to Am
+      fr_dFe             = 0.3_dbl_kind  ! fraction of remineralized nitrogen
+                                         ! (in units of algal iron)
+      k_nitrif           = c0            ! nitrification rate (1/day)           
+      t_iron_conv        = 3065.0_dbl_kind ! desorption loss pFe to dFe (day)
+      max_loss           = 0.9_dbl_kind ! restrict uptake to % of remaining value 
+      max_dfe_doc1       = 0.2_dbl_kind ! max ratio of dFe to saccharides in the ice 
+                                         !(nM Fe/muM C)    
+      fr_resp_s          = 0.75_dbl_kind ! DMSPd fraction of respiration loss as DMSPd
+      y_sk_DMS           = p5            ! fraction conversion given high yield
+      t_sk_conv          = 3.0_dbl_kind  ! Stefels conversion time (d)
+      t_sk_ox            = 10.0_dbl_kind ! DMS oxidation time (d)
+      algaltype_diatoms  = c0            ! ------------------
+      algaltype_sp       = p5            !
+      algaltype_phaeo    = p5            !
+      nitratetype        = -c1           ! mobility type between
+      ammoniumtype       = c1            ! stationary <-->  mobile
+      silicatetype       = -c1           !
+      dmspptype          = p5            !
+      dmspdtype          = -c1           !
+      humtype            = c1            !
+      doctype_s          = p5            !
+      doctype_l          = p5            !
+      dontype_protein    = p5            !
+      fedtype_1          = p5            !
+      feptype_1          = p5            !
+      zaerotype_bc1      = c1            !
+      zaerotype_bc2      = c1            !
+      zaerotype_dust1    = c1            !
+      zaerotype_dust2    = c1            !
+      zaerotype_dust3    = c1            !
+      zaerotype_dust4    = c1            !--------------------
+      ratio_C2N_diatoms  = 7.0_dbl_kind  ! algal C to N ratio (mol/mol)
+      ratio_C2N_sp       = 7.0_dbl_kind
+      ratio_C2N_phaeo    = 7.0_dbl_kind
+      ratio_chl2N_diatoms= 2.1_dbl_kind  ! algal chlorophyll to N ratio (mg/mmol)
+      ratio_chl2N_sp     = 1.1_dbl_kind
+      ratio_chl2N_phaeo  = 0.84_dbl_kind
+      F_abs_chl_diatoms  = 2.0_dbl_kind  ! scales absorbed radiation for dEdd
+      F_abs_chl_sp       = 4.0_dbl_kind
+      F_abs_chl_phaeo    = 5.0
+      ratio_C2N_proteins = 7.0_dbl_kind  ! ratio of C to N in proteins (mol/mol)       
 
       ! z salinity  parameters
       grid_oS         = c5            ! for bottom flux         
@@ -1056,6 +1248,120 @@
       call broadcast_scalar(scale_bgc,          master_task)
       call broadcast_scalar(initbio_frac,       master_task)
       call broadcast_scalar(frazil_scav,        master_task)
+      call broadcast_scalar(ratio_Si2N_diatoms, master_task)
+      call broadcast_scalar(ratio_Si2N_sp,      master_task)
+      call broadcast_scalar(ratio_Si2N_phaeo,   master_task)
+      call broadcast_scalar(ratio_S2N_diatoms,  master_task)
+      call broadcast_scalar(ratio_S2N_sp,       master_task)
+      call broadcast_scalar(ratio_S2N_phaeo,    master_task)
+      call broadcast_scalar(ratio_Fe2C_diatoms, master_task)
+      call broadcast_scalar(ratio_Fe2C_sp,      master_task)
+      call broadcast_scalar(ratio_Fe2C_phaeo,   master_task)
+      call broadcast_scalar(ratio_Fe2N_diatoms, master_task)
+      call broadcast_scalar(ratio_Fe2N_sp,      master_task)
+      call broadcast_scalar(ratio_Fe2N_phaeo,   master_task)
+      call broadcast_scalar(ratio_Fe2DON   ,    master_task)
+      call broadcast_scalar(ratio_Fe2DOC_s ,    master_task)
+      call broadcast_scalar(ratio_Fe2DOC_l ,    master_task)
+      call broadcast_scalar(fr_resp     ,       master_task)
+      call broadcast_scalar(tau_min  ,          master_task)
+      call broadcast_scalar(tau_max  ,          master_task)
+      call broadcast_scalar(algal_vel  ,        master_task)
+      call broadcast_scalar(R_dFe2dust ,        master_task)
+      call broadcast_scalar(dustFe_sol      ,   master_task)
+      call broadcast_scalar(chlabs_diatoms ,  master_task)
+      call broadcast_scalar(chlabs_sp      ,  master_task)
+      call broadcast_scalar(chlabs_phaeo     ,  master_task)
+      call broadcast_scalar(alpha2max_low_diatoms ,  master_task) 
+      call broadcast_scalar(alpha2max_low_sp      ,  master_task)
+      call broadcast_scalar(alpha2max_low_phaeo   ,  master_task)
+      call broadcast_scalar(beta2max_diatoms ,  master_task) 
+      call broadcast_scalar(beta2max_sp      ,  master_task) 
+      call broadcast_scalar(beta2max_phaeo   ,  master_task) 
+      call broadcast_scalar(mu_max_diatoms   ,  master_task) 
+      call broadcast_scalar(mu_max_sp        ,  master_task) 
+      call broadcast_scalar(mu_max_phaeo     ,  master_task) 
+      call broadcast_scalar(grow_Tdep_diatoms,  master_task) 
+      call broadcast_scalar(grow_Tdep_sp     ,  master_task) 
+      call broadcast_scalar(grow_Tdep_phaeo  ,  master_task) 
+      call broadcast_scalar(fr_graze_diatoms ,  master_task) 
+      call broadcast_scalar(fr_graze_sp      ,  master_task) 
+      call broadcast_scalar(fr_graze_phaeo   ,  master_task)  
+      call broadcast_scalar(mort_pre_diatoms ,  master_task) 
+      call broadcast_scalar(mort_pre_sp      ,  master_task)  
+      call broadcast_scalar(mort_pre_phaeo   ,  master_task)  
+      call broadcast_scalar(mort_Tdep_diatoms,  master_task) 
+      call broadcast_scalar(mort_Tdep_sp     ,  master_task)   
+      call broadcast_scalar(mort_Tdep_phaeo  ,  master_task)   
+      call broadcast_scalar(k_exude_diatoms  ,  master_task) 
+      call broadcast_scalar(k_exude_sp       ,  master_task)   
+      call broadcast_scalar(k_exude_phaeo    ,  master_task)   
+      call broadcast_scalar(K_Nit_diatoms    ,  master_task) 
+      call broadcast_scalar(K_Nit_sp         ,  master_task)
+      call broadcast_scalar(K_Nit_phaeo      ,  master_task)
+      call broadcast_scalar(K_Am_diatoms     ,  master_task)
+      call broadcast_scalar(K_Am_sp          ,  master_task)
+      call broadcast_scalar(K_Am_phaeo       ,  master_task)
+      call broadcast_scalar(K_Sil_diatoms    ,  master_task)
+      call broadcast_scalar(K_Sil_sp         ,  master_task)
+      call broadcast_scalar(K_Sil_phaeo      ,  master_task)
+      call broadcast_scalar(K_Fe_diatoms     ,  master_task)
+      call broadcast_scalar(K_Fe_sp          ,  master_task)
+      call broadcast_scalar(K_Fe_phaeo       ,  master_task)
+      call broadcast_scalar(f_don_protein    ,  master_task)
+      call broadcast_scalar(kn_bac_protein   ,  master_task)
+      call broadcast_scalar(f_don_Am_protein ,  master_task)
+      call broadcast_scalar(f_doc_s          ,  master_task)
+      call broadcast_scalar(f_doc_l          ,  master_task)  
+      call broadcast_scalar(f_exude_s        ,  master_task)
+      call broadcast_scalar(f_exude_l        ,  master_task)
+      call broadcast_scalar(k_bac_s          ,  master_task) 
+      call broadcast_scalar(k_bac_l          ,  master_task)
+      call broadcast_scalar(T_max            ,  master_task)
+      call broadcast_scalar(fsal             ,  master_task)
+      call broadcast_scalar(op_dep_min       ,  master_task)
+      call broadcast_scalar(fr_graze_s       ,  master_task) 
+      call broadcast_scalar(fr_graze_e       ,  master_task) 
+      call broadcast_scalar(fr_mort2min      ,  master_task) 
+      call broadcast_scalar(fr_dFe           ,  master_task)
+      call broadcast_scalar(k_nitrif         ,  master_task)
+      call broadcast_scalar(t_iron_conv      ,  master_task)
+      call broadcast_scalar(max_loss         ,  master_task)
+      call broadcast_scalar(max_dfe_doc1     ,  master_task)
+      call broadcast_scalar(fr_resp_s        ,  master_task)
+      call broadcast_scalar(y_sk_DMS         ,  master_task)
+      call broadcast_scalar(t_sk_conv        ,  master_task) 
+      call broadcast_scalar(t_sk_ox          ,  master_task)
+      call broadcast_scalar(algaltype_diatoms,  master_task)
+      call broadcast_scalar(algaltype_sp       ,  master_task) 
+      call broadcast_scalar(algaltype_phaeo    ,  master_task) 
+      call broadcast_scalar(nitratetype        ,  master_task)
+      call broadcast_scalar(ammoniumtype       ,  master_task)
+      call broadcast_scalar(silicatetype       ,  master_task)
+      call broadcast_scalar(dmspptype          ,  master_task)  
+      call broadcast_scalar(dmspdtype          ,  master_task) 
+      call broadcast_scalar(humtype            ,  master_task)
+      call broadcast_scalar(doctype_s          ,  master_task) 
+      call broadcast_scalar(doctype_l          ,  master_task)
+      call broadcast_scalar(dontype_protein    ,  master_task)
+      call broadcast_scalar(fedtype_1          ,  master_task)
+      call broadcast_scalar(feptype_1          ,  master_task)
+      call broadcast_scalar(zaerotype_bc1      ,  master_task)
+      call broadcast_scalar(zaerotype_bc2      ,  master_task)
+      call broadcast_scalar(zaerotype_dust1    ,  master_task)
+      call broadcast_scalar(zaerotype_dust2    ,  master_task)
+      call broadcast_scalar(zaerotype_dust3    ,  master_task)
+      call broadcast_scalar(zaerotype_dust4    ,  master_task)
+      call broadcast_scalar(ratio_C2N_diatoms  ,  master_task)
+      call broadcast_scalar(ratio_C2N_sp       ,  master_task)
+      call broadcast_scalar(ratio_C2N_phaeo    ,  master_task)
+      call broadcast_scalar(ratio_chl2N_diatoms,  master_task)
+      call broadcast_scalar(ratio_chl2N_sp     ,  master_task)
+      call broadcast_scalar(ratio_chl2N_phaeo  ,  master_task)
+      call broadcast_scalar(F_abs_chl_diatoms  ,  master_task)
+      call broadcast_scalar(F_abs_chl_sp       ,  master_task)
+      call broadcast_scalar(F_abs_chl_phaeo    ,  master_task)
+      call broadcast_scalar(ratio_C2N_proteins ,  master_task) 
 
       if (skl_bgc .and. n_bgc < 2) then
          write (nu_diag,*) ' '
@@ -1099,7 +1405,39 @@
                  nt_bgc_hum, nlt_bgc_hum, tr_bgc_hum, solve_zsal, &
                  skl_bgc, z_tracers, dEdd_algae, solve_zbgc, &
                  frazil_scav, initbio_frac, bio_index_o, bio_index, ntrcr_o, &
-                 max_algae, max_doc, max_dic, max_don, max_fe)
+                 max_algae, max_doc, max_dic, max_don, max_fe, &
+                 ratio_Si2N_diatoms, ratio_Si2N_sp, ratio_Si2N_phaeo, &
+                 ratio_S2N_diatoms, ratio_S2N_sp, ratio_S2N_phaeo, &
+                 ratio_Fe2C_diatoms, ratio_Fe2C_sp, ratio_Fe2C_phaeo, &
+                 ratio_Fe2N_diatoms, ratio_Fe2N_sp, ratio_Fe2N_phaeo, &
+                 ratio_Fe2DON, ratio_Fe2DOC_s,  ratio_Fe2DOC_l, & 
+                 chlabs_diatoms, chlabs_sp, chlabs_phaeo, &    
+                 alpha2max_low_diatoms, alpha2max_low_sp, alpha2max_low_phaeo, &  
+                 beta2max_diatoms, beta2max_sp, beta2max_phaeo, &    
+                 mu_max_diatoms, mu_max_sp, mu_max_phaeo, &      
+                 grow_Tdep_diatoms, grow_Tdep_sp, grow_Tdep_phaeo, &      
+                 fr_graze_diatoms, fr_graze_sp, fr_graze_phaeo, &    
+                 mort_pre_diatoms, mort_pre_sp, mort_pre_phaeo, &        
+                 mort_Tdep_diatoms, mort_Tdep_sp, mort_Tdep_phaeo, &
+                 k_exude_diatoms, k_exude_sp, k_exude_phaeo, &   
+                 K_Nit_diatoms, K_Nit_sp, K_Nit_phaeo, &     
+                 K_Am_diatoms, K_Am_sp, K_Am_phaeo, &     
+                 K_Sil_diatoms, K_Sil_sp, K_Sil_phaeo, &     
+                 K_Fe_diatoms, K_Fe_sp, K_Fe_phaeo, & 
+                 f_don_protein, kn_bac_protein, &   
+                 f_don_Am_protein ,f_doc_s, f_doc_l, &
+                 f_exude_s, f_exude_l, k_bac_s,  k_bac_l, &
+                 algaltype_diatoms, algaltype_sp, algaltype_phaeo, &
+                 doctype_s, doctype_l, dontype_protein, &
+                 fedtype_1, feptype_1, zaerotype_bc1, zaerotype_bc2, &
+                 zaerotype_dust1, zaerotype_dust2, zaerotype_dust3, &
+                 zaerotype_dust4, &
+                 ratio_C2N_diatoms, ratio_C2N_sp, ratio_C2N_phaeo, &
+                 ratio_chl2N_diatoms, ratio_chl2N_sp, ratio_chl2N_phaeo, &
+                 F_abs_chl_diatoms, F_abs_chl_sp, F_abs_chl_phaeo, &
+                 ratio_C2N_proteins, &
+                 nitratetype, ammoniumtype, dmspptype, dmspdtype, &
+                 silicatetype, humtype, tau_min, tau_max)
 
       !-----------------------------------------------------------------
       ! final consistency checks

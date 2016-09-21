@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_mechred.F90 1135 2016-07-29 21:03:23Z eclare $
+!  SVN:$Id: ice_mechred.F90 1150 2016-09-08 16:41:28Z eclare $
 !=======================================================================
 
 ! Driver for ice mechanical redistribution (ridging)
@@ -148,7 +148,7 @@
       logical (kind=log_kind), intent(out) :: &
          l_stop         ! if true, abort on return
 
-      character (char_len), intent(out) :: &
+      character (len=*), intent(out) :: &
          stop_label   ! diagnostic information for abort
 
       integer (kind=int_kind), intent(in) :: &
@@ -1112,7 +1112,7 @@
       logical (kind=log_kind), intent(inout) :: &
          l_stop         ! if true, abort on return
 
-      character (char_len), intent(out) :: &
+      character (len=*), intent(out) :: &
          stop_label   ! diagnostic information for abort
 
       real (kind=dbl_kind), dimension (:), intent(inout), optional :: &

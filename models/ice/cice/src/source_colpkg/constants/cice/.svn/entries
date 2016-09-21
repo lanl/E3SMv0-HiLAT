@@ -1,15 +1,15 @@
 10
 
 dir
-1146
+1153
 http://oceans11.lanl.gov/svn/CICE/branches/hilat_colpkg/source_colpkg/constants/cice
 http://oceans11.lanl.gov/svn/CICE
 
 
 
-2015-07-27T15:05:32.873898Z
-1030
-eclare
+2016-09-02T20:55:45.588033Z
+1147
+njeffery
 
 
 
@@ -28,7 +28,7 @@ eclare
 
 ice_constants_colpkg.F90
 file
-1147
+
 
 
 

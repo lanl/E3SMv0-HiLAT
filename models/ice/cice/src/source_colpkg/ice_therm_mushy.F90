@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_therm_mushy.F90 1147 2016-09-02 20:55:45Z njeffery $
+!  SVN:$Id: ice_therm_mushy.F90 1150 2016-09-08 16:41:28Z eclare $
 !=======================================================================
 
 module ice_therm_mushy

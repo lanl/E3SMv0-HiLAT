@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_step_mod.F90 1135 2016-07-29 21:03:23Z eclare $
+!  SVN:$Id: ice_step_mod.F90 1150 2016-09-08 16:41:28Z eclare $
 !=======================================================================
 !
 !  Contains CICE component driver routines common to all drivers.
@@ -1001,7 +1001,7 @@
       use ice_colpkg, only: colpkg_biogeochemistry, colpkg_init_OceanConcArray
       use ice_colpkg_shared, only: skl_bgc, max_algae, max_nbtrcr, max_don, &
                              max_doc, max_dic, max_aero, max_fe
-      use ice_colpkg_tracers, only: tr_brine, nbtrcr, ntrcr, bio_index_o, nlt_zaero
+      use ice_colpkg_tracers, only: tr_brine, nbtrcr, ntrcr, bio_index_o, nlt_zaero, tr_zaero
       use ice_diagnostics, only: diagnostic_abort
       use ice_domain, only: blocks_ice
       use ice_domain_size, only: nblyr, nilyr, nslyr, n_algae, n_zaero, ncat, &
@@ -1066,9 +1066,11 @@
          do mm = 1,nbtrcr
             ocean_bio(i,j,mm,iblk) = ocean_bio_all(i,j,bio_index_o(mm),iblk)  
          enddo  ! mm    
-         do mm = 1, n_zaero  ! update aerosols
-            flux_bio_atm(i,j,nlt_zaero(mm),iblk) = faero_atm(i,j,mm,iblk)
-         enddo  ! mm
+         if (tr_zaero) then
+            do mm = 1, n_zaero  ! update aerosols
+               flux_bio_atm(i,j,nlt_zaero(mm),iblk) = faero_atm(i,j,mm,iblk)
+            enddo  ! mm
+         endif
 
          call colpkg_biogeochemistry(dt, ntrcr, nbtrcr,&
                               upNO        (i,j,          iblk),        &
