@@ -72,7 +72,7 @@
            f_Silsnow      = 'x', f_PONsnow      = 'x', & 
            f_humsnow      = 'x',                       &
            f_DICsnow      = 'x', f_DOCsnow      = 'x', & 
-           f_DONsnow      = 'x', f_zaerosnow    = 'x', &   &  
+           f_DONsnow      = 'x', f_zaerosnow    = 'x', &
            f_chlfrac      = 'x', f_Nitfrac      = 'x', &   
            f_Amfrac       = 'x',                       &  
            f_Nfrac        = 'x', f_DMSPpfrac    = 'x', &   
