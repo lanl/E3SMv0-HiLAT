@@ -3118,7 +3118,7 @@ contains
          hpond     ! melt pond thickness (m)
     
     real(kind=dbl_kind), parameter :: &
-         lambda_pond = c1 / (10.0_dbl_kind * 24.0_dbl_kind * 3600.0_dbl_kind), &
+         lambda_pond = 5.0e-7_dbl_kind, &
          hpond0 = 0.01_dbl_kind
 
     if (tr_pond) then

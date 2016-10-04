@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history.F90 1118 2016-04-08 20:53:47Z eclare $
+!  SVN:$Id: ice_history.F90 1135 2016-07-29 21:03:23Z eclare $
 !=======================================================================
 
 ! Driver for core history output
@@ -1232,7 +1232,7 @@
       n3Dzcum = n3Dccum + num_avail_hist_fields_3Dz
       n3Dbcum = n3Dzcum + num_avail_hist_fields_3Db
       n3Dacum = n3Dbcum + num_avail_hist_fields_3Da
-      n4Dicum = n3Dbcum + num_avail_hist_fields_4Di
+      n4Dicum = n3Dacum + num_avail_hist_fields_4Di
       n4Dscum = n4Dicum + num_avail_hist_fields_4Ds ! should equal num_avail_hist_fields_tot
 
       do ns = 1,nstreams

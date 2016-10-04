@@ -1,8 +1,8 @@
 10
 
 dir
-1121
-http://oceans11.lanl.gov/svn/CICE/branches/zbgc_colpkg/source_colpkg/constants/cesm
+1146
+http://oceans11.lanl.gov/svn/CICE/branches/hilat_colpkg/source_colpkg/constants/cesm
 http://oceans11.lanl.gov/svn/CICE
 
 
@@ -28,20 +28,15 @@ eclare
 
 ice_constants_colpkg.F90
 file
+1147
 
 
 
-
-2015-12-14T18:16:25.754362Z
-dbf6e635fca8321c4531138c3b8e0d0c
-2015-12-12T18:12:30.675861Z
-1099
-eclare
-
-
-
-
-
+2016-09-02T20:25:34.309498Z
+f22941ba825f61510153fb9cbfb8a2bc
+2016-09-02T20:55:45.588033Z
+1147
+njeffery
 
 
 
@@ -58,5 +53,10 @@ eclare
 
 
 
-7847
+
+
+
+
+
+7856
 

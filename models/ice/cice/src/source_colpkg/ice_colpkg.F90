@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_colpkg.F90 1118 2016-04-08 20:53:47Z eclare $
+!  SVN:$Id: ice_colpkg.F90 1130 2016-07-15 21:10:00Z eclare $
 !=========================================================================
 !
 ! flags and interface routines for the column package
@@ -2040,7 +2040,7 @@
                                      first_ice,    fzsal,         &
                                      flux_bio,     ocean_bio,     &
                                      l_stop,       stop_label,    &
-                                     nu_diag,                     &
+                                     nu_diag,      frazil_diag,   &
                                      frz_onset,    yday)
 
       use ice_constants_colpkg, only: puny
@@ -2104,7 +2104,8 @@
          fhocn    , & ! net heat flux to ocean (W/m^2)
          fzsal    , & ! salt flux to ocean from zsalinity (kg/m^2/s)
          meltl    , & ! lateral ice melt         (m/step-->cm/day)
-         frazil       ! frazil ice growth        (m/step-->cm/day)
+         frazil   , & ! frazil ice growth        (m/step-->cm/day)
+         frazil_diag  ! frazil ice growth diagnostic (m/step-->cm/day)
 
       real (kind=dbl_kind), dimension(:), intent(inout) :: &
          aicen_init,& ! initial concentration of ice
@@ -2210,7 +2211,7 @@
                            cgrid,         igrid,        &
                            nbtrcr,        flux_bio,     &
                            ocean_bio,     fzsal,        &
-                           nu_diag,                     &
+                           nu_diag,       frazil_diag,  &
                            l_stop,        stop_label)
 
          if (l_stop) return

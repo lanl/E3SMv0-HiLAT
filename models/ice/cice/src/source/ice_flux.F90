@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_flux.F90 1118 2016-04-08 20:53:47Z eclare $
+!  SVN:$Id: ice_flux.F90 1135 2016-07-29 21:03:23Z eclare $
 !=======================================================================
 
 ! Flux variable declarations; these include fields sent from the coupler
@@ -266,7 +266,8 @@
          dvidtt, & ! ice volume tendency thermo. (m/s)
          dagedtt,& ! ice age tendency thermo.    (s/s)
          mlt_onset, &! day of year that sfc melting begins
-         frz_onset   ! day of year that freezing begins (congel or frazil)
+         frz_onset, &! day of year that freezing begins (congel or frazil)
+         frazil_diag ! frazil ice growth diagnostic (m/step-->cm/day)
          
       real (kind=dbl_kind), & 
          dimension (nx_block,ny_block,ncat,max_blocks), public :: &
@@ -609,6 +610,7 @@
       albpnd (:,:,:) = c0
       apeff_ai (:,:,:) = c0
       snowfrac (:,:,:) = c0
+      frazil_diag (:,:,:) = c0
 
       ! drag coefficients are computed prior to the atmo_boundary call, 
       ! during the thermodynamics section 

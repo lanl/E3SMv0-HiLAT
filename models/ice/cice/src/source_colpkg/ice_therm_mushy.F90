@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_therm_mushy.F90 1118 2016-04-08 20:53:47Z eclare $
+!  SVN:$Id: ice_therm_mushy.F90 1147 2016-09-02 20:55:45Z njeffery $
 !=======================================================================
 
 module ice_therm_mushy
@@ -3118,7 +3118,7 @@ contains
          hpond     ! melt pond thickness (m)
     
     real(kind=dbl_kind), parameter :: &
-         lambda_pond = c1 / (10.0_dbl_kind * 24.0_dbl_kind * 3600.0_dbl_kind), &
+         lambda_pond = 5.0e-7_dbl_kind, &
          hpond0 = 0.01_dbl_kind
 
     if (tr_pond) then

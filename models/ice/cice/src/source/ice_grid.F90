@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_grid.F90 929 2015-03-10 00:35:22Z eclare $
+!  SVN:$Id: ice_grid.F90 1125 2016-07-01 20:57:48Z eclare $
 !=======================================================================
 
 ! Spatial grids, masks, and boundary conditions
@@ -878,6 +878,8 @@
          ! Check for consistency
          if (my_task == master_task) then
             if (nx_global /= ni .and. ny_global /= nj) then
+              write(nu_diag,*) 'latlongrid: ni,nj = ',ni,nj
+              write(nu_diag,*) 'latlongrid: nx_g,ny_g = ',nx_global, ny_global
               call abort_ice ('latlongrid: ni,nj not equal to nx_global,ny_global')
             end if
          end if
