@@ -42,9 +42,11 @@
    ! Parameters for Liquid Stratus !
    ! ----------------------------- !
 
-   logical,  parameter          :: CAMstfrac    = .false.       ! If .true. (.false.),
-                                                                ! use Slingo (triangular PDF-based) liquid stratus fraction
-   logical,  parameter          :: freeze_dry   = .false.       ! If .true., use 'freeze dry' in liquid stratus fraction formula
+   logical,  parameter          :: CAMstfrac    = .false.       ! If .true. (.false.), use Slingo (triangular PDF-based) liquid stratus fraction
+   logical,  parameter          :: freeze_dry   = .true.   !HW  ! If .true., use 'freeze dry' in liquid stratus fraction formula
+   real(r8), parameter          :: fd_minf      = 0.15_r8       ! Minimum FD factor
+   real(r8), parameter          :: fd_qth       = 3.e-3_r8      ! FD affects q < fd_qth
+
    real(r8), parameter          :: qlst_min     = 2.e-5_r8      ! Minimum in-stratus LWC constraint [ kg/kg ]
    real(r8), parameter          :: qlst_max     = 3.e-3_r8      ! Maximum in-stratus LWC constraint [ kg/kg ]
    real(r8), parameter          :: cc           = 0.1_r8        ! For newly formed/dissipated in-stratus CWC ( 0 <= cc <= 1 )
@@ -2081,8 +2083,10 @@
        endif
 
        if( freeze_dry ) then
-           a  = a *max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
-           Ga = Ga/max(0.15_r8,min(1.0_r8,qv/0.0030_r8)) 
+           a  = a *max(fd_minf,min(1.0_r8,qv/fd_qth))
+           Ga = Ga/max(fd_minf,min(1.0_r8,qv/fd_qth))
+!HW           a  = a *max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
+!HW           Ga = Ga/max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
        endif
 
    elseif( p .lt. premit ) then
@@ -2238,8 +2242,10 @@
        endif
 
        if( freeze_dry ) then
-           a  = a *max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
-           Ga = Ga/max(0.15_r8,min(1.0_r8,qv/0.0030_r8)) 
+           a  = a *max(fd_minf,min(1.0_r8,qv/fd_qth))
+           Ga = Ga/max(fd_minf,min(1.0_r8,qv/fd_qth))
+!HW           a  = a *max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
+!HW           Ga = Ga/max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
        endif
 
    elseif( p .lt. premit ) then
@@ -2355,8 +2361,10 @@
             Ga = 0.5_r8*(1._r8-rhmin)*((1._r8-rhmin)/(U-rhmin))
        endif
        if( freeze_dry ) then
-           a  = a*max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
-           Ga = Ga/max(0.15_r8,min(1.0_r8,qv/0.0030_r8)) 
+           a  = a *max(fd_minf,min(1.0_r8,qv/fd_qth))
+           Ga = Ga/max(fd_minf,min(1.0_r8,qv/fd_qth))
+!HW           a  = a*max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
+!HW           Ga = Ga/max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
        endif
 
    elseif( p .lt. premit ) then
@@ -2472,8 +2480,10 @@
             Ga = 0.5_r8*(1._r8-rhmin)*((1._r8-rhmin)/(U-rhmin))
        endif
        if( freeze_dry ) then
-           a  = a*max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
-           Ga = Ga/max(0.15_r8,min(1.0_r8,qv/0.0030_r8)) 
+           a  = a *max(fd_minf,min(1.0_r8,qv/fd_qth))
+           Ga = Ga/max(fd_minf,min(1.0_r8,qv/fd_qth))
+!HW           a  = a*max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
+!HW           Ga = Ga/max(0.15_r8,min(1.0_r8,qv/0.0030_r8))
        endif
 
    elseif( p .lt. premit ) then

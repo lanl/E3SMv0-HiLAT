@@ -605,12 +605,16 @@ end subroutine macrop_driver_readnl
 
    do k = top_lev, pver
    do i = 1, state_loc%ncol
-      if( state_loc%t(i,k) > 268.15_r8 ) then
+! MV      if( state_loc%t(i,k) > 268.15_r8 ) then
+! MV: for different Tice value:
+      if( state_loc%t(i,k) > 261.15_r8 ) then
           dum1 = 0.0_r8
       elseif( state_loc%t(i,k) < 238.15_r8 ) then
           dum1 = 1.0_r8
       else
-          dum1 = ( 268.15_r8 - state_loc%t(i,k) ) / 30._r8
+! MV          dum1 = ( 268.15_r8 - state_loc%t(i,k) ) / 30._r8
+! MV: for different Tice value:
+          dum1 = ( 261.15_r8 - state_loc%t(i,k) ) / 23._r8
       endif
 
      ! If detrainment was done elsewhere, still update the variables used for output
