@@ -423,8 +423,8 @@
 
       if (location == 1 .and. vbrin > c0) then  ! add frazil to bottom
 
-         hbri     = vbrin
-         hbri_old = vtmp
+         hbri     = vbrin 
+         hbri_old = vtmp 
          if (solve_zsal) then
             top_conc = sss * salt_loss
             do k = 1, nblyr 

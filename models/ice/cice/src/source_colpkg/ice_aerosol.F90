@@ -742,10 +742,12 @@
              trcrn(bio_index(k)+nblyr+1)=aerosno(k,1)/dzssl_new * ar 
              trcrn(bio_index(k)+nblyr+2)=aerosno(k,2)/dzint_new * ar
              zbgc_snow(k) = zbgc_snow(k) * ar
+	     zbgc_atm(k) = zbgc_atm(k) * ar
          enddo
          else
          do k = 1,nbtrcr
             zbgc_snow(k) = (zbgc_snow(k) + aerosno(k,1) + aerosno(k,2)) * ar
+	    zbgc_atm(k) = zbgc_atm(k) * ar
             trcrn(bio_index(k)+nblyr+1)= c0
             trcrn(bio_index(k)+nblyr+2)= c0
          enddo

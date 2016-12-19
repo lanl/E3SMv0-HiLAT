@@ -1012,7 +1012,7 @@
       use ice_flux_bgc, only: hin_old, flux_bio, flux_bio_atm, faero_atm, & 
           nit, amm, sil, dmsp, dms, algalN, doc, don, dic, fed, fep, zaeros, hum
       use ice_state, only: aicen_init, vicen_init, aicen, vicen, vsnon, &
-          trcrn, vsnon_init          
+          trcrn, vsnon_init, aice0          
       use ice_timers, only: timer_bgc, ice_timer_start, ice_timer_stop
 
       real (kind=dbl_kind), intent(in) :: &
@@ -1122,6 +1122,7 @@
                               aicen       (i,j,:,        iblk),        &
                               vicen       (i,j,:,        iblk),        &
                               vsnon       (i,j,:,        iblk),        &
+                              aice0       (i,j,          iblk),        &
                               trcrn       (i,j,1:ntrcr,:,iblk),        &
                               vsnon_init  (i,j,:,        iblk),        &
                               skl_bgc, max_algae, max_nbtrcr,          &
