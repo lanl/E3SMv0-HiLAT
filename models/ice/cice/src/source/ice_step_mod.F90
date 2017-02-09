@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_step_mod.F90 1150 2016-09-08 16:41:28Z eclare $
+!  SVN:$Id: ice_step_mod.F90 1161 2017-01-06 20:28:24Z njeffery $
 !=======================================================================
 !
 !  Contains CICE component driver routines common to all drivers.
@@ -1012,7 +1012,7 @@
       use ice_flux_bgc, only: hin_old, flux_bio, flux_bio_atm, faero_atm, & 
           nit, amm, sil, dmsp, dms, algalN, doc, don, dic, fed, fep, zaeros, hum
       use ice_state, only: aicen_init, vicen_init, aicen, vicen, vsnon, &
-          trcrn, vsnon_init, aice0          
+          trcrn, vsnon_init, aice0                    
       use ice_timers, only: timer_bgc, ice_timer_start, ice_timer_stop
 
       real (kind=dbl_kind), intent(in) :: &

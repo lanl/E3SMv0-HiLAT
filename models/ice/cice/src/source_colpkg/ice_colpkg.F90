@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_colpkg.F90 1150 2016-09-08 16:41:28Z eclare $
+!  SVN:$Id: ice_colpkg.F90 1161 2017-01-06 20:28:24Z njeffery $
 !=========================================================================
 !
 ! flags and interface routines for the column package
