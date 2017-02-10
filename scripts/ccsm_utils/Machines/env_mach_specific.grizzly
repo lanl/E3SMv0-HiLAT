@@ -3,9 +3,7 @@
 #-------------------------------------------------------------------------------
 # Modules and library paths
 #-------------------------------------------------------------------------------
-if ( -f /etc/csh.cshrc ) then
-  source /etc/csh.cshrc
-endif
+source /etc/profile.d/z00_lmod.csh
 
 module purge
 module use /usr/projects/climate/SHARED_CLIMATE/modulefiles/all

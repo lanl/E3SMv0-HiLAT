@@ -8,7 +8,7 @@
 #
 # The decomposition is appropriate for 1920 OCN pes, and 480 ICE pes
 # 
-export CaseName=t32_GIAF_Griz
+export CaseName=t32_GIAF_Griz3
 echo $CaseName
 
 ./create_newcase -case ../../$CaseName -res T62_t32 -compset GIAF -mach grizzly -proj climatehilat
@@ -23,7 +23,7 @@ cd ../../$CaseName
 ./xmlchange -file env_build.xml -id POP_DECOMPTYPE -val cartesian
 ./xmlchange -file env_build.xml -id CICE_MODE -val prognostic
 ./xmlchange -file env_build.xml -id CICE_AUTO_DECOMP -val false
-./xmlchange -file env_build.xml -id CICE_BLCKX -val 5
+./xmlchange -file env_build.xml -id CICE_BLCKX -val 10
 ./xmlchange -file env_build.xml -id CICE_BLCKY -val 400
 ./xmlchange -file env_build.xml -id CICE_MXBLCKS -val 1
 ./xmlchange -file env_build.xml -id CICE_DECOMPTYPE -val cartesian

@@ -29,13 +29,13 @@ cd ../../$CaseName
 ./xmlchange -file env_build.xml -id CICE_DECOMPTYPE -val cartesian
 ./xmlchange -file env_build.xml -id CICE_DECOMPSETTING -val slenderX2
 
-./xmlchange -file env_run.xml -id ATM_NCPL -val 24
-./xmlchange -file env_run.xml -id LND_NCPL -val 24
-./xmlchange -file env_run.xml -id ICE_NCPL -val 24
-./xmlchange -file env_run.xml -id OCN_NCPL -val 24
-./xmlchange -file env_run.xml -id GLC_NCPL -val 24
-./xmlchange -file env_run.xml -id ROF_NCPL -val 24
-./xmlchange -file env_run.xml -id WAV_NCPL -val 24
+./xmlchange -file env_run.xml -id ATM_NCPL -val 48
+./xmlchange -file env_run.xml -id LND_NCPL -val 48
+./xmlchange -file env_run.xml -id ICE_NCPL -val 48
+./xmlchange -file env_run.xml -id OCN_NCPL -val 48
+./xmlchange -file env_run.xml -id GLC_NCPL -val 1
+./xmlchange -file env_run.xml -id ROF_NCPL -val 48
+./xmlchange -file env_run.xml -id WAV_NCPL -val 48
 ./xmlchange -file env_run.xml -id CPL_SEQ_OPTION -val RASM_OPTION1
 
 ./xmlchange -file env_run.xml -id PIO_TYPENAME -val pnetcdf
