@@ -77,7 +77,7 @@
          ! kseaice is used only for zero-layer thermo
          kseaice= 2.00_dbl_kind  ,&! thermal conductivity of sea ice (W/m/deg)
                                    ! (used in zero layer thermodynamics option)
-         ksno   = 0.357_dbl_kind  ,&! thermal conductivity of snow  (W/m/deg) ! Jorge
+         ksno   = 0.3_dbl_kind  ,&! thermal conductivity of snow  (W/m/deg) ! Jorge
          zref   = 10._dbl_kind   ,&! reference height for stability (m)
          hs_min = 1.e-4_dbl_kind ,&! min snow thickness for computing zTsn (m)
          snowpatch = 0.005_dbl_kind     ! parameter for fractional snow area (m)
