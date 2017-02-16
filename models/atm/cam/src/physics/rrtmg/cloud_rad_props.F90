@@ -655,6 +655,12 @@ subroutine interpolate_ice_optics_lw(ncol, iciwpth, dei, abs_od)
                    absor(lwband:lwband), 1, dei_wgts)
            enddo
            abs_od(:,i,k) = iciwpth(i,k) * absor
+
+!HW bugfix, following that in the ACME  
+! add an upper limit for snow/ice optical depth
+           where(abs_od(:,i,k) > 50.0_r8) abs_od(:,i,k) = 50.0_r8
+!HW 
+
            call lininterp_finish(dei_wgts)
         endif
      enddo
