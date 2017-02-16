@@ -1577,8 +1577,8 @@ contains
    endif
 
 !maltrud debug
-   write(stdout,*) 'swang: pop_sum_buffer1: ', my_task, &
-     index_o2x_So_dms, surf_dms_nf_ind, delt_last
+!  write(stdout,*) 'swang: pop_sum_buffer1: ', my_task, &
+!    index_o2x_So_dms, surf_dms_nf_ind, delt_last
 
 !-----------------------------------------------------------------------
 !  same as above for DMSP
@@ -1854,8 +1854,8 @@ contains
          SBUFF_SUM(:,:,iblock,index_o2x_Faoo_fdms_ocn) + delt_last*WORK(:,:,iblock)
 
 !maltrud debug
-   write(stdout,*) 'pjc: pop_sum_buffer2: ', my_task,  &
-     minval(WORK(:,:,iblock)), maxval(WORK(:,:,iblock))
+!  write(stdout,*) 'pjc: pop_sum_buffer2: ', my_task,  &
+!    minval(WORK(:,:,iblock)), maxval(WORK(:,:,iblock))
 
    endif
 

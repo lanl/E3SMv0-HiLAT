@@ -50,6 +50,15 @@
   </size>
 
 <!-- -------------------------------------------------------------------------------- -->
+  <!-- tx0.3v2 resolution -->
+  <decomp nproc="1920" res="tx0.3v2" >
+    <maxblocks >1</maxblocks>
+    <bsize_x   >25</bsize_x>
+    <bsize_y   >20</bsize_y>
+    <decomptype>spacecurve</decomptype>
+  </decomp>
+
+
   <!-- tx0.1v2 resolution -->
   <decomp nproc="480" res="tx0.1v2" >
     <maxblocks >1</maxblocks>
