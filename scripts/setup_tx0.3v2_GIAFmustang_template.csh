@@ -1,18 +1,12 @@
 #!/bin/bash
 
-# Make sure to set:
-# the correct advective scheme ('lw_lim' in user_nl_pop2);
-# diffusive settings ('del2', ah&hmix_del2t_nml = 0.0e7 in user_nl_pop2);
-# the local salinity fix for run-off (in forcing_coupled.F90); 
-# and the correct value of ksno (in ice_constants_colpkg.F90)
-#
-# The decomposition is appropriate for 1920 OCN pes, and 480 ICE pes
-# 
-export CaseName=t32_GIAF_Griz3
-echo $CaseName
+export CaseName=t32_IAF_Mus
+echo "casename = $CaseName"
+export CaseDir=/main/path/to/casedir
+echo "casedir = $CaseDir/$CaseName"
 
-./create_newcase -case ../../$CaseName -res T62_t32 -compset GIAF -mach grizzly -proj climatehilat
-cd ../../$CaseName
+./create_newcase -case $CaseDir/$CaseName -compset G_INTERANNUAL -res T62_t32 -mach mustang -proj w14_coupledclimate
+cd $CaseDir/$CaseName
 
 ./xmlchange -file env_build.xml -id POP_AUTO_DECOMP -val false
 ./xmlchange -file env_build.xml -id POP_BLCKX -val 25
@@ -71,3 +65,5 @@ cd ../../$CaseName
 ./xmlchange -file env_run.xml -id WAV_PIO_ROOT -val -1
 ./xmlchange -file env_run.xml -id WAV_PIO_NUMTASKS -val -1
 ./xmlchange -file env_run.xml -id WAV_PIO_TYPENAME -val pnetcdf
+
+./cesm_setup

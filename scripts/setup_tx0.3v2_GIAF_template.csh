@@ -7,12 +7,14 @@
 # and the correct value of ksno (in ice_constants_colpkg.F90)
 #
 # The decomposition is appropriate for 1920 OCN pes, and 480 ICE pes
-#
-export CaseName=t32_B1850_Griz
-echo $CaseName
+# 
+export CaseName=t32_GIAF_Griz3
+echo "casename = $CaseName"
+export CaseDir=/main/path/to/casedir
+echo "casedir = $CaseDir/$CaseName"
 
-./create_newcase -case ../../$CaseName -res ne30_t32 -user_compset 1850_CAM5_CLM45%SP_CICE_POP2_RTM_SGLC_SWAV -mach grizzly -proj climatehilat
-cd ../../$CaseName
+./create_newcase -case $CaseDir/$CaseName -res T62_t32 -compset GIAF -mach grizzly -proj climatehilat
+cd $CaseDir/$CaseName
 
 ./xmlchange -file env_build.xml -id POP_AUTO_DECOMP -val false
 ./xmlchange -file env_build.xml -id POP_BLCKX -val 25
@@ -29,13 +31,13 @@ cd ../../$CaseName
 ./xmlchange -file env_build.xml -id CICE_DECOMPTYPE -val cartesian
 ./xmlchange -file env_build.xml -id CICE_DECOMPSETTING -val slenderX2
 
-./xmlchange -file env_run.xml -id ATM_NCPL -val 48
-./xmlchange -file env_run.xml -id LND_NCPL -val 48
-./xmlchange -file env_run.xml -id ICE_NCPL -val 48
-./xmlchange -file env_run.xml -id OCN_NCPL -val 48
-./xmlchange -file env_run.xml -id GLC_NCPL -val 1
-./xmlchange -file env_run.xml -id ROF_NCPL -val 48
-./xmlchange -file env_run.xml -id WAV_NCPL -val 48
+./xmlchange -file env_run.xml -id ATM_NCPL -val 24
+./xmlchange -file env_run.xml -id LND_NCPL -val 24
+./xmlchange -file env_run.xml -id ICE_NCPL -val 24
+./xmlchange -file env_run.xml -id OCN_NCPL -val 24
+./xmlchange -file env_run.xml -id GLC_NCPL -val 24
+./xmlchange -file env_run.xml -id ROF_NCPL -val 24
+./xmlchange -file env_run.xml -id WAV_NCPL -val 24
 ./xmlchange -file env_run.xml -id CPL_SEQ_OPTION -val RASM_OPTION1
 
 ./xmlchange -file env_run.xml -id PIO_TYPENAME -val pnetcdf
