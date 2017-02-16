@@ -134,6 +134,8 @@ my $inst_string = $opts{'inst_string'};
 my $OCN_GRID    = $opts{'ocn_grid'};
 $cfgdir         = $opts{'cfg_dir'};
 
+my $my_path = "${CASEROOT}/SourceMods/src.pop2";
+
 # Validate some of the commandline option values.
 validate_options("commandline", \%opts);
 
@@ -493,7 +495,9 @@ if ($tmp > 0) {
 print "POP2 build-namelist: ocn_grid is $OCN_GRID \n";
 print "POP2 build-namelist: ocn_tracer_modules are @OCN_TRACER_MODULES \n";
 
-(-d $DIN_LOC_ROOT)  or mkdir $DIN_LOC_ROOT;
+(-d $DIN_LOC_ROOT)  or  die <<"EOF";
+** $ProgName - CCSM inputdata root is not a directory: \"$DIN_LOC_ROOT\" **
+EOF
 if ($print>=2) { print "CESM inputdata root directory: $DIN_LOC_ROOT$eol"; }
 
 #-----------------------------------------------------------------------------------------------
@@ -1559,6 +1563,22 @@ if (any(\@OCN_TRACER_MODULES, "moby")) {
 }
 
 ##########################################
+# namelist group: irf_nml                #
+##########################################
+ 
+if (any(\@OCN_TRACER_MODULES, "IRF")) {
+  my $IRF_MODE;
+  my $file = "extract_ocn_tracer_module_opt.csh";
+  if (-f "${my_path}/${file}") {
+    $IRF_MODE = `${my_path}/${file} IRF_MODE | tail -n 1`;
+  } else {
+    $IRF_MODE = `${CODEROOT}/ocn/pop2/bld/${file} IRF_MODE | tail -n 1`;
+  }
+  add_default($nl, 'irf_tracer_file', 'IRF_MODE'=>"$IRF_MODE");
+  add_default($nl, 'irf_tracer_file_ind_start' );
+}
+ 
+##########################################
 # namelist group: tavg_nml               #
 #        AND                             #
 # tavg contents file                     #
@@ -1595,8 +1615,6 @@ if ($OCN_GRID =~ /^gx*/) {
 ##########################################
 # copy files to $RUNDIR                  #
 ##########################################
-
-my $my_path = "${CASEROOT}/SourceMods/src.pop2";
 
 my @copy_files_to_input = ();
 push @copy_files_to_input,"${OCN_GRID}_vert_grid";
@@ -1729,11 +1747,12 @@ if ($OCN_TAVG_TRACER_BUDGET eq "TRUE") {
 for my $module (@OCN_TRACER_MODULES) {
   my $file = "ocn.${module}.tavg.csh";
   my $my_stream = $numcols+1;
+  my @tavg_script_args = module_tavg_script_args($nl, $module);
   if (-f "${my_path}/$file"){
-    $sysmod = "${my_path}/${file} $my_stream";
+    $sysmod = "${my_path}/${file} $my_stream @tavg_script_args";
     system($sysmod) == 0 or die "ERROR: $sysmod failed: $?\n";
   } else {
-    $sysmod = "${CODEROOT}/ocn/pop2/input_templates/${file} $my_stream";
+    $sysmod = "${CODEROOT}/ocn/pop2/input_templates/${file} $my_stream @tavg_script_args";
     system($sysmod) == 0 or die "ERROR: $sysmod failed: $?\n";
   }
 
@@ -1856,6 +1875,9 @@ if (any(\@OCN_TRACER_MODULES, "tracegas")) {
 if (any(\@OCN_TRACER_MODULES, "moby")) {
     push @groups, qw(moby_nml moby_parms_nml );
 }
+if (any(\@OCN_TRACER_MODULES, "IRF")) {
+    push @groups, qw(irf_nml);
+}    
 
 # Check for variables in the "derived" group, add them to appropriate group
 for my $var ($nl->get_variable_names('derived')) {
@@ -2372,3 +2394,16 @@ sub any() {
   }
   return 0;
 }
+
+#-------------------------------------------------------------------------------
+
+sub module_tavg_script_args() {
+  my $nl = shift;
+  my $module = shift;
+  if ($module eq "IRF") {
+    return ($nl->get_variable_value("irf_nml", "irf_tracer_file"),
+            $nl->get_variable_value("irf_nml", "irf_tracer_file_ind_start"));
+  }
+  return "";
+}
+

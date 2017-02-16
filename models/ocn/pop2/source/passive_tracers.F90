@@ -93,6 +93,12 @@
        moby_write_restart,         &
        POP_mobySendTime
 
+   use IRF_mod, only:            &
+       IRF_tracer_cnt,           &
+       IRF_init,                 &
+       IRF_reset
+
+
    implicit none
    private
    save
@@ -159,10 +165,12 @@
 !-----------------------------------------------------------------------
 
    logical (kind=log_kind) ::  &
-      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, surfdyes_on
+      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, &
+      surfdyes_on, IRF_on
 
    namelist /passive_tracers_on_nml/  &
-      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, surfdyes_on
+      ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, &
+      surfdyes_on, IRF_on
 
 !-----------------------------------------------------------------------
 !     index bounds of passive tracer module variables in TRACER
@@ -175,7 +183,8 @@
       sectdyes_ind_begin,   sectdyes_ind_end,       &
       surfdyes_ind_begin,   surfdyes_ind_end,       &
       cfc_ind_begin,        cfc_ind_end,            &
-      moby_ind_begin,       moby_ind_end
+      moby_ind_begin,       moby_ind_end,           &
+      IRF_ind_begin,        IRF_ind_end
 
 
 !-----------------------------------------------------------------------
@@ -253,6 +262,7 @@
    sectdyes_on       = .false.
    surfdyes_on       = .false.
    moby_on           = .false.
+   IRF_on           = .false.
 
    if (my_task == master_task) then
       open (nml_in, file=nml_filename, status='old', iostat=nml_error)
@@ -292,6 +302,7 @@
    call broadcast_scalar(sectdyes_on,       master_task)
    call broadcast_scalar(surfdyes_on,       master_task)
    call broadcast_scalar(moby_on,           master_task)
+   call broadcast_scalar(IRF_on,            master_task)
 
 !-----------------------------------------------------------------------
 !  check for modules that require the flux coupler
@@ -346,6 +357,11 @@
    if (moby_on) then
       call set_tracer_indices('MOBY', moby_tracer_cnt, cumulative_nt,  &
                               moby_ind_begin, moby_ind_end)
+   end if
+
+   if (IRF_on) then
+      call set_tracer_indices('IRF', IRF_tracer_cnt, cumulative_nt,  &
+                              IRF_ind_begin, IRF_ind_end)
    end if
 
    if (cumulative_nt /= nt) then
@@ -497,6 +513,15 @@
          return
       endif
 
+   end if
+
+!-----------------------------------------------------------------------
+!  IRF (IRF) block
+!-----------------------------------------------------------------------
+
+   if (IRF_on) then
+      call IRF_init(tracer_d(IRF_ind_begin:IRF_ind_end), &
+                    TRACER(:,:,:,IRF_ind_begin:IRF_ind_end,:,:))
    end if
 
 !-----------------------------------------------------------------------
@@ -825,6 +850,10 @@
    endif
 
 !-----------------------------------------------------------------------
+!  IRF does not have source/sink terms
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
 !  accumulate time average if necessary
 !-----------------------------------------------------------------------
 
@@ -926,6 +955,10 @@
          TRACER(:,:,:,moby_ind_begin:moby_ind_end,oldtime,:) , &
          TRACER(:,:,:,moby_ind_begin:moby_ind_end,curtime,:)   )
   endif
+
+!-----------------------------------------------------------------------
+!  IRF does not compute and store 3D source-sink terms
+!-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
 !  accumulate time average if necessary
@@ -1074,6 +1107,10 @@
    end if
 
 !-----------------------------------------------------------------------
+!  IRF does not have surface fluxes
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
 !  add virtual fluxes for tracers that specify a non-zero ref_val
 !-----------------------------------------------------------------------
 
@@ -1192,6 +1229,10 @@
    end if
 
 !-----------------------------------------------------------------------
+!  IRF does not write additional restart fields
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
 !EOC
 
  end subroutine write_restart_passive_tracers
@@ -1201,7 +1242,7 @@
 ! !IROUTINE: reset_passive_tracers
 ! !INTERFACE:
 
- subroutine reset_passive_tracers(TRACER_NEW, bid)
+ subroutine reset_passive_tracers(TRACER_OLD, TRACER_NEW, bid)
 
 ! !DESCRIPTION:
 !  call subroutines for each tracer module to reset tracer values
@@ -1216,6 +1257,7 @@
 ! !INPUT/OUTPUT PARAMETERS:
 
    real(r8), dimension(nx_block,ny_block,km,nt), intent(inout) :: &
+      TRACER_OLD,    &! all tracers at old time for a given block
       TRACER_NEW      ! all tracers at new time for a given block
 
 !EOP
@@ -1258,6 +1300,16 @@
    if (moby_on) then
       call moby_reset(  &
          TRACER_NEW(:,:,:,moby_ind_begin:moby_ind_end), bid)
+   end if
+
+!-----------------------------------------------------------------------
+!  IRF block
+!-----------------------------------------------------------------------
+
+   if (IRF_on) then
+      call IRF_reset( &
+         TRACER_OLD(:,:,:,IRF_ind_begin:IRF_ind_end), &
+         TRACER_NEW(:,:,:,IRF_ind_begin:IRF_ind_end) )
    end if
 
 !-----------------------------------------------------------------------
@@ -1544,6 +1596,10 @@
    endif
 
 !-----------------------------------------------------------------------
+!  IRF does not have additional sflux tavg fields
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
 !EOC
 
  end subroutine passive_tracers_tavg_sflux
@@ -1754,6 +1810,10 @@
          tracer_ref_val = moby_tracer_ref_val(ind-moby_ind_begin+1)
       endif
    endif
+
+!-----------------------------------------------------------------------
+!  IRF does not use virtual fluxes
+!-----------------------------------------------------------------------
 
 !-----------------------------------------------------------------------
 !EOC

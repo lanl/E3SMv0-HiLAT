@@ -1209,6 +1209,15 @@
 <moby_use_nml_surf_vals>.false.</moby_use_nml_surf_vals>
 <moby_use_nml_surf_vals runtype="startup">.true.</moby_use_nml_surf_vals>
 
+<!---------------------------->
+<!-- irf_nml                -->
+<!---------------------------->
+
+<irf_tracer_file IRF_MODE="offline_transport" ocn_grid="gx1v6">ocn/pop/gx1v6/ic/IRF_offline_transport_tracers_gx1v6_20150313.nc</irf_tracer_file>
+<irf_tracer_file IRF_MODE="offline_transport" ocn_grid="tx0.3v2">ocn/pop/tx0.3v2/ic/IRF_offline_transport_tracers_V4_tx0.3v2_21-Oct-2016.nc</irf_tracer_file>
+
+<irf_tracer_file_ind_start>1</irf_tracer_file_ind_start>
+
 <!----------------------------------->
 <!--derived - these are temporary --->
 <!--names for variables with the  --->

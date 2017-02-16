@@ -3968,6 +3968,16 @@ Flag for using tracegas module.
 Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
 </entry>
 
+<entry 
+id="IRF_on"
+type="logical" 
+category="passive_tracers"
+group="passive_tracers_on_nml" >
+Flag for using IRF module.
+
+Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
+</entry>
+
 <!-- - - - - - - - - - - - - - - - - - -->
 <!-- Group: iage_nml                 - -->
 <!-- - - - - - - - - - - - - - - - - - -->
@@ -6501,6 +6511,29 @@ type="char*256"
 category="tracegas"
 group="tracegas_nml" >
 Default: 
+</entry>
+
+<!-- - - - - - - - - - - - - - - - - - -->
+<!-- Group: irf_nml                  - -->
+<!-- - - - - - - - - - - - - - - - - - -->
+
+<entry 
+id="irf_tracer_file"
+type="char*256" 
+category="pop2"
+group="irf_nml"
+input_pathname="abs" >
+Default: one of the following, depending on ocean grid and NK_MODE
+IRF_offline_transport_tracers_gx1v6_20150313.nc
+IRF_offline_transport_tracers_V4_tx0.3v2_21-Oct-2016.nc
+</entry>
+
+<entry 
+id="irf_tracer_file_ind_start"
+type="integer" 
+category="pop2"
+group="irf_nml" >
+Default: 1
 </entry>
 
 </namelist_definition>

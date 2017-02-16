@@ -13,7 +13,7 @@
 !  tracers.
 !
 ! !REVISION HISTORY:
-!  SVN:$Id: advection.F90 57769 2014-03-01 23:16:19Z mlevy@ucar.edu $
+!  SVN:$Id: advection.F90 69107 2015-03-13 20:13:07Z klindsay $
 
 ! !USES:
    use POP_KindsMod
@@ -168,7 +168,8 @@
       tavg_ADV_TRACER,   &! vertical average of tracer advective tendency
       tavg_UE_TRACER,    &! flux of tracer across east  face
       tavg_VN_TRACER,    &! flux of tracer across north face
-      tavg_WT_TRACER      ! flux of tracer across top   face
+      tavg_WT_TRACER,    &! flux of tracer across top   face
+      tavg_ADV_3D_TRACER  ! tracer advective tendency
 
 !-----------------------------------------------------------------------
 !
@@ -250,6 +251,9 @@
 
    type (block) ::        &
       this_block          ! block information for current block
+
+   character (char_len) :: &
+      units_string        ! units string for tavg calls
 
 !-----------------------------------------------------------------------
 !
@@ -722,6 +726,12 @@
                           units='centimeter^2/s^2', grid_loc='3112',       &
                           coordinates='TLONG TLAT z_w time')
 
+   if (partial_bottom_cells) then
+      units_string = 'centimeter^3/s'
+   else
+      units_string = 'centimeter^2/s'
+   endif
+
    call define_tavg_field(tavg_UEU,'UEU',3,                            &
                           long_name='East Flux of Zonal Momentum',     &
                           units='cm/s^2', grid_loc='3321')
@@ -832,6 +842,20 @@
                              scale_factor=tracer_d(n)%scale_factor,    &
                              grid_loc='2110',                          &
                              coordinates='TLONG TLAT time' )
+
+   end do
+
+   do n=1,nt
+
+      call define_tavg_field(tavg_ADV_3D_TRACER(n),                    &
+                             'ADV_3D_' /&
+                                     &/ trim(tracer_d(n)%short_name),3,&
+                             long_name=trim(tracer_d(n)%short_name)   /&
+                                     &/' Advection Tendency',          &
+                             units=trim(tracer_d(n)%tend_units),       &
+                             scale_factor=tracer_d(n)%scale_factor,    &
+                             grid_loc='3111',                          &
+                             coordinates='TLONG TLAT z_t time' )
 
    end do
 
@@ -1741,6 +1765,13 @@
             end do
          endif
          call accumulate_tavg_field(WORK,tavg_ADV_TRACER(n),bid,k)
+
+         where (k <= KMT(:,:,bid))
+            WORK = -LTK(:,:,n)
+         elsewhere
+            WORK = c0
+         end where
+         call accumulate_tavg_field(WORK,tavg_ADV_3D_TRACER(n),bid,k)
 
       enddo
 
