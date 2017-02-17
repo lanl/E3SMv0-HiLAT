@@ -342,7 +342,7 @@
 <tadvect_ctype ocn_grid="gx1v6"  >upwind3</tadvect_ctype>
 <tadvect_ctype ocn_grid="tx1v1"  >centered</tadvect_ctype>
 <tadvect_ctype ocn_grid="tx0.1v2">centered</tadvect_ctype>
-<tadvect_ctype ocn_grid="tx0.3v2">centered</tadvect_ctype>
+<tadvect_ctype ocn_grid="tx0.3v2">lw_lim</tadvect_ctype>
 
 <!---------------------------->
 <!-- hmix_nml -->
@@ -358,7 +358,7 @@
 <hmix_tracer_choice ocn_grid="gx1v6"   >'gent'</hmix_tracer_choice>
 <hmix_tracer_choice ocn_grid="tx1v1"   >'del4'</hmix_tracer_choice>
 <hmix_tracer_choice ocn_grid="tx0.1v2" >'del4'</hmix_tracer_choice>
-<hmix_tracer_choice ocn_grid="tx0.3v2" >'del4'</hmix_tracer_choice>
+<hmix_tracer_choice ocn_grid="tx0.3v2" >'del2'</hmix_tracer_choice>
 
 <lsubmesoscale_mixing ocn_grid="gx3v7"  >.true.</lsubmesoscale_mixing>
 <lsubmesoscale_mixing ocn_grid="gx1v6"  >.true.</lsubmesoscale_mixing>
@@ -1282,7 +1282,7 @@
 <ah&hmix_del2t_nml ocn_grid="gx1v6"  >0.6e7</ah&hmix_del2t_nml>
 <ah&hmix_del2t_nml ocn_grid="tx1v1"  >0.6e7</ah&hmix_del2t_nml>
 <ah&hmix_del2t_nml ocn_grid="tx0.1v2">1.e8</ah&hmix_del2t_nml>
-<ah&hmix_del2t_nml ocn_grid="tx0.3v2">1.e8</ah&hmix_del2t_nml>
+<ah&hmix_del2t_nml ocn_grid="tx0.3v2">0.e7</ah&hmix_del2t_nml>
 
 <am&hmix_del4u_nml ocn_grid="gx3v7"  >-0.6e20</am&hmix_del4u_nml>
 <am&hmix_del4u_nml ocn_grid="gx1v6"  >-0.6e20</am&hmix_del4u_nml>
