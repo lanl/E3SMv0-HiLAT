@@ -1618,7 +1618,7 @@ Users should NOT EDIT this setting."
  valid_values="" 
  value="" 
  group="build_component_pop2"
- sdesc="Optional ocean tracers.  Valid values are Any combination of: iage cfc ecosys tracegas sectdyes surfdyes"
+ sdesc="Optional ocean tracers.  Valid values are Any combination of: iage cfc ecosys tracegas sectdyes surfdyes IRF"
 ></entry>
 
 <entry id="OCN_TRACER_MODULES_OPT"
