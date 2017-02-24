@@ -132,6 +132,7 @@ $OBJROOT/ocn/source
 EOF
 
 @ NT = 2
+set IRF_NT = 0
 foreach module ( `echo $OCN_TRACER_MODULES` )  
    if ($module =~ "iage"   ) @ NT = $NT +  1
    if ($module =~ "cfc"    ) @ NT = $NT +  2   
@@ -139,6 +140,15 @@ foreach module ( `echo $OCN_TRACER_MODULES` )
    if ($module =~ "tracegas" ) @ NT = $NT + 2
    if ($module =~ "sectdyes" ) @ NT = $NT + 6
    if ($module =~ "surfdyes" ) @ NT = $NT + 4
+   if ($module =~ "IRF"    ) then
+      set file = extract_ocn_tracer_module_opt.csh
+      if (-f ${my_path}/${file}) then
+        set IRF_NT = `${my_path}/${file} IRF_NT | tail -n 1`
+      else
+        set IRF_NT = `${CODEROOT}/ocn/pop2/bld/${file} IRF_NT | tail -n 1`
+      endif
+      @ NT = $NT + $IRF_NT
+   endif
    if ($module == moby     ) then
       if (-e $my_path/${OCN_GRID}_data.ptracers) then
         set dir = $my_path
@@ -154,9 +164,11 @@ foreach module ( `echo $OCN_TRACER_MODULES` )
 end
 
 set cppdefs = "-DCCSMCOUPLED -DBLCKX=$POP_BLCKX -DBLCKY=$POP_BLCKY -DMXBLCKS=$POP_MXBLCKS -DNT=$NT"
+set cppdefs = "-DCCSMCOUPLED -DBLCKX=$POP_BLCKX -DBLCKY=$POP_BLCKY -DMXBLCKS=$POP_MXBLCKS -DNT=$NT -DIRF_NT=$IRF_NT"
 if ($OCN_ICE_FORCING == 'inactive' ) set cppdefs = "$cppdefs -DZERO_SEA_ICE_REF_SAL"
 if ($OCN_GRID =~ "tx0.1*"          ) set cppdefs = "$cppdefs -D_HIRES";
 if ($OCN_ICE_FORCING == 'inactive' ) set cppdefs = "$cppdefs -DZERO_SEA_ICE_REF_SAL"
+if ($POP_TAVG_R8 == 'TRUE'         ) set cppdefs = "$cppdefs -DTAVG_R8"
 
 cat >! $OBJROOT/ocn/obj/POP2_cppdefs.new <<EOF
 $cppdefs

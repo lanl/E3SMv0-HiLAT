@@ -11,7 +11,7 @@
 !  and isopycnal diffusion.
 
 ! !REVISION HISTORY:
-!  SVN:$Id: hmix_gm.F90 48834 2013-07-09 19:37:42Z mlevy@ucar.edu $
+!  SVN:$Id: hmix_gm.F90 69107 2015-03-13 20:13:07Z klindsay $
 
 ! !USES:
 
@@ -262,8 +262,9 @@
                                 !  advection tendency
          tavg_VNT_ISOP,     &   ! heat flux tendency in grid-y direction
                                 !  due to eddy-induced velocity
-         tavg_VNS_ISOP          ! salt flux tendency in grid-y direction
+         tavg_VNS_ISOP,     &   ! salt flux tendency in grid-y direction
                                 !  due to eddy-induced velocity
+         tavg_VDC_GM            ! GM contribution to VDC
 
 !-----------------------------------------------------------------------
 !
@@ -1113,6 +1114,11 @@
 
    endif
 
+   call define_tavg_field(tavg_VDC_GM,'VDC_GM',3, &
+                          long_name='vertical mixing coeff, GM contribution', &
+                          units='cm^2/s', grid_loc='3113', &
+                          coordinates='TLONG TLAT z_w_bot time')
+
       call get_timer(timer_nloop,'HMIX_TRACER_GM_NLOOP', &
                                   nblocks_clinic, distrb_clinic%nprocs)
 
@@ -1743,6 +1749,9 @@
           VDC_GM(:,:,k,bid) = WORK1
           VDC(:,:,k,n,bid) = VDC(:,:,k,n,bid) + WORK1
         end do
+
+        ! WORK1 and output axis are both at cell bottom
+        call accumulate_tavg_field(WORK1,tavg_VDC_GM,bid,k)
 
       end if
 
@@ -3245,6 +3254,7 @@
                ( BUOY_FREQ_SQ_REF /= c0 ) )
           BUOY_FREQ_SQ_NORM(:,:,k) =  &
               max( BUOY_FREQ_SQ(:,:,k,bid) / BUOY_FREQ_SQ_REF, 0.1_r8 )
+!             max( BUOY_FREQ_SQ(:,:,k,bid) / BUOY_FREQ_SQ_REF, 0.2_r8 )
           BUOY_FREQ_SQ_NORM(:,:,k) =  &
               min( BUOY_FREQ_SQ_NORM(:,:,k), c1 ) 
         elsewhere

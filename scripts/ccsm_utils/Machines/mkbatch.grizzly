@@ -18,7 +18,7 @@ endif
 if ( $nodes > 70 ) then
   set queuetype = "#MSUB -l qos=standard"
 else
-  set queuetype = ""
+  set queuetype = "#MSUB -l qos=interactive"
 endif
 
 #--- Job name is first fifteen characters of case name ---
