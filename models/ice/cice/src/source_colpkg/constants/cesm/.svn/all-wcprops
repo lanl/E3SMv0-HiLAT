@@ -1,7 +1,7 @@
 K 25
 svn:wc:ra_dav:version-url
 V 74
-/svn/CICE/!svn/ver/1137/branches/hilat_colpkg/source_colpkg/constants/cesm
+/svn/CICE/!svn/ver/1147/branches/hilat_colpkg/source_colpkg/constants/cesm
 END
 ice_constants_colpkg.F90
 K 25

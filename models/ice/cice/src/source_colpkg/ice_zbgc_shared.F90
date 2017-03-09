@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_zbgc_shared.F90 1108 2016-03-07 18:42:44Z njeffery $
+!  SVN:$Id: ice_zbgc_shared.F90 1167 2017-02-12 23:02:03Z njeffery $
 !=======================================================================
 !
 ! Biogeochemistry variables
@@ -21,42 +21,22 @@
                 zap_small_bgc, regrid_stationary
 
       ! bio parameters for algal_dyn
-
-      real (kind=dbl_kind), parameter, dimension(max_algae), public :: &
-         R_Si2N    = (/ 1.8_dbl_kind,      & ! algal C to Sil (mole/mole) 
-                        c0,                &
-                        c0/),              &
-         R_S2N     = (/ 0.03_dbl_kind,     & ! algal S to N (mole/mole)
-                        0.03_dbl_kind,     &
-                        0.03_dbl_kind/),   &
+ 
+       real (kind=dbl_kind),  dimension(max_algae), public :: &
+         R_Si2N     , & ! algal Sil to N (mole/mole) 
+         R_S2N      , & ! algal S to N (mole/mole)
          ! Marchetti et al 2006, 3 umol Fe/mol C for iron limited Pseudo-nitzschia
-         R_Fe2C    = (/ 3.3e-3_dbl_kind,   & ! algal Fe to carbon (umol/mmol)
-                        3.3e-3_dbl_kind,   &
-                        1.0e-1_dbl_kind/), &
-         R_Fe2N    = (/ 2.3e-2_dbl_kind,   & ! algal Fe to N (umol/mmol)
-                        2.3e-2_dbl_kind,   &
-                        7.0e-1_dbl_kind/)
+         R_Fe2C     , & ! algal Fe to carbon (umol/mmol)
+         R_Fe2N         ! algal Fe to N (umol/mmol)
 
       real (kind=dbl_kind), dimension(max_don), public :: & 
-         R_Fe2DON  = (/ 2.3e-2_dbl_kind/)    ! Fe to N of DON (nmol/umol)
+         R_Fe2DON       ! Fe to N of DON (nmol/umol)
 
-      real (kind=dbl_kind), dimension(max_doc), public :: &  ! increase compare to algal R_Fe2C
-         R_Fe2DOC  =  (/ 1.0e-1_dbl_kind, &  ! Fe to C of DOC (nmol/umol)
-                         3.3e-2_dbl_kind, &
-                         1.0e-1_dbl_kind/)
+      real (kind=dbl_kind), dimension(max_doc), public :: &  
+         R_Fe2DOC       ! Fe to C of DOC (nmol/umol)
 
       real (kind=dbl_kind), parameter, public :: &
-         R_gC2molC  = 12.01_dbl_kind,  & ! mg/mmol C
-         fr_resp    = 0.05_dbl_kind ,  & ! fraction of algal growth lost due to respiration
-         tau_min    = 5.2e3_dbl_kind,  & ! rapid mobile to stationary exchanges (s)
-                                         ! 3.12e4_dbl_kind = 6 hours, 1.25e5_dbl_kind s = 1 day
-         tau_max    = 1.875e6_dbl_kind   ! long time mobile to stationary exchanges (s) = 15 days
-                                         ! 6.25e5_dbl_kind = 5 days
-
-      real (kind=dbl_kind), parameter, public :: &  
-         R_dFe2dust  = 0.035_dbl_kind,  & ! g/g (3.5% content) Tagliabue 2009
-         dustFe_sol  = 0.005_dbl_kind     ! solubility fraction
-                       !(0.2-2.5% solubility of mineral; 17.8% solubility of Biomass burning)  Bowie 2009        
+         R_gC2molC  = 12.01_dbl_kind ! mg/mmol C
 
       ! scavenging coefficient for tracers in snow
       ! bottom to last 6 are from Flanner et al., 2007
@@ -96,6 +76,35 @@
          zbgc_init_frac, &   ! fraction of ocean tracer  concentration in new ice
          tau_ret,        &   ! retention timescale  (s), mobile to stationary phase
          tau_rel             ! release timescale    (s), stationary to mobile phase         
+
+      !-----------------------------------------------------------------
+      ! From algal_dyn in ice_algae.F90 but not in namelist
+      !-----------------------------------------------------------------
+
+      real (kind=dbl_kind), dimension(max_algae), public :: &
+         chlabs           , & ! chla absorption 1/m/(mg/m^3)
+         alpha2max_low    , & ! light limitation (1/(W/m^2))
+         beta2max         , & ! light inhibition (1/(W/m^2))
+         mu_max           , & ! maximum growth rate (1/d)
+         grow_Tdep        , & ! T dependence of growth (1/C)
+         fr_graze         , & ! fraction of algae grazed
+         mort_pre         , & ! mortality (1/day)
+         mort_Tdep        , & ! T dependence of mortality (1/C)
+         k_exude          , & ! algal carbon  exudation rate (1/d)
+         K_Nit            , & ! nitrate half saturation (mmol/m^3) 
+         K_Am             , & ! ammonium half saturation (mmol/m^3) 
+         K_Sil            , & ! silicon half saturation (mmol/m^3)
+         K_Fe                 ! iron half saturation  or micromol/m^3
+            
+      real (kind=dbl_kind), dimension(max_DON), public :: &
+         f_don            , & ! fraction of spilled grazing to DON
+         kn_bac           , & ! Bacterial degredation of DON (1/d)
+         f_don_Am             ! fraction of remineralized DON to Am
+
+      real (kind=dbl_kind), dimension(max_DOC), public :: &
+         f_doc            , & ! fraction of mort_N that goes to each doc pool
+         f_exude          , & ! fraction of exuded carbon to each DOC pool
+         k_bac                ! Bacterial degredation of DOC (1/d)    
 
       !-----------------------------------------------------------------
       ! brine
@@ -250,23 +259,28 @@
 
          n_nd = nbyrn
          n_nr = nlyrn
-         if (hice > hinS) then
-            n_plus          = 3
+         if (hice > hinS) then   ! add S_min to top layer
+            n_plus          = 3        
             tracer(1)       = S_min
             tracer(2)       = S_min
-            dgrid (1)       = -hice+hinS
-            dgrid (2)       = p5*(hinS-hice)
-            dgrid (nbyrn+3) = hinS
-            tracer(nbyrn+3) = trcrn(it+nbyrn-1)
             rgrid (1)       = -hice + hinS
-            rgrid (nlyrn+2) = hinS 
+            rgrid (nlyrn+n_plus-1) = hinS 
+            do kr = 1,n_nr
+               rgrid(kr+1) = (ice_grid(kr)-c1)*hice+ hinS
+            enddo
+            dgrid (1)       = -hice+hinS
+            dgrid (2)       = (hinS-hice)*p5
+            dgrid (nbyrn+n_plus) = hinS
+            tracer(nbyrn+n_plus) = trcrn(it+nbyrn-1)
             do kd = 1,n_nd
                dgrid(kd+2) = bio_grid(kd)*hinS
                tracer(kd+2) = trcrn(it+kd-1)
             enddo
-            do kr = 1,n_nr
-               rgrid(kr+1) = (ice_grid(kr)-c1)*hice+ hinS
-            enddo
+            tracer(n_plus) = (S_min*(hice-hinS) + &
+                         tracer(n_plus)*p5*(dgrid(n_plus+1)-dgrid(n_plus)))/ &
+                        (hice-hinS+ p5*(dgrid(n_plus+1)-dgrid(n_plus)))
+            tracer(1) = tracer(n_plus)
+            tracer(2) = tracer(n_plus)
          else
             n_plus          = 2
             tracer(1)       = trcrn(it)
@@ -359,9 +373,9 @@
                                     top_conc,     igrid,    &
                                     flux_bio,               &
                                     l_stop,       stop_label, &
-                                    melt_b)
+                                    melt_b,       con_gel)
       
-      use ice_constants_colpkg, only: c0, c1, p5
+      use ice_constants_colpkg, only: c0, c1, p5, puny
 
       integer (kind=int_kind), intent(in) :: &
          ntrcr,         & ! number of tracers
@@ -388,98 +402,124 @@
       character (char_len), intent(inout) :: stop_label
 
       real(kind=dbl_kind), intent(in), optional :: &
-         melt_b           ! bottom melt
+         melt_b,         &  ! bottom melt (m)
+         con_gel            ! bottom growth (m)
 
       !  local variables
 
-      integer (kind=int_kind) :: k, n, nt
+      integer (kind=int_kind) :: k, n, nt, nr
 
       real (kind=dbl_kind), dimension (ntrcr+2) :: &
          trtmp0,   &    ! temporary, remapped tracers
          trtmp
 
       real (kind=dbl_kind):: &
-         meltb,    &    !
+         meltb,    &    ! ice bottom melt (m)
+         congel,   &    ! ice bottom growth (m)
          htemp,    &    ! ice thickness after melt (m)
-         zspace,   &    ! bio grid spacing
-         sum_old,  &    ! total tracer before melt loss
-         sum_new        ! total tracer after melt
+         dflux,    &    ! regrid flux correction (mmol/m^2)
+         sum_i,    &    ! total tracer before melt loss
+         sum_f,    &    ! total tracer after melt
+         neg_flux, & 
+         hice,     & 
+         hbio
+
+      real (kind=dbl_kind), dimension(nblyr+1):: &
+         zspace
 
       ! initialize
 
-      zspace = c1/(real(nblyr,kind=dbl_kind))
+      zspace(:) = c1/(real(nblyr,kind=dbl_kind))
+      zspace(1) = p5*zspace(1)
+      zspace(nblyr+1) = zspace(1)
       trtmp0(:) = c0
       trtmp(:) = c0
       meltb = c0
       nt = 1
+      nr = 0
+      sum_i = c0
+      sum_f = c0
+      meltb = c0
+      congel = c0
+      dflux = c0
+
+      !---------------------
+      ! compute initial sum
+      !----------------------
+     
+      do k = 1, nblyr+1
+         sum_i = sum_i + C_stationary(k)*zspace(k)
+        
+      enddo
+     
       if (present(melt_b)) then
          meltb = melt_b
       endif
+      if (present(con_gel)) then
+         congel = con_gel
+      endif
+
       if (hbri_old > c0) then
          do k = 1, nblyr+1
             trtmp0(nblyr+2-k) = C_stationary(k)/hbri_old  ! reverse order
          enddo   ! k
       endif
-      htemp = max(c0,max(hbri,hbri_old - meltb))
+
+      htemp = c0
 
       if (meltb > c0) then
-
+          htemp = hbri_old-meltb  
+          nr = 0
+          hice = hbri_old
+          hbio = htemp
+      elseif (congel > c0) then
+          htemp = hbri_old+congel
+          nr = 1
+          hice = htemp
+          hbio = hbri_old
+      elseif (hbri .gt. hbri_old) then
+          htemp = hbri
+          nr = 1
+          hice = htemp
+          hbio = hbri_old
+      endif
+     
       !-----------------------------------------------------------------
-      ! Regrid C_stationary to remove bottom melt
+      ! Regrid C_stationary to add or remove bottom layer(s)
       !-----------------------------------------------------------------
-         if (hbri_old > htemp) then
-            call remap_zbgc (ntrcr,  nblyr+1,            &
+      if (htemp > c0) then
+          call remap_zbgc   (ntrcr,            nblyr+1,  &
                              nt,                         &
                              trtmp0(1:ntrcr),            &
                              trtmp,                      &
-                             0,                nblyr+1,  &
-                             hbri_old,         htemp,    &
+                             nr,                nblyr+1, & 
+                             hice,              hbio,    & 
                              igrid(1:nblyr+1),           &
                              igrid(1:nblyr+1), top_conc, &
                              l_stop,           stop_label)
-            if (l_stop) return
+          if (l_stop) return
     
-            sum_new = (trtmp(1)+trtmp(nblyr+1))*htemp*p5*zspace
-            sum_old = (C_stationary(1) + C_stationary(nblyr+1))*p5*zspace
-            trtmp0(:) = c0
-            trtmp0(nblyr+1) = trtmp(nt)
-            trtmp0(1) = trtmp(nt + nblyr)
-            do k = 2,nblyr
-               sum_old = sum_old + C_stationary(k)*zspace
-               trtmp0(nblyr+2-k) = trtmp(nt + k-1)
-               sum_new = sum_new + trtmp0(nblyr+2-k)*htemp*zspace
-            enddo       !k
-            flux_bio = flux_bio + max(c0,(sum_old - sum_new)/dt)
-            do k = 1, nblyr+1
-               C_stationary(k) = trtmp0(k)*hbri
-            enddo   ! k
-         endif
-
-      elseif (hbri > hbri_old) then
-
-      !-----------------------------------------------------------------
-      ! Regrid C_stationary to migrate if there is bottom growth
-      !-----------------------------------------------------------------
-         call remap_zbgc    (ntrcr,            nblyr+1,  &
-                             nt,                         &
-                             trtmp0(1:ntrcr),            &
-                             trtmp,                      &
-                             0,                nblyr+1,  &
-                             hbri_old,         hbri,     &
-                             igrid(1:nblyr+1),           &
-                             igrid(1:nblyr+1), top_conc, &
-                             l_stop,           stop_label)
-         if (l_stop) return
-
-         trtmp0(:) = c0
-         do k = 1,nblyr+1
-            trtmp0(nblyr+2-k) = trtmp(nt+k-1)
-         enddo    ! k
-         flux_bio = flux_bio  - (hbri-hbri_old)*top_conc/dt
-         do k = 1, nblyr+1
-            C_stationary(k) = trtmp0(k)*hbri
+          trtmp0(:) = c0
+          do k = 1,nblyr+1
+             trtmp0(nblyr+2-k) = trtmp(nt + k-1)
+          enddo       !k
+         
+          do k = 1, nblyr+1
+             C_stationary(k) = trtmp0(k)*htemp
+             sum_f = sum_f + C_stationary(k)*zspace(k)
           enddo   ! k
-      endif 
+
+         if (congel > c0 .and. top_conc .le. c0 .and. abs(sum_i-sum_f) > puny) then
+            dflux = sum_i - sum_f
+            sum_f = c0
+            do k = 1,nblyr+1
+                C_stationary(k) = max(c0,C_stationary(k) + dflux)
+                sum_f = sum_f + C_stationary(k)*zspace(k)
+            enddo
+         endif
+       
+         flux_bio = flux_bio + (sum_i -sum_f)/dt 
+      endif
 
       end subroutine regrid_stationary
 

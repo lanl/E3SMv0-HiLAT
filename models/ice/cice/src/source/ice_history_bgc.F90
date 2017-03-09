@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_history_bgc.F90 1111 2016-03-24 19:23:34Z njeffery $
+!  SVN:$Id: ice_history_bgc.F90 1161 2017-01-06 20:28:24Z njeffery $
 !=======================================================================
 ! Biogeochemistry history output
 !
@@ -103,7 +103,14 @@
            f_bgc_DOC_ml   = 'x', f_bgc_DIC_ml   = 'x', &
            f_bgc_N_ml     = 'x', f_bgc_DON_ml   = 'x', &
            f_peakval      = 'x', f_bgc_Fed_ml   = 'x', &
-           f_bgc_Fep_ml   = 'x', f_bgc_hum_ml   = 'x'
+           f_bgc_Fep_ml   = 'x', f_bgc_hum_ml   = 'x', &
+           f_bgc_N_cat1   = 'x', f_bgc_DOC_cat1 = 'x', &
+	   f_bgc_DIC_cat1 = 'x', f_bgc_Nit_cat1 = 'x', &
+           f_bgc_Am_cat1  = 'x', f_bgc_Sil_cat1 = 'x', &
+           f_bgc_DMSPd_cat1= 'x', f_bgc_DMS_cat1 = 'x', &
+	   f_bgc_DON_cat1 = 'x', f_bgc_Fed_cat1 = 'x', &
+           f_bgc_hum_cat1 = 'x', f_bgc_Fep_cat1 = 'x', &
+           f_bgc_PON_cat1 = 'x'
 
       !---------------------------------------------------------------
       ! namelist variables
@@ -162,22 +169,25 @@
            n_Cnet   , n_Csnow   ,            &
            n_chlnet , n_chlsnow , n_chlfrac, &
            n_algalpeak          , &
-           n_peakval      
+           n_peakval, n_bgc_N_cat1
 
       integer(kind=int_kind), dimension(max_doc, max_nstrm) :: &
            n_bgc_DOC,  n_bgc_DOC_ml, &
            n_fDOC   ,  n_fDOC_ai   , &
-           n_DOCnet ,  n_DOCsnow   , n_DOCfrac
+           n_DOCnet ,  n_DOCsnow   , n_DOCfrac, &
+           n_bgc_DOC_cat1
 
       integer(kind=int_kind), dimension(max_dic, max_nstrm) :: &
            n_bgc_DIC,  n_bgc_DIC_ml, &
            n_fDIC   ,  n_fDIC_ai   , &
-           n_DICnet ,  n_DICsnow   , n_DICfrac
+           n_DICnet ,  n_DICsnow   , n_DICfrac, &
+           n_bgc_DIC_cat1
 
       integer(kind=int_kind), dimension(max_don, max_nstrm) :: &
            n_bgc_DON,  n_bgc_DON_ml, &
            n_fDON   ,  n_fDON_ai   , &
-           n_DONnet ,  n_DONsnow   , n_DONfrac
+           n_DONnet ,  n_DONsnow   , n_DONfrac, &
+           n_bgc_DON_cat1
 
       integer(kind=int_kind), dimension(max_fe,  max_nstrm) :: &
            n_bgc_Fed ,  n_bgc_Fed_ml , &
@@ -185,7 +195,8 @@
            n_Fednet  ,  n_Fedsnow    , n_Fedfrac, &
            n_bgc_Fep ,  n_bgc_Fep_ml , &
            n_fFep    ,  n_fFep_ai    , &
-           n_Fepnet  ,  n_Fepsnow    , n_Fepfrac
+           n_Fepnet  ,  n_Fepsnow    , n_Fepfrac, &
+           n_bgc_Fed_cat1, n_bgc_Fep_cat1
 
       integer(kind=int_kind), dimension(max_nstrm) :: &
            n_bgc_S       , &  
@@ -224,7 +235,11 @@
            n_humfrac     , &
            n_DMSPpfrac   , n_DMSPdfrac   , &  
            n_DMSfrac     , n_PONfrac     , &  
-           n_grownet     , n_PPnet      
+           n_grownet     , n_PPnet       , &
+           n_bgc_Nit_cat1, n_bgc_Am_cat1 , &
+           n_bgc_Sil_cat1, n_bgc_DMSPd_cat1,&
+           n_bgc_DMS_cat1, n_bgc_PON_cat1, &
+           n_bgc_hum_cat1
 
 !=======================================================================
 
@@ -543,6 +558,20 @@
         f_fPON_ai    = 'x'
      endif
        
+      f_bgc_Nit_cat1    = f_bgc_Nit 
+      f_bgc_Am_cat1     = f_bgc_Am   
+      f_bgc_N_cat1      = f_bgc_N
+      f_bgc_DOC_cat1    = f_bgc_DOC
+      f_bgc_DIC_cat1    = f_bgc_DIC
+      f_bgc_DON_cat1    = f_bgc_DON
+      f_bgc_Fed_cat1    = f_bgc_Fe 
+      f_bgc_Fep_cat1    = f_bgc_Fe  
+      f_bgc_Sil_cat1    = f_bgc_Sil 
+      f_bgc_hum_cat1    = f_bgc_hum 
+      f_bgc_DMSPd_cat1  = f_bgc_DMSPd
+      f_bgc_DMS_cat1    = f_bgc_DMS 
+      f_bgc_PON_cat1    = f_bgc_PON
+
       if (solve_zsal) then
          f_fzsal = f_fsalt
          f_fzsal_g = f_fsalt
@@ -620,6 +649,19 @@
       call broadcast_scalar (f_bgc_Fe,       master_task)
       call broadcast_scalar (f_bgc_Fed,      master_task)
       call broadcast_scalar (f_bgc_Fep,      master_task)
+      call broadcast_scalar (f_bgc_N_cat1,   master_task)
+      call broadcast_scalar (f_bgc_DOC_cat1, master_task)
+      call broadcast_scalar (f_bgc_DIC_cat1, master_task)
+      call broadcast_scalar (f_bgc_Nit_cat1, master_task)
+      call broadcast_scalar (f_bgc_Am_cat1,  master_task)
+      call broadcast_scalar (f_bgc_Sil_cat1, master_task)
+      call broadcast_scalar (f_bgc_hum_cat1, master_task)
+      call broadcast_scalar (f_bgc_DMSPd_cat1, master_task)
+      call broadcast_scalar (f_bgc_DMS_cat1, master_task)
+      call broadcast_scalar (f_bgc_PON_cat1, master_task)
+      call broadcast_scalar (f_bgc_DON_cat1, master_task)
+      call broadcast_scalar (f_bgc_Fed_cat1, master_task)
+      call broadcast_scalar (f_bgc_Fep_cat1, master_task)
       call broadcast_scalar (f_bgc_Nit_ml,   master_task)
       call broadcast_scalar (f_bgc_DOC_ml,   master_task)
       call broadcast_scalar (f_bgc_DIC_ml,   master_task)
@@ -1782,7 +1824,7 @@
          ilo,ihi,jlo,jhi      ! beginning and end of physical domain
 
       real (kind=dbl_kind), dimension (nx_block,ny_block,nblyr+4) :: & 
-         workz
+         workz, workz2
 
       real (kind=dbl_kind) :: & 
          maxv
@@ -2542,6 +2584,7 @@
       if (f_bgc_N   (1:1) /= 'x') then
          do k = 1,n_algae
            workz(:,:,:) = c0
+           workz2(:,:,:) = c0
              do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then  
@@ -2551,10 +2594,19 @@
                          trcr(i,j,nt_bgc_N(k):nt_bgc_N(k)+nblyr,iblk)
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_N(k),iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then  
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_N(k)+nblyr+1:nt_bgc_N(k)+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_N(k):nt_bgc_N(k)+nblyr,1,iblk)
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_N(k),iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
            call accum_hist_field(n_bgc_N(k,:)-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+           call accum_hist_field(n_bgc_N_cat1(k,:)-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
          enddo !k
       endif  !f_bgc_N
       if (f_bgc_C   (1:1) /= 'x') then
@@ -2578,6 +2630,7 @@
       if (f_bgc_DOC   (1:1) /= 'x') then
          do k = 1,n_doc   
            workz(:,:,:) = c0
+           workz2(:,:,:) = c0
              do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then  
@@ -2587,15 +2640,25 @@
                          trcr(i,j,nt_bgc_DOC(k):nt_bgc_DOC(k)+nblyr,iblk)
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_DOC(k),iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then  
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_DOC(k)+nblyr+1:nt_bgc_DOC(k)+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_DOC(k):nt_bgc_DOC(k)+nblyr,1,iblk)
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_DOC(k),iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
            call accum_hist_field(n_bgc_DOC(k,:)-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+           call accum_hist_field(n_bgc_DOC_cat1(k,:)-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
          enddo !k
       endif  !f_bgc_DOC
       if (f_bgc_DIC   (1:1) /= 'x') then
          do k = 1,n_dic  
            workz(:,:,:) = c0
+           workz2(:,:,:) = c0
              do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then  
@@ -2605,15 +2668,25 @@
                          trcr(i,j,nt_bgc_DIC(k):nt_bgc_DIC(k)+nblyr,iblk)
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_DIC(k),iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then  
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_DIC(k)+nblyr+1:nt_bgc_DIC(k)+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_DIC(k):nt_bgc_DIC(k)+nblyr,1,iblk)
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_DIC(k),iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
            call accum_hist_field(n_bgc_DIC(k,:)-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+          call accum_hist_field(n_bgc_DIC_cat1(k,:)-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
          enddo !k
       endif  !f_bgc_DIC
       if (f_bgc_DON   (1:1) /= 'x') then
          do k = 1,n_don  
            workz(:,:,:) = c0
+           workz2(:,:,:) = c0
              do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then  
@@ -2623,15 +2696,25 @@
                          trcr(i,j,nt_bgc_DON(k):nt_bgc_DON(k)+nblyr,iblk)
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_DON(k),iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then  
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_DON(k)+nblyr+1:nt_bgc_DON(k)+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_DON(k):nt_bgc_DON(k)+nblyr,1,iblk)
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_DON(k),iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
            call accum_hist_field(n_bgc_DON(k,:)-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+           call accum_hist_field(n_bgc_DON_cat1(k,:)-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
          enddo !k
       endif  !f_bgc_DON
       if (f_bgc_Fed    (1:1) /= 'x') then
          do k = 1,n_fed   
            workz(:,:,:) = c0
+           workz2(:,:,:) = c0
              do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then  
@@ -2641,15 +2724,25 @@
                          trcr(i,j,nt_bgc_Fed (k):nt_bgc_Fed (k)+nblyr,iblk)
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Fed (k),iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then  
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_Fed (k)+nblyr+1:nt_bgc_Fed (k)+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_Fed (k):nt_bgc_Fed (k)+nblyr,1,iblk)
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Fed (k),iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
            call accum_hist_field(n_bgc_Fed (k,:)-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+           call accum_hist_field(n_bgc_Fed_cat1 (k,:)-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
          enddo !k
       endif  !f_bgc_Fed 
       if (f_bgc_Fep    (1:1) /= 'x') then
          do k = 1,n_fep   
            workz(:,:,:) = c0
+           workz2(:,:,:) = c0
              do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then  
@@ -2659,10 +2752,19 @@
                          trcr(i,j,nt_bgc_Fep (k):nt_bgc_Fep (k)+nblyr,iblk)
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Fep (k),iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then  
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_Fep (k)+nblyr+1:nt_bgc_Fep (k)+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_Fep (k):nt_bgc_Fep (k)+nblyr,1,iblk)
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Fep (k),iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
            call accum_hist_field(n_bgc_Fep (k,:)-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+           call accum_hist_field(n_bgc_Fep_cat1 (k,:)-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
          enddo !k
       endif  !f_bgc_Fep 
       if (f_bgc_chl   (1:1) /= 'x') then
@@ -2686,6 +2788,7 @@
          
       if (f_bgc_Nit   (1:1) /= 'x') then
          workz(:,:,:) = c0
+         workz2(:,:,:) = c0
             do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then
@@ -2695,14 +2798,24 @@
                          trcr(i,j,nt_bgc_Nit:nt_bgc_Nit+nblyr,iblk)  
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Nit,iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_Nit+nblyr+2:nt_bgc_Nit+nblyr+3,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_Nit:nt_bgc_Nit+nblyr,1,iblk)  
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Nit,iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
          call accum_hist_field(n_bgc_Nit-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+         call accum_hist_field(n_bgc_Nit_cat1-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
       endif
 
       if (f_bgc_Am   (1:1) /= 'x') then
          workz(:,:,:) = c0
+         workz2(:,:,:) = c0
             do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then
@@ -2712,14 +2825,24 @@
                          trcr(i,j,nt_bgc_Am:nt_bgc_Am+nblyr,iblk)  
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Am,iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_Am+nblyr+1:nt_bgc_Am+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_Am:nt_bgc_Am+nblyr,1,iblk)  
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Am,iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
          call accum_hist_field(n_bgc_Am-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+         call accum_hist_field(n_bgc_Am_cat1-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
       endif
 
       if (f_bgc_Sil   (1:1) /= 'x') then
          workz(:,:,:) = c0
+         workz2(:,:,:) = c0
             do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then
@@ -2729,15 +2852,25 @@
                          trcr(i,j,nt_bgc_Sil:nt_bgc_Sil+nblyr,iblk) 
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Sil,iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_Sil+nblyr+1:nt_bgc_Sil+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_Sil:nt_bgc_Sil+nblyr,1,iblk) 
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_Sil,iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
          call accum_hist_field(n_bgc_Sil-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+         call accum_hist_field(n_bgc_Sil_cat1-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
       endif
   
 
       if (f_bgc_hum   (1:1) /= 'x') then
          workz(:,:,:) = c0
+         workz2(:,:,:) = c0
             do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then
@@ -2747,14 +2880,24 @@
                          trcr(i,j,nt_bgc_hum:nt_bgc_hum+nblyr,iblk) 
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_hum,iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_hum+nblyr+1:nt_bgc_hum+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_hum:nt_bgc_hum+nblyr,1,iblk) 
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_hum,iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
          call accum_hist_field(n_bgc_hum-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+         call accum_hist_field(n_bgc_hum_cat1-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
       endif
  
       if (f_bgc_DMSPd   (1:1) /= 'x') then
          workz(:,:,:) = c0
+         workz2(:,:,:) = c0
             do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then
@@ -2764,10 +2907,19 @@
                          trcr(i,j,nt_bgc_DMSPd:nt_bgc_DMSPd+nblyr,iblk) 
                     workz(i,j,nblyr+4) = ocean_bio(i,j,nlt_bgc_DMSPd,iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_DMSPd+nblyr+1:nt_bgc_DMSPd+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_DMSPd:nt_bgc_DMSPd+nblyr,1,iblk) 
+                    workz2(i,j,nblyr+4) = ocean_bio(i,j,nlt_bgc_DMSPd,iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
          call accum_hist_field(n_bgc_DMSPd-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+         call accum_hist_field(n_bgc_DMSPd_cat1-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
       endif       
 
       if (f_bgc_DMSPp   (1:1) /= 'x') then
@@ -2789,6 +2941,7 @@
 
       if (f_bgc_DMS   (1:1) /= 'x') then
          workz(:,:,:) = c0
+         workz2(:,:,:) = c0
             do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then
@@ -2798,14 +2951,24 @@
                          trcr(i,j,nt_bgc_DMS:nt_bgc_DMS+nblyr,iblk) 
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_DMS,iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_DMS+nblyr+1:nt_bgc_DMS+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_DMS:nt_bgc_DMS+nblyr,1,iblk) 
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_DMS,iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
          call accum_hist_field(n_bgc_DMS-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+         call accum_hist_field(n_bgc_DMS_cat1-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
       endif
 
       if (f_bgc_PON   (1:1) /= 'x') then
          workz(:,:,:) = c0
+         workz2(:,:,:) = c0
             do j = jlo, jhi
                do i = ilo, ihi
                   if (aice(i,j,iblk) > puny) then
@@ -2815,10 +2978,19 @@
                          trcr(i,j,nt_bgc_PON:nt_bgc_PON+nblyr,iblk) 
                     workz(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_PON,iblk) !ocean
                   endif
+                  if (aicen(i,j,1,iblk) > puny) then
+                    workz2(i,j,1:2) =  &   !snow
+                         trcrn(i,j,nt_bgc_PON+nblyr+1:nt_bgc_PON+nblyr+2,1,iblk)
+                    workz2(i,j,3:nblyr+3) = &  !ice
+                         trcrn(i,j,nt_bgc_PON:nt_bgc_PON+nblyr,1,iblk) 
+                    workz2(i,j,nblyr+4) =  ocean_bio(i,j,nlt_bgc_PON,iblk) !ocean
+                  endif
                 enddo ! i
              enddo    ! j 
          call accum_hist_field(n_bgc_PON-n3Dbcum, iblk, nzalyr,  &
                                   workz(:,:,1:nzalyr), a3Da)
+         call accum_hist_field(n_bgc_PON_cat1-n3Dbcum, iblk, nzalyr,  &
+                                  workz2(:,:,1:nzalyr), a3Da)
       endif
         
       endif   ! z_tracers
@@ -2968,6 +3140,99 @@
             call define_hist_field(n_bgc_PON,"bgc_PON","mmol/m^3",tstr3Da, tcstr, &
                 "other bulk nitrogen pool ", "snow+bio grid", c1, c0, &
                 ns, f_bgc_PON)
+!--------------------------------------------
+!   Category 1 BGC
+!----------------------------------------------
+
+       if (f_bgc_Nit_cat1(1:1) /= 'x') & 
+            call define_hist_field(n_bgc_Nit_cat1,"bgc_Nit_cat1","mmol/m^3",tstr3Da, tcstr, &
+                "bulk nitrate in cat 1 ", "snow+bio grid", c1, c0,     &
+                ns, f_bgc_Nit_cat1)
+ 
+       if (f_bgc_Am_cat1(1:1) /= 'x') &
+            call define_hist_field(n_bgc_Am_cat1,"bgc_Am_cat1","mmol/m^3",tstr3Da, tcstr, &
+                "bulk ammonia/um in cat 1", "snow+bio grid", c1, c0,  &
+                ns, f_bgc_Am_cat1)
+
+       if (f_bgc_N_cat1(1:1) /= 'x') then
+         do n=1,n_algae
+            write(nchar,'(i3.3)') n
+            write(vname_in,'(a,a)') 'bgc_N_cat1', trim(nchar)
+            call define_hist_field(n_bgc_N_cat1(n,:),vname_in,"mmol/m^3",tstr3Da, tcstr, &
+                "bulk algal N conc. in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_N_cat1)
+          enddo
+       endif
+       if (f_bgc_DOC_cat1(1:1) /= 'x') then
+         do n=1,n_doc
+            write(nchar,'(i3.3)') n
+            write(vname_in,'(a,a)') 'bgc_DOC_cat1', trim(nchar)
+            call define_hist_field(n_bgc_DOC_cat1(n,:),vname_in,"mmol/m^3",tstr3Da, tcstr, &
+                "bulk DOC conc. in cat 1 ", "snow+bio grid", c1, c0, &
+                ns, f_bgc_DOC_cat1)
+          enddo
+       endif
+       if (f_bgc_DIC_cat1(1:1) /= 'x') then
+         do n=1,n_dic
+            write(nchar,'(i3.3)') n
+            write(vname_in,'(a,a)') 'bgc_DIC_cat1', trim(nchar)
+            call define_hist_field(n_bgc_DIC_cat1(n,:),vname_in,"mmol/m^3",tstr3Da, tcstr, &
+                "bulk DIC conc. in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_DIC_cat1)
+          enddo
+       endif
+       if (f_bgc_DON_cat1(1:1) /= 'x') then
+         do n=1,n_don
+            write(nchar,'(i3.3)') n
+            write(vname_in,'(a,a)') 'bgc_DON_cat1', trim(nchar)
+            call define_hist_field(n_bgc_DON_cat1(n,:),vname_in,"mmol/m^3",tstr3Da, tcstr, &
+                "bulk DON conc. in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_DON_cat1)
+          enddo
+       endif
+       if (f_bgc_Fed_cat1 (1:1) /= 'x') then
+         do n=1,n_fed 
+            write(nchar,'(i3.3)') n
+            write(vname_in,'(a,a)') 'bgc_Fed_cat1', trim(nchar)
+            call define_hist_field(n_bgc_Fed_cat1 (n,:),vname_in,"umol/m^3",tstr3Da, tcstr, &
+                "bulk dFe conc. in cat 1 ", "snow+bio grid", c1, c0, &
+                ns, f_bgc_Fed_cat1 )
+          enddo
+       endif
+       if (f_bgc_Fep_cat1 (1:1) /= 'x') then
+         do n=1,n_fep 
+            write(nchar,'(i3.3)') n
+            write(vname_in,'(a,a)') 'bgc_Fep_cat1', trim(nchar)
+            call define_hist_field(n_bgc_Fep_cat1 (n,:),vname_in,"umol/m^3",tstr3Da, tcstr, &
+                "bulk pFe conc. in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_Fep_cat1 )
+          enddo
+       endif
+     
+       if (f_bgc_Sil_cat1(1:1) /= 'x') &
+            call define_hist_field(n_bgc_Sil_cat1,"bgc_Sil_cat1","mmol/m^3",tstr3Da, tcstr, &
+                "bulk silicate in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_Sil_cat1)
+     
+       if (f_bgc_hum_cat1(1:1) /= 'x') &
+            call define_hist_field(n_bgc_hum,"bgc_hum_cat1","mmol/m^3",tstr3Da, tcstr, &
+                "bulk humic (carbon) material in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_hum_cat1)
+      
+       if (f_bgc_DMSPd_cat1(1:1) /= 'x') &
+            call define_hist_field(n_bgc_DMSPd_cat1,"bgc_DMSPd_cat1","mmol/m^3",tstr3Da, tcstr, &
+                "bulk dissolved DMSP in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_DMSPd_cat1)
+  
+       if (f_bgc_DMS_cat1(1:1) /= 'x') &
+            call define_hist_field(n_bgc_DMS_cat1,"bgc_DMS_cat1","mmol/m^3",tstr3Da, tcstr, &
+                "bulk DMS gas in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_DMS_cat1)
+     
+       if (f_bgc_PON_cat1(1:1) /= 'x') &
+            call define_hist_field(n_bgc_PON_cat1,"bgc_PON_cat1","mmol/m^3",tstr3Da, tcstr, &
+                "other bulk nitrogen pool in cat 1", "snow+bio grid", c1, c0, &
+                ns, f_bgc_PON_cat1)
     
       enddo  !ns
 

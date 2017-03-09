@@ -405,7 +405,7 @@
                   if (tr_zaero)  then
                      do k = 1,n_zaero
                      pflux_zaero(n,k)      = flux_bio(i,j,nlt_zaero(k),iblk)*mps_to_cmpdy/c100 
-                     pflux_atm_zaero_s(n,k)= flux_bio_atm(i,j,nlt_zaero(k),iblk)*mps_to_cmpdy/c100
+                     pflux_atm_zaero_s(n,k)= flux_bio_atm(i,j,nlt_zaero(k),iblk)*mps_to_cmpdy/c100 !*aice
                      pflux_atm_zaero(n,k)  = fbio_atmice(i,j,nlt_zaero(k),iblk)*mps_to_cmpdy/c100
                      pflux_snow_zaero(n,k) = fbio_snoice(i,j,nlt_zaero(k),iblk)*mps_to_cmpdy/c100
                      enddo
@@ -782,9 +782,9 @@
          write(nu_diag,*) '  aerosol conc. (kg/m^3) or flux (kg/m^2/d)'
          write(nu_diag,1020) '  type: ',kk
          write(nu_diag,900) 'Atm source flux     = ',pflux_atm_zaero_s(1,kk),pflux_atm_zaero_s(2,kk)
-         write(nu_diag,900) 'ice-ocean flux      = ',pflux_zaero(1,kk),pflux_zaero(2,kk)
-         write(nu_diag,900) 'direct atm-ice flux = ',pflux_atm_zaero(1,kk),pflux_atm_zaero(2,kk)
-         write(nu_diag,900) 'snow-ice flux       = ',pflux_snow_zaero(1,kk),pflux_snow_zaero(2,kk)
+         write(nu_diag,900) 'ice-ocean flux*aice = ',pflux_zaero(1,kk),pflux_zaero(2,kk)
+         write(nu_diag,900) 'atm-ice flux*aice   = ',pflux_atm_zaero(1,kk),pflux_atm_zaero(2,kk)
+         write(nu_diag,900) 'snow-ice flux*aice  = ',pflux_snow_zaero(1,kk),pflux_snow_zaero(2,kk)
          write(nu_diag,*) '             snow + ice conc.'
          write(nu_diag,803) ' aerosol(1)','    aerosol(2) '
          write(nu_diag,802) ((pzaeros(n,k,kk),n=1,2), k = 1,2)              

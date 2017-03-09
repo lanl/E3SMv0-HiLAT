@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_flux.F90 1135 2016-07-29 21:03:23Z eclare $
+!  SVN:$Id: ice_flux.F90 1150 2016-09-08 16:41:28Z eclare $
 !=======================================================================
 
 ! Flux variable declarations; these include fields sent from the coupler
