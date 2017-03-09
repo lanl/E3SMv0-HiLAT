@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_zbgc_shared.F90 1163 2017-01-31 20:56:02Z njeffery $
+!  SVN:$Id: ice_zbgc_shared.F90 1167 2017-02-12 23:02:03Z njeffery $
 !=======================================================================
 !
 ! Biogeochemistry variables
@@ -199,7 +199,7 @@
 
       logical (kind=log_kind), intent(inout) :: &
          l_stop            ! if true, print diagnostics and abort on return
-
+        
       character (char_len), intent(inout) :: stop_label
 
       ! local variables

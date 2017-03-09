@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_step_mod.F90 1161 2017-01-06 20:28:24Z njeffery $
+!  SVN:$Id: ice_step_mod.F90 1172 2017-03-01 23:34:26Z njeffery $
 !=======================================================================
 !
 !  Contains CICE component driver routines common to all drivers.
@@ -743,7 +743,7 @@
       real(kind= dbl_kind), dimension(ntrcr, ncat) :: &
          ztrcr
 
-      real(kind= dbl_kind), dimension(nbtrcr_sw, ncat) :: &
+      real(kind= dbl_kind), dimension(ntrcr, ncat) :: &
          ztrcr_sw
 
       logical (kind=log_kind) :: &

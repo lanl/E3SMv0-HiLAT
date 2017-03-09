@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_arrays_column.F90 1078 2015-11-12 00:56:52Z eclare $
+!  SVN:$Id: ice_arrays_column.F90 1172 2017-03-01 23:34:26Z njeffery $
 !=======================================================================
 
 ! Grid-dependent arrays needed for column package
@@ -13,7 +13,7 @@
       use ice_blocks, only: nx_block, ny_block
       use ice_constants_colpkg, only: nspint
       use ice_domain_size, only: max_blocks, ncat, nilyr, nslyr, &
-           nblyr, max_nsw 
+           nblyr, max_nsw , max_ntrcr
       use ice_colpkg_shared, only: max_nbtrcr, max_algae, max_aero, &
            nmodal1, nmodal2
 
@@ -249,7 +249,7 @@
          upNH         ! ammonium uptake rate (mmol/m^2/d) times aice
         
       real (kind=dbl_kind), &
-         dimension(nx_block,ny_block,max_nsw, ncat, max_blocks), public :: &
+         dimension(nx_block,ny_block,max_ntrcr, ncat, max_blocks), public :: &
          trcrn_sw        ! bgc tracers active in the delta-Eddington shortwave 
                          ! calculation on the shortwave grid (swgrid)
 

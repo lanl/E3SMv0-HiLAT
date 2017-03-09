@@ -1,4 +1,4 @@
-!  SVN:$Id: ice_init_column.F90 1150 2016-09-08 16:41:28Z eclare $
+!  SVN:$Id: ice_init_column.F90 1172 2017-03-01 23:34:26Z njeffery $
 !=========================================================================
 !
 ! Initialization routines for the column package.
@@ -137,7 +137,7 @@
       real(kind= dbl_kind), dimension(ntrcr, ncat) :: &
          ztrcr
 
-      real(kind= dbl_kind), dimension(nbtrcr_sw, ncat) :: &
+      real(kind= dbl_kind), dimension(ntrcr, ncat) :: &
          ztrcr_sw
 
       !$OMP PARALLEL DO PRIVATE(iblk,i,j,n,ilo,ihi,jlo,jhi,this_block, &

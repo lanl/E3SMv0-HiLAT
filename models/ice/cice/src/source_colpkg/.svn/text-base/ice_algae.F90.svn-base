@@ -1184,7 +1184,7 @@
                                  nblyr,                  top_conc,    &
                                  i_grid,                 flux_bio(mm),&
                                  l_stop,                 stop_label,  &
-                                 meltb,                  congel, nu_diag)
+                                 meltb,                  congel)
 
             elseif (tr_bgc_N .and. mm .eq. nlt_bgc_N(1)) then  
                if (meltb > algal_vel*dt) then             
