@@ -555,6 +555,7 @@ for mct, etc.
   <ADD_FFLAGS DEBUG="FALSE"> -O2  </ADD_FFLAGS>  
   <ADD_CFLAGS DEBUG="FALSE"> -O2  </ADD_CFLAGS>  
   <CONFIG_ARGS> --host=Linux </CONFIG_ARGS>
+  <ADD_GPTL_CPPDEFS> -DHAVE_PAPI </ADD_GPTL_CPPDEFS>
   <ADD_SLIBS> -L$(NETCDF_DIR) -lnetcdff -Wl,--as-needed,-L$(NETCDF_DIR)/lib -lnetcdff -lnetcdf $(MKL)</ADD_SLIBS>
 </compiler>
 

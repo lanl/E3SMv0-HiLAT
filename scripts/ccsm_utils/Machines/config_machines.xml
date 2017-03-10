@@ -174,8 +174,8 @@
          <CESMSCRATCHROOT>$ENV{SCRATCH}/acme_scratch</CESMSCRATCHROOT>
          <RUNDIR>$CESMSCRATCHROOT/$CASE/run</RUNDIR>
          <EXEROOT>$CESMSCRATCHROOT/$CASE/bld</EXEROOT>
-         <DIN_LOC_ROOT>/project/projectdirs/ccsm1/inputdata</DIN_LOC_ROOT>
-         <DIN_LOC_ROOT_CLMFORC>/project/projectdirs/ccsm1/inputdata/atm/datm7</DIN_LOC_ROOT_CLMFORC>
+         <DIN_LOC_ROOT>/project/projectdirs/acme/inputdata</DIN_LOC_ROOT>
+         <DIN_LOC_ROOT_CLMFORC>/project/projectdirs/acme/inputdata/atm/datm7</DIN_LOC_ROOT_CLMFORC>
          <DOUT_S>FALSE</DOUT_S>
          <DOUT_S_ROOT>$CESMSCRATCHROOT/archive/$CASE</DOUT_S_ROOT>
          <DOUT_L_MSROOT>csm/$CASE</DOUT_L_MSROOT>
@@ -184,7 +184,7 @@
          <SAVE_TIMING_DIR>/project/projectdirs/$PROJECT</SAVE_TIMING_DIR>
          <OS>CNL</OS>
          <BATCHQUERY>qstat -f</BATCHQUERY>
-         <BATCHSUBMIT>qsub</BATCHSUBMIT>
+         <BATCHSUBMIT>sbatch</BATCHSUBMIT>
          <SUPPORTED_BY>jnjohnson at lbl dot gov</SUPPORTED_BY>
          <GMAKE_J>8</GMAKE_J>
          <MAX_TASKS_PER_NODE>48</MAX_TASKS_PER_NODE>
