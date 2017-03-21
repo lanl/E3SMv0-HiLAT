@@ -195,6 +195,7 @@ value of RUN_STARTDATE will be date2.
 
 <COMPSET sname="G_NORMAL_YEAR"  alias="G"   >2000_DATM%NYF_SLND_CICE_POP2_DROF%NYF_SGLC_SWAV</COMPSET>
 <COMPSET sname="G_INTERANNUAL"  alias="GIAF">2000_DATM%IAF_SLND_CICE_POP2_DROF%IAF_SGLC_SWAV</COMPSET>
+<COMPSET sname="G_JRA55"        alias="GJRA55">2000_DATM%JRA55_SLND_CICE_POP2_DROF%JRA55_SGLC_SWAV</COMPSET>
 <COMPSET sname="G_1850_ECOSYS"  alias="GECO">1850_DATM%NYF_SLND_CICE_POP2%ECO_DROF%NYF_SGLC_SWAV</COMPSET>
 
 <!-- E compsets -->
@@ -1075,6 +1076,7 @@ MPASLI  => MPAS Land Ice (default)
 <DATM_MODE compset="_DATM%NPS"  >COPYALL_NPS_v1</DATM_MODE>
 <DATM_MODE compset="_DATM%NPSC2">COPYALL_NPS_CORE2_v1</DATM_MODE>
 <DATM_MODE compset="_DATM%WW3"  >WW3</DATM_MODE>
+<DATM_MODE compset="_DATM%JRA55"  >JRA55</DATM_MODE>
 
 <DATM_PRESAERO compset="PDAY_DATM">clim_2000</DATM_PRESAERO> 
 <DATM_PRESAERO compset="2000_DATM">clim_2000</DATM_PRESAERO>
@@ -1190,6 +1192,7 @@ MPASLI  => MPAS Land Ice (default)
 
 <desc compset="_DATM%NYF">COREv2 datm normal year forcing: (requires additional user-supplied data)</desc>
 <desc compset="_DATM%IAF">COREv2 datm interannual year forcing: (requires additional user-supplied data)</desc>
+<desc compset="_DATM%JRA55">JRA55 datm interannual year forcing: (requires additional user-supplied data)</desc>
 
 <desc compset="_DATM%NPS">DATM NPS forcing:</desc>
 
@@ -1203,6 +1206,7 @@ DATM%S1850 => CPL history atm input data
 DATM%1PT   => single point tower site atm input data
 DATM%NYF   => COREv2 datm normal year forcing (requires extra user data)
 DATM%IAF   => COREv2 datm interannual year forcing (requires extra user data)
+DATM%JRA55 => JRA55 datm interannual year forcing (requires extra user data)
 DATM%NPS   => DATM NPS forcing
 </help>
 
@@ -1269,6 +1273,7 @@ DLND%LCPL => dlnd_mode is CPLHIST
 <DROF_MODE compset="_DROF%NULL">NULL</DROF_MODE>
 <DROF_MODE compset="_DROF%NYF" >DIATREN_ANN_RX1</DROF_MODE>
 <DROF_MODE compset="_DROF%IAF" >DIATREN_IAF_RX1</DROF_MODE>  
+<DROF_MODE compset="_DROF%JRA55">JRA55</DROF_MODE>  
 <DROF_MODE compset=".+" grid="r%null">NULL</DROF_MODE> <!-- overwrites above if runoff grid is null -->
 
 <!-- ======================================= -->
@@ -1279,6 +1284,7 @@ DLND%LCPL => dlnd_mode is CPLHIST
 <desc compset="_DROF%NULL">NULL drof mode:</desc>
 <desc compset="_DROF%NYF" >COREv2 drof normal year forcing:</desc>
 <desc compset="_DROF%IAF" >COREv2 drof interannual year forcing:</desc>
+<desc compset="_DROF%JRA55" >JRA55 drof interannual year forcing:</desc>
 
 <help>
 =========================================
@@ -1286,6 +1292,7 @@ DROF naming conventions
 =========================================
 DROF%NYF  => COREv2 drof normal year forcing
 DROF%IAF  => COREv2 drof interannual year forcing
+DROF%JRA55=> JRA55 drof interannual year forcing
 DROF%NULL => null mode
 </help>
 

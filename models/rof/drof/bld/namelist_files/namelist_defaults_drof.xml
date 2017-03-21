@@ -44,6 +44,7 @@ Currently the following streams are supported
    rof.cplhist
    rof.diatren_ann_rx1
    rof.diatren_iaf_rx1
+   rof.jra55_0.25
 
 -->
 
@@ -55,6 +56,7 @@ Currently the following streams are supported
 <datamode drof_mode="CPLHIST"        >CPLHIST</datamode>
 <datamode drof_mode="DIATREN_ANN_RX1">DIATREN_ANN_RX1</datamode>
 <datamode drof_mode="DIATREN_IAF_RX1">DIATREN_IAF_RX1</datamode>
+<datamode drof_mode="JRA55"          >JRA55</datamode>
 
 <!-- =========================================  -->
 <!--- streams                                   -->
@@ -64,6 +66,7 @@ Currently the following streams are supported
 <streamslist drof_mode="CPLHIST"        >rof.cplhist</streamslist>
 <streamslist drof_mode="DIATREN_ANN_RX1">rof.diatren_ann_rx1</streamslist>
 <streamslist drof_mode="DIATREN_IAF_RX1">rof.diatren_iaf_rx1</streamslist>
+<streamslist drof_mode="JRA55"          >rof.jra55_0.25</streamslist>
 
 <!-- =========================================  -->
 <!--- stream: dlnd.diatren_ann_rx1              -->
@@ -119,6 +122,93 @@ Currently the following streams are supported
 <strm_datvar     stream="rof.diatren_iaf_rx1">
   runoff rofl
 </strm_datvar>
+
+<!-- =========================================  -->
+<!--- stream: dlnd.rof.jra55_0.25               -->
+<!--- JRA-55 0.25 degree runoff                 -->
+<!--- inter-annual                              -->
+<!-- =========================================  -->
+
+<strm_year_align stream="rof.jra55_0.25">1</strm_year_align>
+<strm_year_start stream="rof.jra55_0.25">1958</strm_year_start>
+<strm_year_end   stream="rof.jra55_0.25">2015</strm_year_end>
+<strm_offset     stream="rof.jra55_0.25">0</strm_offset>
+<strm_tintalgo   stream="rof.jra55_0.25">upper</strm_tintalgo>
+<strm_taxmode    stream="rof.jra55_0.25">cycle</strm_taxmode>
+<strm_domdir     stream="rof.jra55_0.25">$DIN_LOC_ROOT/share/domains</strm_domdir>
+<strm_domfil     stream="rof.jra55_0.25">domain.roff.JRA025.170111.nc</strm_domfil>
+<strm_datdir     stream="rof.jra55_0.25">$DIN_LOC_ROOT/ocn/jra55/v1.1_noleap</strm_datdir>
+<strm_datfil     stream="rof.jra55_0.25">
+           JRA.v1.1.runoff.1958.170113.nc
+           JRA.v1.1.runoff.1959.170113.nc
+           JRA.v1.1.runoff.1960.170113.nc
+           JRA.v1.1.runoff.1961.170113.nc
+           JRA.v1.1.runoff.1962.170113.nc
+           JRA.v1.1.runoff.1963.170113.nc
+           JRA.v1.1.runoff.1964.170113.nc
+           JRA.v1.1.runoff.1965.170113.nc
+           JRA.v1.1.runoff.1966.170113.nc
+           JRA.v1.1.runoff.1967.170113.nc
+           JRA.v1.1.runoff.1968.170113.nc
+           JRA.v1.1.runoff.1969.170113.nc
+           JRA.v1.1.runoff.1970.170113.nc
+           JRA.v1.1.runoff.1971.170113.nc
+           JRA.v1.1.runoff.1972.170113.nc
+           JRA.v1.1.runoff.1973.170113.nc
+           JRA.v1.1.runoff.1974.170113.nc
+           JRA.v1.1.runoff.1975.170113.nc
+           JRA.v1.1.runoff.1976.170113.nc
+           JRA.v1.1.runoff.1977.170113.nc
+           JRA.v1.1.runoff.1978.170113.nc
+           JRA.v1.1.runoff.1979.170113.nc
+           JRA.v1.1.runoff.1980.170113.nc
+           JRA.v1.1.runoff.1981.170113.nc
+           JRA.v1.1.runoff.1982.170113.nc
+           JRA.v1.1.runoff.1983.170113.nc
+           JRA.v1.1.runoff.1984.170113.nc
+           JRA.v1.1.runoff.1985.170113.nc
+           JRA.v1.1.runoff.1986.170113.nc
+           JRA.v1.1.runoff.1987.170113.nc
+           JRA.v1.1.runoff.1988.170113.nc
+           JRA.v1.1.runoff.1989.170113.nc
+           JRA.v1.1.runoff.1990.170113.nc
+           JRA.v1.1.runoff.1991.170113.nc
+           JRA.v1.1.runoff.1992.170113.nc
+           JRA.v1.1.runoff.1993.170113.nc
+           JRA.v1.1.runoff.1994.170113.nc
+           JRA.v1.1.runoff.1995.170113.nc
+           JRA.v1.1.runoff.1996.170113.nc
+           JRA.v1.1.runoff.1997.170113.nc
+           JRA.v1.1.runoff.1998.170113.nc
+           JRA.v1.1.runoff.1999.170113.nc
+           JRA.v1.1.runoff.2000.170113.nc
+           JRA.v1.1.runoff.2001.170113.nc
+           JRA.v1.1.runoff.2002.170113.nc
+           JRA.v1.1.runoff.2003.170113.nc
+           JRA.v1.1.runoff.2004.170113.nc
+           JRA.v1.1.runoff.2005.170113.nc
+           JRA.v1.1.runoff.2006.170113.nc
+           JRA.v1.1.runoff.2007.170113.nc
+           JRA.v1.1.runoff.2008.170113.nc
+           JRA.v1.1.runoff.2009.170113.nc
+           JRA.v1.1.runoff.2010.170113.nc
+           JRA.v1.1.runoff.2011.170113.nc
+           JRA.v1.1.runoff.2012.170113.nc
+           JRA.v1.1.runoff.2013.170113.nc
+           JRA.v1.1.runoff.2014.170113.nc
+           JRA.v1.1.runoff.2015.170113.nc
+</strm_datfil>
+<strm_domvar     stream="rof.jra55_0.25">
+  time   time
+  xc     lon
+  yc     lat
+  area   area
+  mask   mask
+</strm_domvar>
+<strm_datvar     stream="rof.jra55_0.25">
+  runoff rofl
+</strm_datvar>
+
 
 <!-- =========================================  -->
 <!--- dlnd.rof.cplhist                          -->

@@ -5,6 +5,7 @@
 
 set check_grid = "fail"
 if (${ROF_GRID} == "rx1" ) set check_grid = "OK"
+if (${ROF_GRID} == "r025" ) set check_grid = "OK"
 if (${ROF_GRID} == "null") set check_grid = "OK"
 
 if (${check_grid} != "OK") then

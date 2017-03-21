@@ -12,7 +12,7 @@
 type="char*256"  
 category="datm_setting"
 group="datm_env_settings" 
-valid_values="CLM_QIAN,CLM1PT,CLMCRUNCEP,CPLHIST3HrWx,CORE2_NYF,CORE2_IAF,COPYALL_NPS_v1,COPYALL_CORE2_v1,WW3">
+valid_values="CLM_QIAN,CLM1PT,CLMCRUNCEP,CPLHIST3HrWx,CORE2_NYF,CORE2_IAF,JRA55,COPYALL_NPS_v1,COPYALL_CORE2_v1,WW3">
 Data Model mode to process forcing data
 </entry>
 
@@ -36,8 +36,8 @@ Prescribed aerosol mode
 type="char*256"  
 category="streams"
 group="shr_strdata_nml" 
-valid_values="CLMNCEP,COPYALL,CPLHIST,CORE2_NYF,CORE2_IAF,NULL">
-valid values: CLMNCEP,COPYALL,CPLHIST,CORE2_NYF,CORE2_IAF,NULL
+valid_values="CLMNCEP,COPYALL,CPLHIST,CORE2_NYF,CORE2_IAF,JRA55,NULL">
+valid values: CLMNCEP,COPYALL,CPLHIST,CORE2_NYF,CORE2_IAF,JRA55,NULL
 general method that operates on the data.  this is generally
 implemented in the data models but is set in the strdata method for
 convenience.  valid options are dependent on the data model and will
@@ -74,6 +74,8 @@ datamode = "CORE2_IAF"
   W.G.Large, S.G.Yeager (2008), The global climatology of an
   interannually varying air-sea flux data set.  
   Clm Dyn doi 10.1007/s00382-008-0441-3.
+datamode = "JRA55"
+  This is for the experimental set-up of JRA-55 forcing. 
 datamode = "CLMNCEP"
   In conjunction with NCEP climatological atmosphere data, provides the
   atmosphere forcing favored by the Land Model Working Group when

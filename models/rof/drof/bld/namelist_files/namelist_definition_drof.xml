@@ -16,8 +16,8 @@
 type="char*256"  
 category="streams"
 group="shr_strdata_nml" 
-valid_values="NULL,CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1">
-valid values: NULL,CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1
+valid_values="NULL,CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,JRA55">
+valid values: NULL,CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,JRA55
 The runoff data is associated with the runoff model 
 and is normally on a different grid than the land data.  
 In the data model, the land and snow modes are treated completely 
@@ -36,10 +36,13 @@ datamode = "CPLHIST"
 datamode = DIATREN_ANN_RX1,DIATREN_IAF_RX1
   Reads in annual and intra-annual forcing runoff data used for CORE2 forcing runs
   Only valid for rof mode
+datamode = JRA55
+  Reads in intra-annual forcing runoff data used for JRA55 forcing runs
+  Only valid for rof mode
 
 Set by the following xml variables in env_run.xml
 DROF_MODE 
-   specifies values for rof mode: CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,NULL
+   specifies values for rof mode: CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,NULL,JRA55
    default value: DIATREN_ANN_RX1
 </entry>
 
