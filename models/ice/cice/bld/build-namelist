@@ -596,6 +596,10 @@ add_default($nl, 'frazil_scav');
 # namelist group: tracer_nml     #
 ##################################
 
+##################################
+# namelist group: tracer_nml     #
+##################################
+
 
 add_default($nl, 'tr_lvl');
 add_default($nl, 'tr_iage');
