@@ -9,10 +9,10 @@
 # 
 export CaseName=t32_GIAF_CaseName
 echo "casename = $CaseName"
-export CaseDir=/main/path/to/casedir
+export CaseDir=/turquoise/usr/projects/climate/wilbert/HiLAT-JRA55/
 echo "casedir = $CaseDir/$CaseName"
 
-./create_newcase -case $CaseDir/$CaseName -res T62_t32 -compset GIAF -mach grizzly -proj climatehilat
+./create_newcase -case $CaseDir/$CaseName -res TL319_t32 -compset GJRA55 -mach grizzly -proj climatehilat
 cd $CaseDir/$CaseName
 
 ./xmlchange -file env_build.xml -id POP_AUTO_DECOMP -val false
