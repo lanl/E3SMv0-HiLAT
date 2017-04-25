@@ -175,7 +175,7 @@ contains
     use modal_aero_initialize_data, only: modal_aero_initialize
     use rad_constituents,           only: rad_cnst_get_info
     use dust_model,      only: dust_init, dust_names, dust_active, dust_nbin, dust_nnum
-    use seasalt_model,   only: seasalt_init, seasalt_names, seasalt_active,seasalt_nbin
+    use seasalt_model,   only: seasalt_init, seasalt_names, seasalt_active,seasalt_nbin,nslt_om
     use drydep_mod,      only: inidrydep
     use wetdep,          only: wetdep_init
     use mo_chem_utls,    only: get_het_ndx
@@ -349,6 +349,20 @@ contains
              call add_default (dummy, 1, ' ')
           endif
        enddo
+
+#if (defined MODAL_AERO_9MODE || MODAL_AERO_4MODE_MOM)
+       dummy = 'SSTSFMBL_OM'
+       call addfld (dummy,'kg/m2/s ',1,'A','Mobilization flux of marine organic matter at surface',phys_decomp)
+       if (history_aerosol) then
+          call add_default (dummy, 1, ' ')
+       endif
+
+       dummy = 'F_eff'
+       call addfld (dummy,'kg/m2/s ',1,'A','Effective enrichment factor of marine organic matter',phys_decomp)
+       if (history_aerosol) then
+          call add_default (dummy, 1, ' ')
+       endif
+#endif
 
     endif
 
@@ -1968,7 +1982,8 @@ contains
   !=============================================================================
   !=============================================================================
   subroutine aero_model_emissions( state, cam_in )
-    use seasalt_model, only: seasalt_emis, seasalt_names, seasalt_indices, seasalt_active,seasalt_nbin
+    use seasalt_model, only: seasalt_emis, seasalt_names, seasalt_indices, seasalt_active,seasalt_nbin, \
+                             nslt_om,has_mam_mom,F_eff_out
     use dust_model,    only: dust_emis, dust_names, dust_indices, dust_active,dust_nbin, dust_nnum
     use physics_types, only: physics_state
 
@@ -1984,6 +1999,8 @@ contains
     real(r8) :: soil_erod_tmp(pcols)
     real(r8) :: sflx(pcols)   ! accumulate over all bins for output
     real(r8) :: u10cubed(pcols)
+    real(r8) :: u10(pcols)               ! Needed in Gantt et al. calculation of organic mass fraction
+    real(r8) :: F_eff(pcols) ! optional diagnostic output -- organic enrichment ratio
     real (r8), parameter :: z0=0.0001_r8  ! m roughness length over oceans--from ocean model
 
     lchnk = state%lchnk
@@ -2005,25 +2022,45 @@ contains
     endif
 
     if (seasalt_active) then
-       u10cubed(:ncol)=sqrt(state%u(:ncol,pver)**2+state%v(:ncol,pver)**2)
+       u10(:ncol)=sqrt(state%u(:ncol,pver)**2+state%v(:ncol,pver)**2)
        ! move the winds to 10m high from the midpoint of the gridbox:
        ! follows Tie and Seinfeld and Pandis, p.859 with math.
 
-       u10cubed(:ncol)=u10cubed(:ncol)*log(10._r8/z0)/log(state%zm(:ncol,pver)/z0)
+       u10(:ncol)=u10(:ncol)*log(10._r8/z0)/log(state%zm(:ncol,pver)/z0)
 
        ! we need them to the 3.41 power, according to Gong et al., 1997:
-       u10cubed(:ncol)=u10cubed(:ncol)**3.41_r8
+       u10cubed(:ncol)=u10(:ncol)**3.41_r8
 
        sflx(:)=0._r8
+       F_eff(:)=0._r8
 
-       call seasalt_emis( u10cubed, cam_in%sst, cam_in%ocnfrac, ncol, cam_in%cflx, seasalt_emis_scale )
+       call seasalt_emis(u10, u10cubed, lchnk, cam_in%sst, cam_in%ocnfrac, ncol, cam_in%cflx, seasalt_emis_scale, F_eff)
 
-       do m=1,seasalt_nbin
+       ! Write out salt mass fluxes to history files
+       do m=1,seasalt_nbin-nslt_om
           mm = seasalt_indices(m)
           sflx(:ncol)=sflx(:ncol)+cam_in%cflx(:ncol,mm)
           call outfld(trim(seasalt_names(m))//'SF',cam_in%cflx(:,mm),pcols,lchnk)
        enddo
+       ! accumulated flux
        call outfld('SSTSFMBL',sflx(:),pcols,lchnk)
+
+       ! Write out marine organic mass fluxes to history files
+       if ( has_mam_mom ) then
+          sflx(:)=0._r8
+          do m=seasalt_nbin-nslt_om+1,seasalt_nbin
+             mm = seasalt_indices(m)
+             sflx(:ncol)=sflx(:ncol)+cam_in%cflx(:ncol,mm)
+             call outfld(trim(seasalt_names(m))//'SF',cam_in%cflx(:,mm),pcols,lchnk)
+          end do
+          ! accumulated flux
+          call outfld('SSTSFMBL_OM',sflx(:),pcols,lchnk)
+
+          if ( F_eff_out ) then
+             call outfld('F_eff',F_eff(:),pcols,lchnk)
+          endif
+       end if
+
     endif
 
   end subroutine aero_model_emissions
