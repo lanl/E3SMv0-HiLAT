@@ -32,16 +32,17 @@ endif
 if ( "${PROJECT}" == "PROJECT_UNSET" ) then
 	set account = ""
 else
-	set account = "#MSUB -A ${PROJECT}"
+	set account = "#SBATCH -A ${PROJECT}"
 endif
 
 cat >! $file << EOF1
 #!/bin/csh
-#MSUB -N ${jobname}
-#MSUB -l nodes=${nodes}:ppn=${MAX_TASKS_PER_NODE}
-#MSUB -l walltime=${walltime}
-#MSUB -o $CASEROOT/log.o
-#MSUB -e $CASEROOT/log.e
+#SBATCH --job-name ${jobname}
+#SBATCH --nodes=${nodes}
+#SBATCH --ntasks-per-node=${MAX_TASKS_PER_NODE}
+#SBATCH --time=${walltime}
+#SBATCH --output $CASEROOT/log.o
+#SBATCH --error $CASEROOT/log.e
 ${account}
 
 cd $CASEROOT

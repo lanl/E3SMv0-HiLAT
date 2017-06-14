@@ -1187,7 +1187,7 @@
                                  meltb,                  congel)
 
             elseif (tr_bgc_N .and. mm .eq. nlt_bgc_N(1)) then  
-               if (meltb > algal_vel*dt) then             
+               if (meltb > algal_vel*dt .or. aicen < 0.001_dbl_kind) then             
 
                   call regrid_stationary &
                                 (initcons_stationary,    hbri_old,    &
@@ -1318,14 +1318,14 @@
             endif
             trcrn(bio_index(m)+k-1) = max(c0, bio_tmp)
             if (ocean_bio(m) .le. c0 .and. flux_bio(m) < c0) then
-                if (flux_bio(m) < -1.0e-12_dbl_kind) then
-                  write (nu_diag, *) 'no ocean_bio but flux_bio < c0'
-                  write (nu_diag, *) 'm,ocean_bio(m),flux_bio(m)'
-                  write (nu_diag, *) m,ocean_bio(m),flux_bio(m)     
-                  write (nu_diag, *) 'setting flux_bio(m) = c0'  
+                !if (flux_bio(m) < -1.0e-12_dbl_kind) then
+                !  write (nu_diag, *) 'no ocean_bio but flux_bio < c0'
+                !  write (nu_diag, *) 'm,ocean_bio(m),flux_bio(m)'
+                !  write (nu_diag, *) m,ocean_bio(m),flux_bio(m)     
+                !  write (nu_diag, *) 'setting flux_bio(m) = c0'  
                 !  l_stop = .true.
                 !  stop_label = 'flux_bio < 0 when ocean_bio = 0'
-                endif
+                !endif
                 flux_bio(m) = max(c0,flux_bio(m))
             endif
          enddo        ! k

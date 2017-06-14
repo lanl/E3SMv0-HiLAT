@@ -860,18 +860,18 @@
          <COMPILERS>intel,pgi,gnu</COMPILERS>
          <MPILIBS>openmpi,mvapich,mpi-serial</MPILIBS>
          <OS>LINUX</OS>
-         <RUNDIR>/lustre/scratch2/turquoise/$ENV{USER}/HILAT/$CASE/run</RUNDIR>
-         <EXEROOT>/lustre/scratch2/turquoise/$ENV{USER}/HILAT/$CASE/bld</EXEROOT>
+         <RUNDIR>/lustre/scratch3/turquoise/$ENV{USER}/HILAT/$CASE/run</RUNDIR>
+         <EXEROOT>/lustre/scratch3/turquoise/$ENV{USER}/HILAT/$CASE/bld</EXEROOT>
          <DIN_LOC_ROOT>/usr/projects/cesm/input_data</DIN_LOC_ROOT>
          <DIN_LOC_ROOT_CLMFORC>/usr/projects/cesm/input_data/atm/datm7</DIN_LOC_ROOT_CLMFORC>
          <DOUT_S>FALSE</DOUT_S>
-         <DOUT_S_ROOT>/lustre/scratch2/turquoise/$ENV{USER}/archive/$CASE</DOUT_S_ROOT>
+         <DOUT_S_ROOT>/lustre/scratch3/turquoise/$ENV{USER}/archive/$CASE</DOUT_S_ROOT>
          <DOUT_L_MSROOT>UNSET</DOUT_L_MSROOT>
          <CCSM_BASELINE>/usr/projects/cesm/input_data/ccsm_baselines</CCSM_BASELINE>
-         <CESMSCRATCHROOT>/lustre/scratch2/turquoise/$ENV{USER}</CESMSCRATCHROOT>
+         <CESMSCRATCHROOT>/lustre/scratch3/turquoise/$ENV{USER}</CESMSCRATCHROOT>
          <CCSM_CPRNC>$CCSMROOT/tools/cprnc/build/cprnc</CCSM_CPRNC>
-         <BATCHQUERY>mshow</BATCHQUERY>
-         <BATCHSUBMIT>msub</BATCHSUBMIT>
+         <BATCHQUERY>squeue</BATCHQUERY>
+         <BATCHSUBMIT>sbatch</BATCHSUBMIT>
          <GMAKE_J>4</GMAKE_J>
          <MAX_TASKS_PER_NODE>16</MAX_TASKS_PER_NODE>
 		 <SUPPORTED_BY>jacobsen.douglas -at- gmail.com</SUPPORTED_BY>
@@ -882,18 +882,18 @@
         <COMPILERS>intel,gnu</COMPILERS>
         <MPILIBS>openmpi</MPILIBS>
         <OS>LINUX</OS>
-        <RUNDIR>/lustre/scratch2/turquoise/$ENV{USER}/HILAT/$CASE/run</RUNDIR>
-        <EXEROOT>/lustre/scratch2/turquoise/$ENV{USER}/HILAT/$CASE/bld</EXEROOT>
+        <RUNDIR>/lustre/scratch3/turquoise/$ENV{USER}/HILAT/$CASE/run</RUNDIR>
+        <EXEROOT>/lustre/scratch3/turquoise/$ENV{USER}/HILAT/$CASE/bld</EXEROOT>
         <DIN_LOC_ROOT>/usr/projects/cesm/input_data</DIN_LOC_ROOT>
         <DIN_LOC_ROOT_CLMFORC>/usr/projects/cesm/input_data/atm/datm7</DIN_LOC_ROOT_CLMFORC>
         <DOUT_S>FALSE</DOUT_S>
-        <DOUT_S_ROOT>/lustre/scratch2/turquoise/$ENV{USER}/archive/$CASE</DOUT_S_ROOT>
+        <DOUT_S_ROOT>/lustre/scratch3/turquoise/$ENV{USER}/archive/$CASE</DOUT_S_ROOT>
         <DOUT_L_MSROOT>UNSET</DOUT_L_MSROOT>
         <CCSM_BASELINE>/usr/projects/cesm/input_data/ccsm_baselines</CCSM_BASELINE>
-        <CESMSCRATCHROOT>/lustre/scratch2/turquoise/$ENV{USER}</CESMSCRATCHROOT>
+        <CESMSCRATCHROOT>/lustre/scratch3/turquoise/$ENV{USER}</CESMSCRATCHROOT>
         <CCSM_CPRNC>$CCSMROOT/tools/cprnc/build/cprnc</CCSM_CPRNC>
-        <BATCHQUERY>mshow</BATCHQUERY>
-        <BATCHSUBMIT>msub</BATCHSUBMIT>
+        <BATCHQUERY>squeue</BATCHQUERY>
+        <BATCHSUBMIT>sbatch</BATCHSUBMIT>
         <GMAKE_J>4</GMAKE_J>
         <MAX_TASKS_PER_NODE>32</MAX_TASKS_PER_NODE>
         <SUPPORTED_BY>luke.vanroekel @ gmail.com</SUPPORTED_BY>
