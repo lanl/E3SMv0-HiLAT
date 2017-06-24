@@ -34,7 +34,6 @@ if ( $COMPILER == "intel" ) then
     module rm cray-netcdf
     module load PrgEnv-intel/5.2.56
     #module load PrgEnv-intel 
-    module unload intel
     module rm intel
     module load intel/15.0.1.133
     module rm cray-libsci
