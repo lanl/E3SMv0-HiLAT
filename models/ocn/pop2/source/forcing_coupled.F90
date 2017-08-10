@@ -648,6 +648,13 @@
      number_of_fatal_errors = number_of_fatal_errors + 1
    endif
    
+   if (licebergs .and. sfwf_formulation /= 'partially-coupled') then
+     message =   &
+       'Icebergs require partially-coupled option'
+     write(stdout,*) message
+     number_of_fatal_errors = number_of_fatal_errors + 1
+   endif
+   
    if (number_of_fatal_errors /= 0)  &
       call exit_POP(sigAbort,'subroutine pop_init_partially_coupled')
 
@@ -813,7 +820,7 @@
 !
 !-----------------------------------------------------------------------
  
-      if  (lms_balance .and. sfwf_formulation /= 'partially-coupled' ) then
+      if  (lms_balance .and. (sfwf_formulation /= 'partially-coupled' .or. licebergs)) then
        call ms_balancing (STF(:,:,2,:),EVAP_F, PREC_F, MELT_F,ROFF_F,IOFF_F,   &
                           SALT_F, QFLUX, 'salt')
       endif
@@ -848,8 +855,11 @@
                    TFW(:,:,n,iblock) * MASK_SR(:,:,iblock)
              enddo
         else
-          SFWF_COMP(:,:,iblock,sfwf_comp_cpl) = &
-             STF(:,:,2,iblock) * MASK_SR(:,:,iblock)
+           SFWF_COMP(:,:,iblock,sfwf_comp_cpl) = STF(:,:,2,iblock) 
+           if ( .not. lms_balance ) then
+             SFWF_COMP(:,:,iblock,sfwf_comp_cpl) =   &
+                     SFWF_COMP(:,:,iblock,sfwf_comp_cpl) * MASK_SR(:,:,iblock)
+           endif
         endif
 
       else
@@ -956,6 +966,8 @@
      iblock,             &! local address of current block
      n                    ! index
 
+   real (r8) :: icebergFact
+
 #if CCSMCOUPLED
   real (r8), dimension(nx_block,ny_block,max_blocks_clinic) ::  &
      WORK1, WORK2        ! local work arrays
@@ -965,11 +977,18 @@
    WORK2 = c0
 
    if ( shf_formulation == 'partially-coupled' ) then
+
+     !*** Add latent heat flux due to iceberg melt
+     icebergFact = c0
+     if (licebergs) icebergfact = -hflux_factor*latent_heat_fusion_mks
+     if (lfw_as_salt_flx) icebergFact = icebergFact/salinity_factor
+
      !$OMP PARALLEL DO PRIVATE(iblock)
      do iblock=1,nblocks_clinic
        STF(:,:,1,iblock) =  SHF_COMP(:,:,iblock,shf_comp_wrest)     &
-                   + SHF_COMP(:,:,iblock,shf_comp_srest)     &
-                   + SHF_COMP(:,:,iblock,shf_comp_cpl)
+                   + SHF_COMP(:,:,iblock,shf_comp_srest)            &
+                   + SHF_COMP(:,:,iblock,shf_comp_cpl)              &
+                   + SFWF_COMP(:,:,iblock,sfwf_comp_bergs)*icebergFact
      enddo
      !$OMP END PARALLEL DO
    endif
@@ -982,13 +1001,15 @@
           STF(:,:,2,iblock) =  SFWF_COMP(:,:,  iblock,sfwf_comp_wrest) &
                              + SFWF_COMP(:,:,  iblock,sfwf_comp_srest)
           FW(:,:,iblock)    =  SFWF_COMP(:,:,  iblock,sfwf_comp_cpl)   &
-                             + SFWF_COMP(:,:,  iblock,sfwf_comp_flxio)
+                             + SFWF_COMP(:,:,  iblock,sfwf_comp_flxio) &
+                             + SFWF_COMP(:,:,  iblock,sfwf_comp_bergs)
           TFW(:,:,:,iblock) =   TFW_COMP(:,:,:,iblock, tfw_comp_cpl)    &
-                             +  TFW_COMP(:,:,:,iblock, tfw_comp_flxio)
+                             +  TFW_COMP(:,:,:,iblock, tfw_comp_flxio)  &
+                             +  TFW_COMP(:,:,:,iblock, tfw_comp_bergs)
        enddo
        !$OMP END PARALLEL DO
      else
-       if ( lms_balance ) then
+       if ( lms_balance .and. .not. licebergs) then
 
          !$OMP PARALLEL DO PRIVATE(iblock)
          do iblock=1,nblocks_clinic
@@ -1018,7 +1039,8 @@
            STF(:,:,2,iblock) =  SFWF_COMP(:,:,iblock,sfwf_comp_wrest)  &
                               + SFWF_COMP(:,:,iblock,sfwf_comp_srest)  &
                               + SFWF_COMP(:,:,iblock,sfwf_comp_cpl)    &
-                              + SFWF_COMP(:,:,iblock,sfwf_comp_flxio) 
+                              + SFWF_COMP(:,:,iblock,sfwf_comp_flxio)  &
+                              + SFWF_COMP(:,:,iblock,sfwf_comp_bergs) 
          enddo
          !$OMP END PARALLEL DO
  

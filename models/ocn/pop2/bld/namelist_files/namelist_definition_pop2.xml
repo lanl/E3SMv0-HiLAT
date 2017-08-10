@@ -2895,6 +2895,17 @@ LANL Default: N/A, CESM only
 CESM Default: .true. if sfwf_formulation='partially-coupled', .false. otherwise
 </entry>
 
+<entry 
+id="licebergs"
+type="logical"
+category="forcing"
+group="forcing_sfwf_nml" >
+Use iceberg melt fluxes in partially-coupled setting. 
+
+LANL Default: .false.
+CESM Default: .false.
+</entry>
+
 <!-- - - - - - - - - - - - - - - - - - -->
 <!-- Group: forcing_pt_interior_nml  - -->
 <!-- - - - - - - - - - - - - - - - - - -->

@@ -642,6 +642,8 @@
 <lsend_precip_fact>.false.</lsend_precip_fact>  
 <lsend_precip_fact ocn_coupling="partial">.true.</lsend_precip_fact>
 
+<licebergs>.false.</licebergs>  
+
 <sfwf_data_inc>24.</sfwf_data_inc>
 <sfwf_interp_freq>'every-timestep'</sfwf_interp_freq>
 <sfwf_interp_type>'linear'</sfwf_interp_type>
@@ -654,7 +656,7 @@
 <sfwf_data_renorm>0.001, 19*1.</sfwf_data_renorm>
 
 <sfwf_filename ocn_grid="gx3v7"  >ocn/pop/gx3v7/forcing/sfwf_mm_PHC2_salx_flxio_20090831.ieeer8</sfwf_filename>
-<sfwf_filename ocn_grid="gx1v6"  >ocn/pop/gx1v6/forcing/sfwf_mm_PHC2_salx_flxio_20090205.ieeer8</sfwf_filename>
+<sfwf_filename ocn_grid="gx1v6"  >ocn/pop/gx1v6/forcing/ sfwf_mm_PHC2_salx+flxio+icebergs_20170810.ieeer8</sfwf_filename>
 <sfwf_filename ocn_grid="tx1v1"  >ocn/pop/tx1v1/forcing/sfwf_mm_PHC2_salx_flxio_20080502.ieeer8</sfwf_filename>
 <sfwf_filename ocn_grid="tx0.1v2">ocn/pop/tx0.1v2/forcing/sfwf_mm_PHC2_salx_flxio_20100323.ieeer8</sfwf_filename>
 <sfwf_filename ocn_grid="tx0.3v2">ocn/pop/tx0.3v2/forcing/sss+zero_fluxio.mon</sfwf_filename>
