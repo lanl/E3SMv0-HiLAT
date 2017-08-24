@@ -675,14 +675,14 @@
 
       real (kind=dbl_kind), dimension (:), intent(inout) :: &
          zqin        , & ! ice layer enthalpy (J m-3)
-         zTin            ! internal ice layer temperatures
+         zTin        , & ! internal ice layer temperatures
+	 zqsn            ! snow enthalpy
 
       real (kind=dbl_kind), dimension (:), intent(in) :: &
          zSin            ! internal ice layer salinities
         
       real (kind=dbl_kind), dimension (:), &
          intent(out) :: &
-         zqsn        , & ! snow enthalpy
          zTsn            ! snow temperature
 
       logical (kind=log_kind), intent(inout) :: &
