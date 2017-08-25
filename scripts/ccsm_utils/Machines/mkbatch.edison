@@ -14,7 +14,7 @@ if ( $ntasks % ${MAX_TASKS_PER_NODE} > 0) then
   @ ntasks = $nodes * ${MAX_TASKS_PER_NODE}
 endif
 @ taskpernode = ${MAX_TASKS_PER_NODE} / ${maxthrds}
-set qname = batch
+set qname = regular
 set tlimit = "00:59:00"
 if ($CCSM_ESTCOST > 2) set tlimit = "08:59:00"
 
@@ -35,42 +35,68 @@ cat >! $file << EOF1
 ###SBATCH --mail-type=END
 ###SBATCH --mail-user=xyz@abc.com
 #SBATCH --output=slurm.out
-#SBATCH -p regular
-
+#SBATCH -p $qname
 EOF1
 
 #################################################################################
 else if ($PHASE == set_exe) then
 #################################################################################
-
+source ./Tools/ccsm_getenv || exit -1
 set maxthrds = `${CASEROOT}/Tools/taskmaker.pl -maxthrds`
 set maxtasks = `${CASEROOT}/Tools/taskmaker.pl -sumtasks`
+set ntasks  = `${CASEROOT}/Tools/taskmaker.pl -sumonly`
+@ nodes = $ntasks / ${MAX_TASKS_PER_NODE}
+@ aaa = ( 24 * $nodes ) / ${maxtasks}
 
 cat >> ${CASEROOT}/${CASE}.run << EOF1
-sleep 25
+# -------------------------------------------------------------------------
+# Run the model
+# -------------------------------------------------------------------------
+
+sleep 2
 cd \$RUNDIR
 echo "\`date\` -- CSM EXECUTION BEGINS HERE" 
 
-setenv OMP_NUM_THREADS ${maxthrds}
-# for mvapich
-#srun --ntasks=${maxtasks} --cpu_bind=sockets --cpu_bind=verbose --kill-on-bad-exit \$EXEROOT/cesm.exe >&! cesm.log.\$LID
-# for mvapich2
-srun --mpi=none --ntasks=${maxtasks} --cpu_bind=sockets --cpu_bind=verbose --kill-on-bad-exit \$EXEROOT/cesm.exe >&! cesm.log.\$LID
 
-#setenv MV2_ENABLE_AFFINITY 1
-#setenv MV2_CPU_MAPPING 31:29:27:25:23:21:19:17:15:13:11:9:7:5:3:1
-#srun --mpi=none -n=${maxtasks} --kill-on-bad-exit \$EXEROOT/cesm.exe >&! cesm.log.\$LID
+setenv OMP_STACKSIZE 128M
+setenv OMP_NUM_THREADS ${maxthrds}
+srun -c ${aaa} --label --ntasks=${maxtasks} --cpu_bind=sockets --cpu_bind=verbose --kill-on-bad-exit \$EXEROOT/cesm.exe >&! cesm.log.\$LID
 
 wait
 echo "\`date\` -- CSM EXECUTION HAS FINISHED" 
-
 EOF1
 
 #################################################################################
 else if ($PHASE == set_larch) then
 #################################################################################
 
-   #This is a place holder for a long-term archiving script
+set account_name = ` `
+if (-e ~/.ccsm_proj) then
+   set account_name = `head -1 ~/.ccsm_proj`
+endif
+
+cat >! $CASEROOT/${CASE}.l_archive << EOF1
+#! /bin/csh -f
+#SBATCH --job-name=${CASE}.lta
+#SBATCH --time=30:00
+#SBATCH --nodes=1
+##SBATCH --ntasks=32
+#SBATCH --cpus-per-task=1
+#SBATCH --exclusive
+#SBATCH --mail-type=END
+##SBATCH --mail-user=hailong.wang@pnnl.gov
+###SBATCH --mail-type=END
+###SBATCH --mail-user=xyz@abc.com
+#SBATCH --output=lta%jodid.out
+#SBATCH --error=lta%jodid.err
+#SBATCH -p regular
+cd $CASEROOT 
+source ./Tools/ccsm_getenv || exit -1
+cd \$DOUT_S_ROOT
+$CASEROOT/Tools/lt_archive.sh -m copy_dirs_hsi
+exit 0
+EOF1
+chmod 775 ${CASEROOT}/${CASE}.l_archive
 
 #################################################################################
 else
