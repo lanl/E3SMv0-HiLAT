@@ -1557,7 +1557,7 @@ ncep.v_10.T62.2009.20120412.nc
 <strm_year_end   stream="JRA55.JRA55.PREC">2015</strm_year_end>
 <strm_year_align stream="JRA55.JRA55.PREC">1</strm_year_align>
 <strm_domdir     stream="JRA55.JRA55.PREC">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
-<strm_domfil     stream="JRA55.JRA55.PREC">domain.lnd.TL319_gx1v6.151007.nc</strm_domfil>
+<strm_domfil     stream="JRA55.JRA55.PREC">domain.TL319.170621.nc</strm_domfil>
 <strm_datdir     stream="JRA55.JRA55.PREC">$DIN_LOC_ROOT/ocn/jra55/v1.1_noleap</strm_datdir>
 <strm_datfil     stream="JRA55.JRA55.PREC">
            JRA.v1.1.prec.TL319.1958.170113.nc
@@ -1640,7 +1640,7 @@ ncep.v_10.T62.2009.20120412.nc
 <strm_year_end   stream="JRA55.JRA55.LWDN">2015</strm_year_end>
 <strm_year_align stream="JRA55.JRA55.LWDN">   1</strm_year_align>
 <strm_domdir     stream="JRA55.JRA55.LWDN">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
-<strm_domfil     stream="JRA55.JRA55.LWDN">domain.lnd.TL319_gx1v6.151007.nc</strm_domfil>
+<strm_domfil     stream="JRA55.JRA55.LWDN">domain.TL319.170621.nc</strm_domfil>
 <strm_datdir     stream="JRA55.JRA55.LWDN">$DIN_LOC_ROOT/ocn/jra55/v0.7_noleap</strm_datdir>
 <strm_datfil     stream="JRA55.JRA55.LWDN">
            JRA.v0.7.lwdn.TL319.1958.160610.nc
@@ -1722,7 +1722,7 @@ ncep.v_10.T62.2009.20120412.nc
 <strm_year_end   stream="JRA55.JRA55.SWDN">2015</strm_year_end>
 <strm_year_align stream="JRA55.JRA55.SWDN">   1</strm_year_align>
 <strm_domdir     stream="JRA55.JRA55.SWDN">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
-<strm_domfil     stream="JRA55.JRA55.SWDN">domain.lnd.TL319_gx1v6.151007.nc</strm_domfil>
+<strm_domfil     stream="JRA55.JRA55.SWDN">domain.TL319.170621.nc</strm_domfil>
 <strm_datdir     stream="JRA55.JRA55.SWDN">$DIN_LOC_ROOT/ocn/jra55/v0.7_noleap</strm_datdir>
 <strm_datfil     stream="JRA55.JRA55.SWDN">
            JRA.v0.7.swdn.TL319.1958.160610.nc
@@ -1804,7 +1804,7 @@ ncep.v_10.T62.2009.20120412.nc
 <strm_year_end   stream="JRA55.JRA55.Q_10">2015</strm_year_end>
 <strm_year_align stream="JRA55.JRA55.Q_10">   1</strm_year_align>
 <strm_domdir     stream="JRA55.JRA55.Q_10">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
-<strm_domfil     stream="JRA55.JRA55.Q_10">domain.lnd.TL319_gx1v6.151007.nc</strm_domfil>
+<strm_domfil     stream="JRA55.JRA55.Q_10">domain.TL319.170621.nc</strm_domfil>
 <strm_datdir     stream="JRA55.JRA55.Q_10">$DIN_LOC_ROOT/ocn/jra55/v0.7_noleap</strm_datdir>
 <strm_datfil     stream="JRA55.JRA55.Q_10">
            JRA.v0.7.q_10.TL319.1958.160610.nc
@@ -1886,7 +1886,7 @@ ncep.v_10.T62.2009.20120412.nc
 <strm_year_end   stream="JRA55.JRA55.SLP_">2015</strm_year_end>
 <strm_year_align stream="JRA55.JRA55.SLP_">   1</strm_year_align>
 <strm_domdir     stream="JRA55.JRA55.SLP_">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
-<strm_domfil     stream="JRA55.JRA55.SLP_">domain.lnd.TL319_gx1v6.151007.nc</strm_domfil>
+<strm_domfil     stream="JRA55.JRA55.SLP_">domain.TL319.170621.nc</strm_domfil>
 <strm_datdir     stream="JRA55.JRA55.SLP_">$DIN_LOC_ROOT/ocn/jra55/v0.7_noleap</strm_datdir>
 <strm_datfil     stream="JRA55.JRA55.SLP_">
            JRA.v0.7.slp.TL319.1958.160610.nc
@@ -1968,7 +1968,7 @@ ncep.v_10.T62.2009.20120412.nc
 <strm_year_end   stream="JRA55.JRA55.T_10">2015</strm_year_end>
 <strm_year_align stream="JRA55.JRA55.T_10">   1</strm_year_align>
 <strm_domdir     stream="JRA55.JRA55.T_10">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
-<strm_domfil     stream="JRA55.JRA55.T_10">domain.lnd.TL319_gx1v6.151007.nc</strm_domfil>
+<strm_domfil     stream="JRA55.JRA55.T_10">domain.TL319.170621.nc</strm_domfil>
 <strm_datdir     stream="JRA55.JRA55.T_10">$DIN_LOC_ROOT/ocn/jra55/v0.7_noleap</strm_datdir>
 <strm_datfil     stream="JRA55.JRA55.T_10">
            JRA.v0.7.t_10.TL319.1958.160610.nc
@@ -2050,7 +2050,7 @@ ncep.v_10.T62.2009.20120412.nc
 <strm_year_end   stream="JRA55.JRA55.U_10">2015</strm_year_end>
 <strm_year_align stream="JRA55.JRA55.U_10">   1</strm_year_align>
 <strm_domdir     stream="JRA55.JRA55.U_10">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
-<strm_domfil     stream="JRA55.JRA55.U_10">domain.lnd.TL319_gx1v6.151007.nc</strm_domfil>
+<strm_domfil     stream="JRA55.JRA55.U_10">domain.TL319.170621.nc</strm_domfil>
 <strm_datdir     stream="JRA55.JRA55.U_10">$DIN_LOC_ROOT/ocn/jra55/v0.7_noleap</strm_datdir>
 <strm_datfil     stream="JRA55.JRA55.U_10">
            JRA.v0.7.u_10.TL319.1958.160610.nc
@@ -2132,7 +2132,7 @@ ncep.v_10.T62.2009.20120412.nc
 <strm_year_end   stream="JRA55.JRA55.V_10">2015</strm_year_end>
 <strm_year_align stream="JRA55.JRA55.V_10">   1</strm_year_align>
 <strm_domdir     stream="JRA55.JRA55.V_10">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
-<strm_domfil     stream="JRA55.JRA55.V_10">domain.lnd.TL319_gx1v6.151007.nc</strm_domfil>
+<strm_domfil     stream="JRA55.JRA55.V_10">domain.TL319.170621.nc</strm_domfil>
 <strm_datdir     stream="JRA55.JRA55.V_10">$DIN_LOC_ROOT/ocn/jra55/v0.7_noleap</strm_datdir>
 <strm_datfil     stream="JRA55.JRA55.V_10">
            JRA.v0.7.v_10.TL319.1958.160610.nc
