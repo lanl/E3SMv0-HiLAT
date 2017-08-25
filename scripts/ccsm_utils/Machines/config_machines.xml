@@ -171,7 +171,7 @@
          <DESC>NERSC XC30, os is CNL, 24 pes/node, batch system is PBS</DESC>
 	 <COMPILERS>intel,gnu,cray</COMPILERS>
 	 <MPILIBS>mpt,mpi-serial</MPILIBS>
-         <CESMSCRATCHROOT>$ENV{SCRATCH}/acme_scratch</CESMSCRATCHROOT>
+         <CESMSCRATCHROOT>$SCRATCH</CESMSCRATCHROOT>
          <RUNDIR>$CESMSCRATCHROOT/$CASE/run</RUNDIR>
          <EXEROOT>$CESMSCRATCHROOT/$CASE/bld</EXEROOT>
          <DIN_LOC_ROOT>/project/projectdirs/acme/inputdata</DIN_LOC_ROOT>
