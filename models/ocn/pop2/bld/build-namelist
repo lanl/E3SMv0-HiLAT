@@ -1179,6 +1179,17 @@ if (any(\@OCN_TRACER_MODULES, "surfdyes")) {
 }
 
 ##########################################
+# namelist group: pseudotracers_nml           #
+##########################################
+
+if (any(\@OCN_TRACER_MODULES, "pseudotracers")) {
+    add_default($nl, 'init_pseudotracers_option',    'val'=>"ccsm_${RUN_TYPE}");
+    add_default($nl, 'init_pseudotracers_init_file', 'val'=>'same_as_TS', 'noprepend'=>1);
+    add_default($nl, 'pseudotracers_tadvect_ctype',  'val'=>'base_model');
+    add_default($nl, 'use_pvdc_for_passive_tracers', 'val'=>".false.");
+}
+
+##########################################
 # namelist group: cfc_nml                #
 ##########################################
 
@@ -1865,6 +1876,9 @@ if (any(\@OCN_TRACER_MODULES, "sectdyes")) {
 if (any(\@OCN_TRACER_MODULES, "surfdyes")) {
     push @groups, qw(surfdyes_nml);
 }    
+if (any(\@OCN_TRACER_MODULES, "pseudotracers")) {
+    push @groups, qw(pseudotracers_nml);
+}    
 if (any(\@OCN_TRACER_MODULES, "cfc")) {
     push @groups, qw(cfc_nml);
 }    
@@ -2092,6 +2106,12 @@ sub check_input_files {
 
       # init_surfdyes_file could be 'same_as_TS'
       if (($var eq 'init_surfdyes_init_file') and 
+          ($pathname eq 'same_as_TS')) {
+        $is_a_file = 0;
+      }
+
+      # init_pseudotracers_file could be 'same_as_TS'
+      if (($var eq 'init_pseudotracers_init_file') and 
           ($pathname eq 'same_as_TS')) {
         $is_a_file = 0;
       }

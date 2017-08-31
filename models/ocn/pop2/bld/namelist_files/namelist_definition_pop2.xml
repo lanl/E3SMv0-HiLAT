@@ -3970,6 +3970,16 @@ Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
 </entry>
 
 <entry 
+id="pseudotracers_on"
+type="logical" 
+category="passive_tracers"
+group="passive_tracers_on_nml" >
+Flag for using pseudotracers module.
+
+Default: 'Set by CESM scripts based on $OCN_TRACER_MODULES'
+</entry>
+
+<entry 
 id="moby_on"
 type="logical" 
 category="passive_tracers"
@@ -4290,6 +4300,111 @@ category="passive_tracers"
 group="surfdyes_nml" >
 Default: 'base_model'
 </entry>
+
+<!-- - - - - - - - - - - - - - - - - - -->
+<!-- Group: pseudotracers_nml             - -->
+<!-- - - - - - - - - - - - - - - - - - -->
+
+<entry 
+id="init_pseudotracers_option"
+type="char*256"
+category="passive_tracers"
+group="pseudotracers_nml"
+valid_values="ccsm_startup,zero,ccsm_startup_spunup,restart,ccsm_continue,ccsm_branch,ccsm_hybrid,file" >
+Option for initialization of pseudotracers.
+
+Valid Values: 'ccsm_startup', 'zero', 'ccsm_startup_spunup', 'restart', 'ccsm_continue', 'ccsm_branch', 'ccsm_hybrid', 'file'
+Default: 'ccsm_$RUNTYPE'
+</entry>
+
+<entry 
+id="init_pseudotracers_init_file"
+type="char*256" 
+category="passive_tracers"
+group="pseudotracers_nml"
+input_pathname="abs" >
+Filename for initializing pseudotracers (if init_pseudotracers_option='file').
+
+Default: 'same_as_TS'
+</entry>
+
+<entry 
+id="tracer_init_ext%mod_varname&pseudotracers_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%filename&pseudotracers_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived"
+input_pathname="abs" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%file_varname&pseudotracers_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%file_fmt&pseudotracers_nml"
+type="dtype(1)%char*256" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%scale_factor&pseudotracers_nml"
+type="dtype(1)%real" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="tracer_init_ext%default_val&pseudotracers_nml"
+type="dtype(1)%real" 
+category="passive_tracers"
+group="derived" >
+Default: 
+</entry>
+
+<entry 
+id="init_pseudotracers_init_file_fmt"
+type="char*256" 
+category="passive_tracers"
+group="pseudotracers_nml"
+valid_values="bin,nc" >
+init_pseudotracers_init_file format (binary or netCDF).
+
+Valid Values: 'bin', 'nc'
+Default: 'bin'
+</entry>
+
+<entry 
+id="pseudotracers_tadvect_ctype"
+type="char*256" 
+category="passive_tracers"
+group="pseudotracers_nml" >
+Default: 'base_model'
+</entry>
+
+<entry 
+id="use_pvdc_for_passive_tracers"
+type="logical"
+category="passive_tracers"
+group="pseudotracers_nml" >
+Default: .false.
+</entry>
+
 
 <!-- - - - - - - - - - - - - - - - - - -->
 <!-- Group: cfc_nml                  - -->

@@ -35,11 +35,18 @@
    use tavg
    use time_management
    use diagnostics
+   use movie
    use vmix_const
    use vmix_rich
    use vmix_kpp
    use exit_mod
    use prognostic
+   use passive_tracers, only:pseudotracers_on,        &
+                             pseudotracers_ind_begin, &
+                             pseudotracers_ind_end,   &
+                             pvdc_for_passive_tracers
+   use global_reductions
+
 
    implicit none
    private
@@ -59,6 +66,16 @@
       VDC                 ! tracer diffusivity - public to allow
                           ! possible modification by Gent-McWilliams
                           ! horizontal mixing parameterization
+
+   integer (int_kind), dimension(nt), public, target :: &
+      VDC_pick            ! array specifying the VDC field that tracers are
+                          ! experiencing. Valid values are temperature (1),
+                          ! salinity (2), pseudo-temperature (3)
+                          ! or pseudo-salinity (4)
+
+   real (r8), dimension(:,:,:,:), allocatable, public, target :: &
+      HMXL, KPP_HBLT  ! Mixed layer depth for KPP, made public to 
+                      ! allow modification in case of pseudotracers
 
    real (r8), dimension(:,:,:,:), allocatable, public, target :: &
       VDC_GM              ! Gent-McWilliams contribution to VDC
@@ -159,14 +176,44 @@
    integer (int_kind) :: &
       tavg_VDC_T,        &! tavg id for total vertical TEMP diffusivity
       tavg_VDC_S,        &! tavg id for total vertical SALT diffusivity
+      tavg_VDC_pT,       &! tavg id for total vertical pTEMP diffusivity
+      tavg_VDC_pS,       &! tavg id for total vertical pSALT diffusivity
       tavg_VVC,          &! tavg id for total vertical momentum viscosity
       tavg_VUF,          &! tavg id for vertical flux of U momentum
       tavg_VVF,          &! tavg id for vertical flux of V momentum
       tavg_PEC,          &! tavg id for pot energy release convection
-      tavg_NCNV           ! tavg id for number of convective adjustments
+      tavg_NCNV,         &! tavg id for number of convective adjustments
+      tavg_HMXL,         &! tavg id for average mixed layer depth
+      tavg_HMXL_2,       &! tavg id for average mixed layer depth, stream #2 (allows two frequencies)
+      tavg_XMXL,         &! tavg id for maximum mixed layer depth
+      tavg_XMXL_2,       &! tavg id for maximum mixed layer depth, stream #2
+      tavg_TMXL,         &! tavg id for minimum mixed layer depth
+      tavg_HBLT,         &! tavg id for average boundary layer depth
+      tavg_XBLT,         &! tavg id for maximum boundary layer depth
+      tavg_TBLT,         &! tavg id for minimum boundary layer depth
+      tavg_pHMXL,        &! tavg id for average mixed layer depth (pseudo-tracers)
+      tavg_pHMXL_2,      &! tavg id for average mixed layer depth, stream #2 (pseudo-tracers)
+      tavg_pXMXL,        &! tavg id for maximum mixed layer depth (pseudo-tracers)
+      tavg_pXMXL_2,      &! tavg id for maximum mixed layer depth, stream #2 (pseudo-tracers)
+      tavg_pTMXL,        &! tavg id for minimum mixed layer depth (pseudo-tracers)
+      tavg_pHBLT,        &! tavg id for average boundary layer depth (pseudo-tracers)
+      tavg_pXBLT,        &! tavg id for maximum boundary layer depth (pseudo-tracers)
+      tavg_pTBLT          ! tavg id for minimum boundary layer depth (pseudo-tracers)
 
    integer (int_kind), dimension(nt) :: &
       tavg_DIA_IMPVF_TRACER  ! tavg id for diabatic implicit vertical flux of tracer
+
+!-----------------------------------------------------------------------
+!
+!  movie ids 
+!
+!-----------------------------------------------------------------------
+
+   integer (int_kind) :: &
+      movie_HMXL,          &! movie id for average mixed layer depth
+      movie_HBLT            ! movie id for average boundary layer depth
+
+   integer (int_kind) n
 
 !EOC
 !***********************************************************************
@@ -360,6 +407,13 @@
                     'Implicit vertical mixing required for KPP')
    endif
 
+   if (pseudotracers_on .and. &
+       vmix_itype /= vmix_type_kpp) then
+      call exit_POP(sigAbort, &
+                    'Pseudotracers only work with KPP')
+   endif
+
+
 !-----------------------------------------------------------------------
 !
 !  allocate VDC, VVC arrays and define options for chosen 
@@ -377,6 +431,7 @@
          allocate (VDC(nx_block,ny_block,1,1,nblocks_clinic),  &
                    VVC(nx_block,ny_block,1  ,nblocks_clinic))
       endif
+      VDC_pick(1:nt) = 1
       call init_vmix_const(VDC,VVC)
       call get_timer(timer_vmix_coeffs,'VMIX_COEFFICIENTS_CONSTANT', &
                                   nblocks_clinic, distrb_clinic%nprocs)
@@ -391,17 +446,49 @@
          allocate (VDC(nx_block,ny_block,1,1,nblocks_clinic), &
                    VVC(nx_block,ny_block,km ,nblocks_clinic))
       endif
+      VDC_pick(1:nt) = 1
       call init_vmix_rich(VDC,VVC)
       call get_timer(timer_vmix_coeffs,'VMIX_COEFFICIENTS_RICH', &
                                   nblocks_clinic, distrb_clinic%nprocs)
 
    case(vmix_type_kpp)
-      allocate (VDC(nx_block,ny_block,0:km+1,2,nblocks_clinic), &
-                VVC(nx_block,ny_block,km,      nblocks_clinic))
-      call init_vmix_kpp(VDC,VVC)
+      if (pseudotracers_on) then
+         allocate (VDC(nx_block,ny_block,0:km+1,4,nblocks_clinic), &
+                   VVC(nx_block,ny_block,km,      nblocks_clinic),  &
+                   HMXL(nx_block,ny_block,2,nblocks_clinic),    &
+                   KPP_HBLT(nx_block,ny_block,2,nblocks_clinic))
+         VDC_pick(1) = 1
+         VDC_pick(2) = 2
+         VDC_pick(3) = 3
+         VDC_pick(4) = 4
+         if (pvdc_for_passive_tracers) then
+            VDC_pick(5:nt) = 4
+         else
+            VDC_pick(5:nt) = 2
+         endif
+      else
+         allocate (VDC(nx_block,ny_block,0:km+1,2,nblocks_clinic), &
+                   VVC(nx_block,ny_block,km,      nblocks_clinic), &
+                   HMXL(nx_block,ny_block,1,nblocks_clinic),   &
+                   KPP_HBLT(nx_block,ny_block,1,nblocks_clinic))
+         VDC_pick(1) = 1
+         VDC_pick(2:nt) = 2
+      endif
+      call init_vmix_kpp(VDC,VVC,HMXL,KPP_HBLT)
       call get_timer(timer_vmix_coeffs,'VMIX_COEFFICIENTS_KPP', &
                                   nblocks_clinic, distrb_clinic%nprocs)
 
+      if (my_task == master_task) then
+         write(stdout,blank_fmt)
+         write(stdout,ndelim_fmt)
+         write(stdout,blank_fmt)
+         write(stdout,'(a70)') &
+            'VDC_pick indicates which VDC field is used for tracer vertical mixing '
+         write(stdout,'(a10,30(i1,x))') 'VDC_pick: ',VDC_pick
+         write(stdout,blank_fmt)
+         write(stdout,delim_fmt)
+      endif
+   
    end select
 
    call get_timer(timer_vdifft,'VMIX_EXPLICIT_TRACER', &
@@ -447,6 +534,19 @@
           units='cm^2/s', grid_loc='3113',                      &
           coordinates='TLONG TLAT z_w_bot time')
 
+       if (pseudotracers_on) then
+          call define_tavg_field(tavg_VDC_pT,'VDC_pT',3,             &
+             long_name='total diabatic vertical pTEMP diffusivity', &
+             units='cm^2/s', grid_loc='3113',                      &
+             coordinates='TLONG TLAT z_w_bot time')
+
+          call define_tavg_field(tavg_VDC_pS,'VDC_pS',3,             &
+             long_name='total diabatic vertical pSALT diffusivity', &
+             units='cm^2/s', grid_loc='3113',                      &
+             coordinates='TLONG TLAT z_w_bot time')
+
+       endif
+
        call define_tavg_field(tavg_VVC,'VVC',3,                 &
           long_name='total vertical momentum viscosity',        &
           units='cm^2/s', grid_loc='3113',                      &
@@ -480,6 +580,120 @@
         scale_factor=tracer_d(n)%scale_factor,                          &
         coordinates='TLONG TLAT z_w_bot time')
    enddo
+
+   call define_tavg_field(tavg_HMXL,'HMXL',2,                         &
+                          tavg_method=tavg_method_avg,                &
+                          long_name='Mixed-Layer Depth',              &
+                          units='centimeter', grid_loc='2110',        &
+                          coordinates='TLONG TLAT time')
+
+   call define_tavg_field(tavg_HMXL_2,'HMXL_2',2,                     &
+                          tavg_method=tavg_method_avg,                &
+                          long_name='Mixed-Layer Depth',              &
+                          units='centimeter', grid_loc='2110',        &
+                          coordinates='TLONG TLAT time')
+
+   call define_tavg_field(tavg_XMXL,'XMXL',2,                         &
+                          tavg_method=tavg_method_max,                &
+                          long_name='Maximum Mixed-Layer Depth',      &
+                          units='centimeter', grid_loc='2110',        &
+                          coordinates='TLONG TLAT time')
+
+   call define_tavg_field(tavg_XMXL_2,'XMXL_2',2,                     &
+                          tavg_method=tavg_method_max,                &
+                          long_name='Maximum Mixed-Layer Depth',      &
+                          units='centimeter', grid_loc='2110',        &
+                          coordinates='TLONG TLAT time')
+
+   call define_tavg_field(tavg_TMXL,'TMXL',2,                         &
+                          tavg_method=tavg_method_min,                &
+                          long_name='Minimum Mixed-Layer Depth',      &
+                          units='centimeter', grid_loc='2110',        &
+                          coordinates='TLONG TLAT time')
+
+   call define_tavg_field(tavg_HBLT,'HBLT',2,                         &
+                          tavg_method=tavg_method_avg,                &
+                          long_name='Boundary-Layer Depth',           &
+                          units='centimeter', grid_loc='2110',        &
+                          coordinates='TLONG TLAT time')
+
+   call define_tavg_field(tavg_XBLT,'XBLT',2,                     &
+                          tavg_method=tavg_method_max,                &
+                          long_name='Maximum Boundary-Layer Depth',   &
+                          units='centimeter', grid_loc='2110',        &
+                          coordinates='TLONG TLAT time')
+
+   call define_tavg_field(tavg_TBLT,'TBLT',2,                     &
+                          tavg_method=tavg_method_min,                &
+                          long_name='Minimum Boundary-Layer Depth',   &
+                          units='centimeter', grid_loc='2110',        &
+                          coordinates='TLONG TLAT time')
+
+   if (pseudotracers_on) then
+
+     call define_tavg_field(tavg_pHMXL,'pHMXL',2,                       &
+                            tavg_method=tavg_method_avg,                &
+                            long_name='Pseudo Mixed-Layer Depth',       &
+                            units='centimeter', grid_loc='2110',        &
+                            coordinates='TLONG TLAT time')
+
+     call define_tavg_field(tavg_pHMXL_2,'pHMXL_2',2,                   &
+                            tavg_method=tavg_method_avg,                &
+                            long_name='Pseudo Mixed-Layer Depth',       &
+                            units='centimeter', grid_loc='2110',        &
+                            coordinates='TLONG TLAT time')
+
+     call define_tavg_field(tavg_pXMXL,'pXMXL',2,                       &
+                            tavg_method=tavg_method_max,                &
+                            long_name='Pseudo Maximum Mixed-Layer Depth', &
+                            units='centimeter', grid_loc='2110',        &
+                            coordinates='TLONG TLAT time')
+
+     call define_tavg_field(tavg_pXMXL_2,'pXMXL_2',2,                   &
+                            tavg_method=tavg_method_max,                &
+                            long_name='Pseudo Maximum Mixed-Layer Depth', &
+                            units='centimeter', grid_loc='2110',        &
+                            coordinates='TLONG TLAT time')
+
+     call define_tavg_field(tavg_pTMXL,'pTMXL',2,                       &
+                            tavg_method=tavg_method_min,                &
+                            long_name='Pseudo Minimum Mixed-Layer Depth', &
+                            units='centimeter', grid_loc='2110',        &
+                            coordinates='TLONG TLAT time')
+
+     call define_tavg_field(tavg_pHBLT,'pHBLT',2,                       &
+                            tavg_method=tavg_method_avg,                &
+                            long_name='Pseudo Boundary-Layer Depth',    &
+                            units='centimeter', grid_loc='2110',        &
+                            coordinates='TLONG TLAT time')
+
+     call define_tavg_field(tavg_pXBLT,'pXBLT',2,                       &
+                            tavg_method=tavg_method_max,                &
+                            long_name='Pseudo Maximum Boundary-Layer Depth', &
+                            units='centimeter', grid_loc='2110',        &
+                            coordinates='TLONG TLAT time')
+
+     call define_tavg_field(tavg_pTBLT,'pTBLT',2,                       &
+                            tavg_method=tavg_method_min,                &
+                            long_name='Pseudo Minimum Boundary-Layer Depth', &
+                            units='centimeter', grid_loc='2110',        &
+                            coordinates='TLONG TLAT time')
+
+   endif
+
+!-----------------------------------------------------------------------
+!
+!  define movie diagnostic fields
+!
+!-----------------------------------------------------------------------
+
+   call define_movie_field(movie_HMXL,'HMXL',0,                       &
+                          long_name='Mixed-Layer Depth',              &
+                          units='cm', grid_loc='2110')
+
+   call define_movie_field(movie_HBLT,'HBLT',0,                       &
+                          long_name='Boundary-Layer Depth',           &
+                          units='cm', grid_loc='2110')
 
 !-----------------------------------------------------------------------
 !EOC
@@ -530,7 +744,7 @@
    real (r8), dimension(nx_block,ny_block,2), intent(in), optional :: &
       SMF,                  &! surface momentum forcing at U points
       SMFT                   ! surface momentum forcing at T points
-                            ! *** must pass either one or the other
+                             ! *** must pass either one or the other
 
    type (block), intent(in) :: &
       this_block             ! block info for current block
@@ -545,7 +759,14 @@
 
    integer (int_kind) :: &
       bid,               &! local block address
-      kk                  ! vertical level index
+      kk,                &! vertical level index
+      ind                 ! index
+
+   real (r8), dimension(nx_block,ny_block) :: &
+      WORK                ! dummy array
+
+   real (r8), dimension(:,:,:,:), allocatable :: &
+      WORK_GHAT           ! dummy array
 
 !-----------------------------------------------------------------------
 !
@@ -595,23 +816,98 @@
             call exit_POP(sigAbort, &
                     'vmix_coeffs: must supply either SMF,SMFT')
 
+         if (pseudotracers_on) then
+            allocate(WORK_GHAT(nx_block,ny_block,km,2))
+         else
+            allocate(WORK_GHAT(nx_block,ny_block,km,1))
+         endif
+
          if (present(SMFT)) then
-            call vmix_coeffs_kpp(VDC(:,:,:,:,bid),           &
+
+            if (pseudotracers_on) then
+               call vmix_coeffs_kpp(                                            & 
+                  VDC(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end,bid), &
+                  VVC(:,:,:,  bid),                                             &
+                  HMXL(:,:,2,bid),                                              &
+                  KPP_HBLT(:,:,2,bid),                                          &
+                  TMIX(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end),    &
+                  UMIX,VMIX,UCUR,VCUR,RHOMIX,                                   &
+                  STF(:,:,pseudotracers_ind_begin:pseudotracers_ind_end),       &
+                  SHF_QSW,                                                      &
+                  this_block,                                                   &
+                  convect_diff, convect_visc,                                   &
+                  WORK_GHAT(:,:,:,2),                                      &
+                  SMFT=SMFT)
+            endif
+            call vmix_coeffs_kpp(VDC(:,:,:,1:2,bid),         &
                                  VVC(:,:,:,  bid),           &
-                                 TMIX,UMIX,VMIX,UCUR,VCUR,RHOMIX, &
-                                 STF,SHF_QSW,                &
+                                 HMXL(:,:,1,bid),        &
+                                 KPP_HBLT(:,:,1,bid),        &
+                                 TMIX(:,:,:,1:2),            &
+                                 UMIX,VMIX,UCUR,VCUR,RHOMIX, &
+                                 STF(:,:,1:2),SHF_QSW,       &
                                  this_block,                 &
                                  convect_diff, convect_visc, &
+                                 WORK_GHAT(:,:,:,1),    &
                                  SMFT=SMFT)
          else
-            call vmix_coeffs_kpp(VDC(:,:,:,:,bid),           &
+
+            if (pseudotracers_on) then
+               call vmix_coeffs_kpp(                                            & 
+                  VDC(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end,bid), &
+                  VVC(:,:,:,  bid),                                             &
+                  HMXL(:,:,2,bid),                                              &
+                  KPP_HBLT(:,:,2,bid),                                          &
+                  TMIX(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end),    &
+                  UMIX,VMIX,UCUR,VCUR,RHOMIX,                                   &
+                  STF(:,:,pseudotracers_ind_begin:pseudotracers_ind_end),       &
+                  SHF_QSW,                                                      &
+                  this_block,                                                   &
+                  convect_diff, convect_visc,                                   &
+                  WORK_GHAT(:,:,:,2),                                      &
+                  SMFT=SMF)
+            endif
+            call vmix_coeffs_kpp(VDC(:,:,:,1:2,bid),         &
                                  VVC(:,:,:,  bid),           &
-                                 TMIX,UMIX,VMIX,UCUR,VCUR,RHOMIX, &
-                                 STF,SHF_QSW,                &
+                                 HMXL(:,:,1,bid),        &
+                                 KPP_HBLT(:,:,1,bid),        &
+                                 TMIX(:,:,:,1:2),            &
+                                 UMIX,VMIX,UCUR,VCUR,RHOMIX, &
+                                 STF(:,:,1:2),SHF_QSW,       &
                                  this_block,                 &
                                  convect_diff, convect_visc, &
-                                 SMF=SMF)
+                                 WORK_GHAT(:,:,:,1),        &
+                                 SMFT=SMF)
          endif
+
+!-----------------------------------------------------------------------
+!
+!  Calculate KPP_SRC. Moved here from vmix_coeffs_kpp to assure bit-for-bit
+!  behavior when pseudo-tracers are activated. VDC_pick determines which VDC
+!  (and GHAT) fields are being used for passive tracers. 
+!
+!-----------------------------------------------------------------------
+
+         do n=1,nt
+            ind = ceiling(0.5*VDC_pick(n))
+            KPP_SRC(:,:,1,n,bid) = STF(:,:,n)/dz(1)           &
+                                   *(-VDC(:,:,1,VDC_pick(n),bid)*WORK_GHAT(:,:,1,ind))
+            if (partial_bottom_cells) then
+               do kk=2,km
+                  KPP_SRC(:,:,kk,n,bid) = STF(:,:,n)/DZT(:,:,kk,bid)         &
+                                       *( VDC(:,:,kk-1,VDC_pick(n),bid)*WORK_GHAT(:,:,kk-1,ind)   &
+                                         -VDC(:,:,kk  ,VDC_pick(n),bid)*WORK_GHAT(:,:,kk  ,ind))
+               enddo
+            else
+               do kk=2,km
+                  KPP_SRC(:,:,kk,n,bid) = STF(:,:,n)/dz(kk)                  &
+                                       *( VDC(:,:,kk-1,VDC_pick(n),bid)*WORK_GHAT(:,:,kk-1,ind)   &
+                                         -VDC(:,:,kk  ,VDC_pick(n),bid)*WORK_GHAT(:,:,kk  ,ind))
+               enddo
+            endif
+         enddo
+
+         deallocate(WORK_GHAT)
 
          if (accumulate_tavg_now(tavg_VDC_T) ) then
             do kk=1,km
@@ -629,12 +925,109 @@
             end do
          endif
 
+         if (pseudotracers_on) then
+            if (accumulate_tavg_now(tavg_VDC_pT) ) then
+                 do kk=1,km
+                 ! kk index is no longer shifted because z_w_bot is now an output coordinate
+                 ! VDC is at cell bottom
+                 call accumulate_tavg_field(VDC(:,:,kk,3,bid),tavg_VDC_pT,bid,kk)
+               end do
+            endif
+            if (accumulate_tavg_now(tavg_VDC_pS) ) then
+                 do kk=1,km
+                 ! kk index is no longer shifted because z_w_bot is now an output coordinate
+                 ! VDC is at cell bottom
+                 call accumulate_tavg_field(VDC(:,:,kk,4,bid),tavg_VDC_pS,bid,kk)
+               end do
+            endif
+         endif
+
          if (accumulate_tavg_now(tavg_VVC) ) then
             do kk=1,km
               ! kk index is no longer shifted because z_w_bot is now an output coordinate
               ! VVC is at cell bottom
               call accumulate_tavg_field(VVC(:,:,kk,bid),tavg_VVC,bid,kk)
             end do
+         endif
+
+         if (accumulate_tavg_now(tavg_HMXL) ) then
+            call accumulate_tavg_field(HMXL(:,:,1,bid), tavg_HMXL,   bid, 1)
+         endif
+
+         if (accumulate_tavg_now(tavg_HMXL_2) ) then
+            call accumulate_tavg_field(HMXL(:,:,1,bid), tavg_HMXL_2, bid, 1)
+         endif
+
+         if (accumulate_tavg_now(tavg_XMXL) ) then
+            call accumulate_tavg_field(HMXL(:,:,1,bid), tavg_XMXL,   bid, 1)
+         endif
+
+         if (accumulate_tavg_now(tavg_XMXL_2) ) then
+            call accumulate_tavg_field(HMXL(:,:,1,bid), tavg_XMXL_2, bid, 1)
+         endif
+
+         if (accumulate_tavg_now(tavg_TMXL) ) then
+            call accumulate_tavg_field(HMXL(:,:,1,bid), tavg_TMXL, bid, 1)
+         endif
+
+         if (accumulate_tavg_now(tavg_HBLT) ) then
+            call accumulate_tavg_field(KPP_HBLT(:,:,1,bid), tavg_HBLT, bid, 1)
+         endif
+
+         if (accumulate_tavg_now(tavg_XBLT) ) then
+            call accumulate_tavg_field(KPP_HBLT(:,:,1,bid), tavg_XBLT, bid, 1)
+         endif
+
+         if (accumulate_tavg_now(tavg_TBLT) ) then
+            call accumulate_tavg_field(KPP_HBLT(:,:,1,bid), tavg_TBLT, bid, 1)
+         endif
+
+         if (pseudotracers_on) then
+            if (accumulate_tavg_now(tavg_pHMXL) ) then
+               call accumulate_tavg_field(HMXL(:,:,2,bid), tavg_pHMXL,   bid, 1)
+            endif
+
+            if (accumulate_tavg_now(tavg_pHMXL_2) ) then
+               call accumulate_tavg_field(HMXL(:,:,2,bid), tavg_pHMXL_2, bid, 1)
+            endif
+
+            if (accumulate_tavg_now(tavg_pXMXL) ) then
+               call accumulate_tavg_field(HMXL(:,:,2,bid), tavg_pXMXL,   bid, 1)
+            endif
+
+            if (accumulate_tavg_now(tavg_pXMXL_2) ) then
+               call accumulate_tavg_field(HMXL(:,:,2,bid), tavg_pXMXL_2, bid, 1)
+            endif
+
+            if (accumulate_tavg_now(tavg_pTMXL) ) then
+               call accumulate_tavg_field(HMXL(:,:,2,bid), tavg_pTMXL, bid, 1)
+            endif
+
+            if (accumulate_tavg_now(tavg_pHBLT) ) then
+               call accumulate_tavg_field(KPP_HBLT(:,:,2,bid), tavg_pHBLT, bid, 1)
+            endif
+
+            if (accumulate_tavg_now(tavg_pXBLT) ) then
+               call accumulate_tavg_field(KPP_HBLT(:,:,2,bid), tavg_pXBLT, bid, 1)
+            endif
+
+            if (accumulate_tavg_now(tavg_pTBLT) ) then
+               call accumulate_tavg_field(KPP_HBLT(:,:,2,bid), tavg_pTBLT, bid, 1)
+            endif
+         end if
+
+!-----------------------------------------------------------------------
+!
+!     accumulate movie diagnostics if requested
+!
+!-----------------------------------------------------------------------
+
+         if (movie_requested(movie_HMXL) ) then
+            call update_movie_field(HMXL(:,:,1,bid), movie_HMXL, bid, 1)
+         endif
+
+         if (movie_requested(movie_HBLT) ) then
+            call update_movie_field(KPP_HBLT(:,:,1,bid), movie_HBLT, bid, 1)
          endif
 
       endif
@@ -737,13 +1130,13 @@
 !-----------------------------------------------------------------------
 !
 !  start loop over tracers 
-!  set mt2 to be either 1 (if VDC same for all tracers) or n
-!    if coefficients are different for tracers
+!  Use VDC_pick to determine which mixing field to use
 !
 !-----------------------------------------------------------------------
 
    do n = 1,nt
-      mt2 = min(n,size(VDC,DIM=4))
+
+      mt2 = VDC_pick(n)
 
 !-----------------------------------------------------------------------
 !
@@ -1098,7 +1491,7 @@
 
    do n = nfirst,nlast
 
-      mt2 = min(n,size(VDC,DIM=4))
+      mt2 = VDC_pick(n)
 
 !CDIR COLLAPSE
       do j=jb,je
@@ -1251,7 +1644,7 @@
 !-----------------------------------------------------------------------
 
    do n = 1,nt
-      mt2 = min(n,size(VDC,DIM=4))
+      mt2 = VDC_pick(n)
       if (accumulate_tavg_now(tavg_DIA_IMPVF_TRACER(n))) then
          do k=1,km-1
             if (allocated(VDC_GM)) then
@@ -1387,7 +1780,7 @@
 
    do n = nfirst,nlast
 
-      mt2 = min(n,size(VDC,DIM=4))
+      mt2 = VDC_pick(n)
 
       !*** perform tridiagonal solve in the vertical for every
       !*** horizontal grid point

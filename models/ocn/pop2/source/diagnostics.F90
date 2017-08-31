@@ -34,10 +34,10 @@
                    accumulate_tavg_field, accumulate_tavg_now, &
                    tavg_method_avg, tavg_method_max, tavg_method_min
    use movie, only: define_movie_field, movie_requested, update_movie_field
-   use vmix_kpp, only: HMXL, KPP_HBLT
    use registry
    use io_tools
    use gather_scatter
+   use passive_tracers, only: pseudotracers_on
 
    implicit none
    private
@@ -224,32 +224,6 @@
 
    type (transport), dimension(:), allocatable :: &
       transports          ! transport info for all requested transports
-
-!-----------------------------------------------------------------------
-!
-!  ids for tavg diagnostics computed from diagnostic
-!
-!-----------------------------------------------------------------------
-
-   integer (int_kind) :: &
-      tavg_HMXL,         &! tavg id for average mixed layer depth
-      tavg_HMXL_2,       &! tavg id for average mixed layer depth, stream #2 (allows two frequencies)
-      tavg_XMXL,         &! tavg id for maximum mixed layer depth
-      tavg_XMXL_2,       &! tavg id for maximum mixed layer depth, stream #2
-      tavg_TMXL,         &! tavg id for minimum mixed layer depth
-      tavg_HBLT,         &! tavg id for average boundary layer depth
-      tavg_XBLT,         &! tavg id for maximum boundary layer depth
-      tavg_TBLT           ! tavg id for minimum boundary layer depth
-
-!-----------------------------------------------------------------------
-!
-!  movie ids 
-!
-!-----------------------------------------------------------------------
-
-   integer (int_kind) :: &
-      movie_HMXL,          &! movie id for average mixed layer depth
-      movie_HBLT            ! movie id for average boundary layer depth
 
 !-----------------------------------------------------------------------
 !
@@ -836,74 +810,6 @@
 
 !-----------------------------------------------------------------------
 !
-!  define tavg diagnostic fields
-!
-!-----------------------------------------------------------------------
-
-   call define_tavg_field(tavg_HMXL,'HMXL',2,                         &
-                          tavg_method=tavg_method_avg,                &
-                          long_name='Mixed-Layer Depth',              &
-                          units='centimeter', grid_loc='2110',        &
-                          coordinates='TLONG TLAT time')
-
-   call define_tavg_field(tavg_HMXL_2,'HMXL_2',2,                     &
-                          tavg_method=tavg_method_avg,                &
-                          long_name='Mixed-Layer Depth',              &
-                          units='centimeter', grid_loc='2110',        &
-                          coordinates='TLONG TLAT time')
-
-   call define_tavg_field(tavg_XMXL,'XMXL',2,                         &
-                          tavg_method=tavg_method_max,                &
-                          long_name='Maximum Mixed-Layer Depth',      &
-                          units='centimeter', grid_loc='2110',        &
-                          coordinates='TLONG TLAT time')
-
-   call define_tavg_field(tavg_XMXL_2,'XMXL_2',2,                     &
-                          tavg_method=tavg_method_max,                &
-                          long_name='Maximum Mixed-Layer Depth',      &
-                          units='centimeter', grid_loc='2110',        &
-                          coordinates='TLONG TLAT time')
-
-   call define_tavg_field(tavg_TMXL,'TMXL',2,                         &
-                          tavg_method=tavg_method_min,                &
-                          long_name='Minimum Mixed-Layer Depth',      &
-                          units='centimeter', grid_loc='2110',        &
-                          coordinates='TLONG TLAT time')
-
-   call define_tavg_field(tavg_HBLT,'HBLT',2,                         &
-                          tavg_method=tavg_method_avg,                &
-                          long_name='Boundary-Layer Depth',           &
-                          units='centimeter', grid_loc='2110',        &
-                          coordinates='TLONG TLAT time')
-
-   call define_tavg_field(tavg_XBLT,'XBLT',2,                     &
-                          tavg_method=tavg_method_max,                &
-                          long_name='Maximum Boundary-Layer Depth',   &
-                          units='centimeter', grid_loc='2110',        &
-                          coordinates='TLONG TLAT time')
-
-   call define_tavg_field(tavg_TBLT,'TBLT',2,                     &
-                          tavg_method=tavg_method_min,                &
-                          long_name='Minimum Boundary-Layer Depth',   &
-                          units='centimeter', grid_loc='2110',        &
-                          coordinates='TLONG TLAT time')
-
-!-----------------------------------------------------------------------
-!
-!  define movie diagnostic fields
-!
-!-----------------------------------------------------------------------
-
-   call define_movie_field(movie_HMXL,'HMXL',0,                       &
-                          long_name='Mixed-Layer Depth',              &
-                          units='cm', grid_loc='2110')
-
-   call define_movie_field(movie_HBLT,'HBLT',0,                       &
-                          long_name='Boundary-Layer Depth',           &
-                          units='cm', grid_loc='2110')
-
-!-----------------------------------------------------------------------
-!
 !  find global i,j indices close to specified lat,lon points
 !
 !-----------------------------------------------------------------------
@@ -1373,79 +1279,6 @@
    endif ! ldiag_global
 
 !-----------------------------------------------------------------------
-        if (allocated(HMXL)) then
-          !$OMP PARALLEL DO PRIVATE(iblock)
-          do iblock=1,nblocks_clinic
-            call accumulate_tavg_field(HMXL(:,:,iblock), tavg_HMXL,   iblock, 1)
-          end do
-          !$OMP END PARALLEL DO
-
-          !$OMP PARALLEL DO PRIVATE(iblock)
-          do iblock=1,nblocks_clinic
-            call accumulate_tavg_field(HMXL(:,:,iblock), tavg_HMXL_2, iblock, 1)
-          end do
-          !$OMP END PARALLEL DO
-
-          !$OMP PARALLEL DO PRIVATE(iblock)
-          do iblock=1,nblocks_clinic
-            call accumulate_tavg_field(HMXL(:,:,iblock), tavg_XMXL,   iblock, 1)
-          end do
-          !$OMP END PARALLEL DO
-
-          !$OMP PARALLEL DO PRIVATE(iblock)
-          do iblock=1,nblocks_clinic
-            call accumulate_tavg_field(HMXL(:,:,iblock), tavg_XMXL_2, iblock, 1)
-          end do
-          !$OMP END PARALLEL DO
-
-          !$OMP PARALLEL DO PRIVATE(iblock)
-          do iblock=1,nblocks_clinic
-            call accumulate_tavg_field(HMXL(:,:,iblock), tavg_TMXL, iblock, 1)
-          end do
-          !$OMP END PARALLEL DO
-        end if
-
-        if (allocated(KPP_HBLT)) then
-          !$OMP PARALLEL DO PRIVATE(iblock)
-          do iblock=1,nblocks_clinic
-            call accumulate_tavg_field(KPP_HBLT(:,:,iblock), tavg_HBLT, iblock, 1)
-          end do
-          !$OMP END PARALLEL DO
-
-          !$OMP PARALLEL DO PRIVATE(iblock)
-          do iblock=1,nblocks_clinic
-            call accumulate_tavg_field(KPP_HBLT(:,:,iblock), tavg_XBLT, iblock, 1)
-          end do
-          !$OMP END PARALLEL DO
-
-          !$OMP PARALLEL DO PRIVATE(iblock)
-          do iblock=1,nblocks_clinic
-            call accumulate_tavg_field(KPP_HBLT(:,:,iblock), tavg_TBLT, iblock, 1)
-          end do
-          !$OMP END PARALLEL DO
-        end if
-
-!-----------------------------------------------------------------------
-!
-!     accumulate movie diagnostics if requested
-!
-!-----------------------------------------------------------------------
-
-      if (movie_requested(movie_HMXL) ) then
-        !$OMP PARALLEL DO
-        do iblock=1,nblocks_clinic
-          call update_movie_field(HMXL(:,:,iblock), movie_HMXL, iblock, 1)
-        end do
-        !$OMP END PARALLEL DO
-      endif
-
-      if (movie_requested(movie_HBLT) ) then
-        !$OMP PARALLEL DO
-        do iblock=1,nblocks_clinic
-          call update_movie_field(KPP_HBLT(:,:,iblock), movie_HBLT, iblock, 1)
-        end do
-        !$OMP END PARALLEL DO
-      endif
 
 !EOC
 

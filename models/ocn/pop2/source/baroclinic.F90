@@ -66,6 +66,8 @@
    use exit_mod, only: sigAbort, exit_pop, flushm
    use overflows
    use overflow_type
+   use passive_tracers, only:pseudotracers_on, pseudotracers_ind_begin
+
 
    implicit none
    private
@@ -497,6 +499,7 @@
    integer (int_kind) ::  &
       i,j,                &! dummy indices for horizontal directions
       n,k,                &! dummy indices for vertical level, tracer
+      nTS,                &! number of dynamic tracers (4 if pseudotracers_on)
       iblock,             &! counter for block loops
       kp1,km1              ! level index for k+1, k-1 levels
 
@@ -510,6 +513,15 @@
       factor
    type (block) ::        &
       this_block           ! block information for current block
+
+!-----------------------------------------------------------------------
+!
+!  Set number of dynamic tracers (including pseudotracers)
+!
+!-----------------------------------------------------------------------
+
+   nTS = 2
+   if (pseudotracers_on) nTS = 4
 
 !-----------------------------------------------------------------------
 !
@@ -546,7 +558,6 @@
 !
 !-----------------------------------------------------------------------
 
-
    call t_startf("1_Block_Loop")
    !$OMP PARALLEL DO PRIVATE(iblock,this_block,k,kp1,km1,WTK,WORK1,factor)
 
@@ -565,6 +576,10 @@
 !        compute vertical viscosity and diffusion coeffs
 !
 !-----------------------------------------------------------------------
+
+!       write(stdout,*) 'Max of T and pT  before vmix', &
+!                       maxval(abs(TRACER (:,:,:,1,mixtime,iblock))), &
+!                       maxval(abs(TRACER (:,:,:,3,mixtime,iblock)))
 
 
          if (lsmft_avail) then
@@ -594,6 +609,10 @@
 !        calculate level k tracers at new time
 !
 !-----------------------------------------------------------------------
+
+!       write(stdout,*) 'Max of T and pT  before tracer_update', &
+!                       maxval(abs(TRACER (:,:,:,1,mixtime,iblock))), &
+!                       maxval(abs(TRACER (:,:,:,3,mixtime,iblock)))
 
 
          call tracer_update(k, WTK,                             &
@@ -832,7 +851,7 @@
             call impvmixt(TRACER(:,:,:,:,newtime,iblock), &
                           TRACER(:,:,:,:,oldtime,iblock), &
                           PSURF (:,:,curtime,iblock),     &
-                          1, 2, this_block)
+                          1, nTS, this_block)
 
          endif
       endif
@@ -1170,6 +1189,7 @@
    integer (int_kind) ::  & 
       k,                  &! vertical level index
       n,                  &! tracer index
+      nTS,                &! number of dynamic tracers (4 if pseudotracers_on)
       iblock               ! block index
 
    real (r8), dimension(nx_block,ny_block,nt) :: &
@@ -1191,6 +1211,10 @@
 !  do everything for each sub block
 !
 !-----------------------------------------------------------------------
+
+   nTS = 2
+   if (pseudotracers_on) nTS = 4
+   print*, 'nTS: ',nTS
 
    !$OMP PARALLEL DO PRIVATE(iblock,this_block,n,RHS1)
 
@@ -1214,7 +1238,7 @@
 
             if (lpressure_avg .and. leapfrogts) then
         
-               do n = 1,2   ! corrector for T,S only
+               do n = 1,nTS ! corrector for T,S only
                   where (KMT(:,:,iblock) > 0)  ! corrector RHS at k=1
                      RHS1(:,:,n)=((c2*TRACER(:,:,1,n,curtime,iblock) - &
                                       TRACER(:,:,1,n,oldtime,iblock))  &
@@ -1232,9 +1256,9 @@
                !*** T,S update on corrector step
                call impvmixt_correct(TRACER(:,:,:,:,newtime,iblock), &
                                      PSURF (:,:,    newtime,iblock), &
-                                     RHS1, 1, 2, this_block)
+                                     RHS1, 1, nTS, this_block)
 
-               do n = 3,nt
+               do n = nTS+1,nt
                   !*** surface RHS for passive tracers with press avg
                   where (KMT(:,:,iblock) > 0)
                      TRACER(:,:,1,n,newtime,iblock) =               &
@@ -1252,7 +1276,7 @@
                call impvmixt(TRACER(:,:,:,:,newtime,iblock), &
                              TRACER(:,:,:,:,oldtime,iblock), &
                              PSURF (:,:,    newtime,iblock), &
-                             3, nt, this_block)
+                             nTS+1, nt, this_block)
 
             !*** if implicit vertical mixing but no pressure averaging
             !*** update all tracers with tridiagonal solves
@@ -1352,6 +1376,10 @@
       if (reset_to_freezing .and. .not. liceform) then
          TRACER(:,:,1,1,newtime,iblock) = &
             max(TRACER(:,:,1,1,newtime,iblock),-c2)
+         if (pseudotracers_on) then
+           TRACER(:,:,1,pseudotracers_ind_begin,newtime,iblock) = &
+              max(TRACER(:,:,1,pseudotracers_ind_begin,newtime,iblock),-c2)
+         endif
       endif
 
 !-----------------------------------------------------------------------
@@ -1717,6 +1745,7 @@
 
    integer (int_kind) :: &
       n,                 &! dummy tracer index
+      nTS,               &! number of dynamic tracers (4 if pseudotracers on)
       bid                 ! local_block id
 
    real (r8), dimension(nx_block,ny_block,nt) :: &
@@ -1725,6 +1754,15 @@
 
    real (r8), dimension(nx_block,ny_block) :: &
       WORKSW
+ 
+!-----------------------------------------------------------------------
+!
+!  Set number of dynamic tracers (including pseudotracers)
+!
+!-----------------------------------------------------------------------
+
+   nTS = 2
+   if (pseudotracers_on) nTS = 4
 
 !-----------------------------------------------------------------------
 !
@@ -1948,14 +1986,14 @@
       if (sfc_layer_type == sfc_layer_varthick .and. k == 1 .and. &
           lpressure_avg .and. leapfrogts) then
 
-         do n = 1,2
+         do n = 1,nTS
             where (KMT(:,:,bid) > 0)  ! RHS for predictor
                TNEW(:,:,1,n) = c2dtt(1)*FT(:,:,n) - c2*TCUR(:,:,1,n)* &
                                (PCUR - POLD)/(grav*dz(1))
             endwhere
          enddo
 
-         do n = 3,nt
+         do n = nTS+1,nt
 
             TNEW(:,:,k,n) = merge(c2dtt(k)*FT(:,:,n), &
                                   c0, k <= KMT(:,:,bid))

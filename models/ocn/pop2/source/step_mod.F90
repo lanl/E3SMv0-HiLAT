@@ -249,6 +249,12 @@
 !-----------------------------------------------------------------------
 
 
+!       write(stdout,*) 'Max of T and pT  before mix_pass', &
+!                       maxval(abs(TRACER (:,:,:,1,curtime,iblock))), &
+!                       maxval(abs(TRACER (:,:,:,3,curtime,iblock)))
+
+
+
       if (mix_pass == 1) then
 
          !$OMP PARALLEL DO PRIVATE(iblock)

@@ -140,6 +140,7 @@ foreach module ( `echo $OCN_TRACER_MODULES` )
    if ($module =~ "tracegas" ) @ NT = $NT + 2
    if ($module =~ "sectdyes" ) @ NT = $NT + 6
    if ($module =~ "surfdyes" ) @ NT = $NT + 4
+   if ($module =~ "pseudotracers" ) @ NT = $NT + 2
    if ($module =~ "IRF"    ) then
       set file = extract_ocn_tracer_module_opt.csh
       if (-f ${my_path}/${file}) then
