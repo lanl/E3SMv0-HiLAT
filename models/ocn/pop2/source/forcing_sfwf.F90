@@ -65,6 +65,9 @@
       lsend_precip_fact        ! if T,send precip_fact to cpl for use in fw balance
                                ! (partially-coupled option)
 
+   logical (log_kind), public :: &
+      licebergs                ! if T, add meltwater from icebergs
+                               ! (partially-coupled option)
 
 !EOP
 !BOC
@@ -139,9 +142,12 @@
        sfwf_comp_cpl,             &
        sfwf_data_flxio,           &
        sfwf_comp_flxio,           &
+       sfwf_data_bergs,           &
+       sfwf_comp_bergs,           &
        tfw_num_comps,             &
        tfw_comp_cpl,              & 
-       tfw_comp_flxio       
+       tfw_comp_flxio,            &
+       tfw_comp_bergs       
  
    real (r8), parameter :: &
       precip_mean = 3.4e-5_r8
@@ -219,7 +225,8 @@
    type (io_field_desc) :: &
       io_sss,         &! io field descriptor for input sss field
       io_precip,      &! io field descriptor for input precip field
-      io_flxio         ! io field descriptor for input io_flxio field
+      io_flxio,       &! io field descriptor for input io_flxio field
+      io_bergs         ! io field descriptor for input io_bergs field
 
    type (io_dim) :: &
       i_dim, j_dim, &! dimension descriptors for horiz dimensions
@@ -232,7 +239,7 @@
                                sfwf_data_renorm,    sfwf_formulation, &
                                ladjust_precip,      sfwf_weak_restore,&
                                sfwf_strong_restore, lfw_as_salt_flx,  &
-                               sfwf_strong_restore_ms,                &
+                               sfwf_strong_restore_ms,licebergs,      &
                                lsend_precip_fact,   lms_balance
 
 !-----------------------------------------------------------------------
@@ -259,6 +266,7 @@
    sfwf_strong_restore_ms = 0.6648_r8
    sfwf_strong_restore    = 0.6648_r8
    lfw_as_salt_flx        = .false.
+   licebergs              = .false.
    lsend_precip_fact      = .false.
 
    if (my_task == master_task) then
@@ -295,6 +303,7 @@
    call broadcast_scalar(sfwf_strong_restore,    master_task)
    call broadcast_scalar(sfwf_strong_restore_ms, master_task)
    call broadcast_scalar(lfw_as_salt_flx,        master_task)
+   call broadcast_scalar(licebergs,              master_task)
    call broadcast_scalar(lsend_precip_fact,      master_task)
    call broadcast_scalar(lms_balance,            master_task)
 
@@ -346,9 +355,10 @@
 
 
    case ('partially-coupled')
-      sfwf_data_num_fields = 2 
+      sfwf_data_num_fields = 3 
       sfwf_data_sss   = 1
       sfwf_data_flxio = 2
+      sfwf_data_bergs = 3
 
       allocate(sfwf_data_names(sfwf_data_num_fields), &
                sfwf_bndy_loc  (sfwf_data_num_fields), &
@@ -359,17 +369,22 @@
       sfwf_data_names(sfwf_data_flxio) = 'FLXIO'
       sfwf_bndy_loc  (sfwf_data_flxio) = field_loc_center
       sfwf_bndy_type (sfwf_data_flxio) = field_type_scalar
+      sfwf_data_names(sfwf_data_bergs) = 'BERGS'
+      sfwf_bndy_loc  (sfwf_data_bergs) = field_loc_center
+      sfwf_bndy_type (sfwf_data_bergs) = field_type_scalar
 
  
-      sfwf_num_comps  = 4 
+      sfwf_num_comps  = 5 
       sfwf_comp_wrest = 1
       sfwf_comp_srest = 2
       sfwf_comp_cpl   = 3
       sfwf_comp_flxio = 4
+      sfwf_comp_bergs = 5
 
-      tfw_num_comps  = 2
+      tfw_num_comps  = 3
       tfw_comp_cpl   = 1
       tfw_comp_flxio = 2
+      tfw_comp_bergs = 2
 
    case default
       call exit_POP(sigAbort, &
@@ -568,12 +583,21 @@
                        field_loc = sfwf_bndy_loc(sfwf_data_flxio),   &
                        field_type = sfwf_bndy_type(sfwf_data_flxio), &
                        d2d_array=SFWF_DATA(:,:,:,sfwf_data_flxio,1))
+         io_bergs = construct_io_field( &
+                       trim(sfwf_data_names(sfwf_data_bergs)),       &
+                       dim1=i_dim, dim2=j_dim,                                 &
+                       field_loc = sfwf_bndy_loc(sfwf_data_bergs),   &
+                       field_type = sfwf_bndy_type(sfwf_data_bergs), &
+                       d2d_array=SFWF_DATA(:,:,:,sfwf_data_bergs,1))
          call data_set(forcing_file,'define',io_sss)
          call data_set(forcing_file,'define',io_flxio)
+         call data_set(forcing_file,'define',io_bergs)
          call data_set(forcing_file,'read'  ,io_sss)
          call data_set(forcing_file,'read'  ,io_flxio)
+         call data_set(forcing_file,'read'  ,io_bergs)
          call destroy_io_field(io_sss)
          call destroy_io_field(io_flxio)
+         call destroy_io_field(io_bergs)
 
          allocate( SFWF_COMP(nx_block,ny_block,max_blocks_clinic, &
                              sfwf_num_comps))
@@ -682,12 +706,21 @@
                        field_loc = sfwf_bndy_loc(sfwf_data_flxio ),   &
                        field_type = sfwf_bndy_type(sfwf_data_flxio ), &
                        d3d_array=TEMP_DATA(:,:,:,:,sfwf_data_flxio ))
+         io_bergs  = construct_io_field( &
+                       trim(sfwf_data_names(sfwf_data_bergs )),       &
+                       dim1=i_dim, dim2=j_dim, dim3=month_dim,                  &
+                       field_loc = sfwf_bndy_loc(sfwf_data_bergs ),   &
+                       field_type = sfwf_bndy_type(sfwf_data_bergs ), &
+                       d3d_array=TEMP_DATA(:,:,:,:,sfwf_data_bergs ))
          call data_set(forcing_file,'define',io_sss)
          call data_set(forcing_file,'define',io_flxio )
+         call data_set(forcing_file,'define',io_bergs )
          call data_set(forcing_file,'read'  ,io_sss)
          call data_set(forcing_file,'read'  ,io_flxio )
+         call data_set(forcing_file,'read'  ,io_bergs )
          call destroy_io_field(io_sss)
          call destroy_io_field(io_flxio )
+         call destroy_io_field(io_bergs )
 
          allocate(SFWF_COMP(nx_block,ny_block,max_blocks_clinic, &
                                                  sfwf_num_comps))
@@ -805,12 +838,21 @@
                        field_loc = sfwf_bndy_loc(sfwf_data_flxio ),   &
                        field_type = sfwf_bndy_type(sfwf_data_flxio ), &
                        d2d_array=SFWF_DATA(:,:,:,sfwf_data_flxio ,n))
+            io_bergs  = construct_io_field( &
+                       trim(sfwf_data_names(sfwf_data_bergs )),       &
+                       dim1=i_dim, dim2=j_dim,                                  &
+                       field_loc = sfwf_bndy_loc(sfwf_data_bergs ),   &
+                       field_type = sfwf_bndy_type(sfwf_data_bergs ), &
+                       d2d_array=SFWF_DATA(:,:,:,sfwf_data_bergs ,n))
             call data_set(forcing_file,'define',io_sss)
             call data_set(forcing_file,'define',io_flxio )
+            call data_set(forcing_file,'define',io_bergs )
             call data_set(forcing_file,'read'  ,io_sss)
             call data_set(forcing_file,'read'  ,io_flxio )
+            call data_set(forcing_file,'read'  ,io_bergs )
             call destroy_io_field(io_sss)
             call destroy_io_field(io_flxio )
+            call destroy_io_field(io_bergs )
 
          end select
 
@@ -1519,8 +1561,9 @@
 !  the forcing data (on t-grid) sets needed are 
 !     sfwf\_data\_sss,    restoring SSS                       (msu)
 !     sfwf\_data\_flxio,  diagnosed ("climatological")        (kg/m^2/s)
-!                       ice-ocean freshwater flux 
-
+!                         ice-ocean freshwater flux 
+!     sfwf\_data\_bergs,  iceberg melt freshwater flux, from CICE stand-alone
+!     simulation
 !
 ! !REVISION HISTORY:
 !  same as module
@@ -1529,8 +1572,6 @@
 
    integer (int_kind), intent(in) ::  &
       time_dim                ! number of time points for interpolation
-
-
 
 !EOP
 !BOC
@@ -1646,7 +1687,6 @@
                        TRACER(:,:,1,2,curtime,iblock))
       endwhere
 
-
       !*** ice-ocean climatological flux term
       if ( .not. lactive_ice ) then
         where (KMT(:,:,iblock) > 0)
@@ -1657,6 +1697,14 @@
         if ( .not. lms_balance )  &
           SFWF_COMP(:,:,iblock,sfwf_comp_flxio) = &
           SFWF_COMP(:,:,iblock,sfwf_comp_flxio)*MASK_SR(:,:,iblock)
+      endif
+
+      !*** iceberg meltwater term
+      if (licebergs) then
+         where (KMT(:,:,iblock) > 0)
+           SFWF_COMP(:,:,iblock,sfwf_comp_bergs) =       &
+                             SFWF_DATA(:,:,iblock,sfwf_data_bergs,now)
+         endwhere
       endif
 
       !*** convert surface freshwater flux components (kg/m^2/s) to
@@ -1673,14 +1721,23 @@
                            SFWF_COMP(:,:,iblock,sfwf_comp_flxio)
         SFWF_COMP(:,:,iblock,sfwf_comp_flxio) = WORK(:,:,iblock)
 
+        WORK(:,:,iblock) = fwmass_to_fwflux *                     &
+                           SFWF_COMP(:,:,iblock,sfwf_comp_bergs)
+        SFWF_COMP(:,:,iblock,sfwf_comp_bergs) = WORK(:,:,iblock)
+
         call tmelt(WORK1(:,:,iblock),TRACER(:,:,1,2,curtime,iblock))
 
         TFW_COMP(:,:,1,   iblock,tfw_comp_flxio) = WORK(:,:,iblock)*  &
                                                    WORK1(:,:,iblock)
         TFW_COMP(:,:,2:nt,iblock,tfw_comp_flxio) = c0
+        TFW_COMP(:,:,1,   iblock,tfw_comp_bergs) = WORK(:,:,iblock)*  &
+                                                   WORK1(:,:,iblock)
+        TFW_COMP(:,:,2:nt,iblock,tfw_comp_bergs) = c0
       else
         SFWF_COMP(:,:,iblock,sfwf_comp_flxio)    = salinity_factor*  &
                            SFWF_COMP(:,:,iblock,sfwf_comp_flxio)
+        SFWF_COMP(:,:,iblock,sfwf_comp_bergs)    = salinity_factor*  &
+                           SFWF_COMP(:,:,iblock,sfwf_comp_bergs)
       endif
 
 

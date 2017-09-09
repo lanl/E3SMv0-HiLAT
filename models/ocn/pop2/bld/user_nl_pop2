@@ -47,7 +47,23 @@
 !    tracer_init_ext is an array, to further complicate things). For example
 !      tracer_init_ext(5)%scale_factor&ecosys_nml = 1.1
 !      gas_flux_ap%default_val&cfc_nml = 0
-! 4. To preview the namelists, invoke $CASEROOT preview-namelists and look at 
-!    $CASEROOT/CaseDocs/pop2_in
+!
+! To use iceberg freshwater flux, follow these instructions
+! (note that, on LANL IC machines, the sfwf_filename has been set by default to
+!  /usr/projects/cesm/input_data/ocn/pop/gx1v6/forcing/sfwf_mm_PHC2_salx+flxio+icebergs_20170810.ieeer8):
+!  - For a B-case set the following:
+!      licebergs = .true.
+!      shf_formulation = 'partially-coupled'
+!      shf_data_type = 'monthly'
+!      shf_strong_restore_ms = 0.0
+!      sfwf_formulation = 'partially-coupled'
+!      sfwf_data_type = 'monthly'
+!      sfwf_weak_restore = 0.0
+!      sfwf_strong_restore_ms = 0.0
+!  - For a G-case, we just set licebergs = .true., thus keeping the strong and weak restoring
+!    variables as by default.
+!
+! To preview the namelists, invoke $CASEROOT preview-namelists and look at 
+! $CASEROOT/CaseDocs/pop2_in
 !----------------------------------------------------------------------------------
 
