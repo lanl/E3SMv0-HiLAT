@@ -653,6 +653,8 @@
 <sfwf_strong_restore>0.0</sfwf_strong_restore>
 <sfwf_strong_restore_ms>0.6648</sfwf_strong_restore_ms>
 <lfw_as_salt_flx>.true.</lfw_as_salt_flx>
+<lroff_ref_to_local_salinity>.false.</lroff_ref_to_local_salinity>
+<lroff_ref_to_local_salinity ocn_grid="tx0.3v2">.true.</lroff_ref_to_local_salinity>
 <sfwf_data_renorm>0.001, 19*1.</sfwf_data_renorm>
 
 <sfwf_filename ocn_grid="gx3v7"  >ocn/pop/gx3v7/forcing/sfwf_mm_PHC2_salx_flxio_20090831.ieeer8</sfwf_filename>

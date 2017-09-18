@@ -64,11 +64,13 @@
    logical (log_kind), public :: &
       lsend_precip_fact        ! if T,send precip_fact to cpl for use in fw balance
                                ! (partially-coupled option)
-
    logical (log_kind), public :: &
       licebergs                ! if T, add meltwater from icebergs
                                ! (partially-coupled option)
-
+   logical (log_kind), public :: &
+      lroff_ref_to_local_salinity ! When converting ROFF, IOFF and MELT to 
+                               ! virtual salt flux, refer to the local salinity,
+                               ! rather than a constant reference salinity. 
 !EOP
 !BOC
 !-----------------------------------------------------------------------
@@ -240,7 +242,8 @@
                                ladjust_precip,      sfwf_weak_restore,&
                                sfwf_strong_restore, lfw_as_salt_flx,  &
                                sfwf_strong_restore_ms,licebergs,      &
-                               lsend_precip_fact,   lms_balance
+                               lsend_precip_fact,   lms_balance,      &
+                               lroff_ref_to_local_salinity
 
 !-----------------------------------------------------------------------
 !
@@ -268,6 +271,7 @@
    lfw_as_salt_flx        = .false.
    licebergs              = .false.
    lsend_precip_fact      = .false.
+   lroff_ref_to_local_salinity = .false.
 
    if (my_task == master_task) then
       open (nml_in, file=nml_filename, status='old',iostat=nml_error)
@@ -304,6 +308,7 @@
    call broadcast_scalar(sfwf_strong_restore_ms, master_task)
    call broadcast_scalar(lfw_as_salt_flx,        master_task)
    call broadcast_scalar(licebergs,              master_task)
+   call broadcast_scalar(lroff_ref_to_local_salinity, master_task)
    call broadcast_scalar(lsend_precip_fact,      master_task)
    call broadcast_scalar(lms_balance,            master_task)
 
@@ -955,6 +960,11 @@
       if (lfw_as_salt_flx .and. sfc_layer_type == sfc_layer_varthick) &
          write(stdout,'(a47)') &
          '    Fresh water flux input as virtual salt flux'
+   endif
+   if (my_task == master_task) then
+      if (lfw_as_salt_flx .and. lroff_ref_to_local_salinity) &
+         write(stdout,'(a63)') &
+         '    Local reference salinity only active with virtual salt flux'
    endif
 
 !-----------------------------------------------------------------------

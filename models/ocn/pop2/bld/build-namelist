@@ -1001,6 +1001,7 @@ add_default($nl,'sfwf_strong_restore_ms');
 add_default($nl,'sfwf_weak_restore');
 add_default($nl,'lfw_as_salt_flx');
 add_default($nl,'licebergs');
+add_default($nl,'lroff_ref_to_local_salinity');
 
 ##########################################
 # namelist group: forcing_pt_interior_nml#

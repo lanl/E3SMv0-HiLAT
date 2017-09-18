@@ -654,7 +654,15 @@
      write(stdout,*) message
      number_of_fatal_errors = number_of_fatal_errors + 1
    endif
-   
+
+   if (lroff_ref_to_local_salinity .and. lms_balance) then
+     message =   &
+       'locally-referenced virtual salt flux not tested with '/&
+     &/'marginal seas balancing capability'
+     write(stdout,*) message
+     number_of_fatal_errors = number_of_fatal_errors + 1
+   endif
+
    if (number_of_fatal_errors /= 0)  &
       call exit_POP(sigAbort,'subroutine pop_init_partially_coupled')
 
@@ -703,6 +711,9 @@
 
    real (r8), dimension(nx_block,ny_block,max_blocks_clinic) ::   &
       WORK1, WORK2        ! local work space
+ 
+   real (r8), dimension(nx_block,ny_block) ::   &
+      WORK3               ! local work space
  
 !-----------------------------------------------------------------------
 !
@@ -803,14 +814,26 @@
 !  if not a variable thickness surface layer or if fw_as_salt_flx
 !  flag is on, convert fresh and salt inputs to a virtual salinity flux
 !
+!  ww: make glacial, fluvial, and melt runoff dependent on actual surface
+!  salinity.
 !-----------------------------------------------------------------------
 
       !$OMP PARALLEL DO PRIVATE(iblock)
       do iblock = 1, nblocks_clinic
-        STF(:,:,2,iblock) = RCALCT(:,:,iblock)*(  &
-                     (PREC_F(:,:,iblock)+EVAP_F(:,:,iblock)+  &
-                      MELT_F(:,:,iblock)+ROFF_F(:,:,iblock)+IOFF_F(:,:,iblock))*salinity_factor   &
-                    + SALT_F(:,:,iblock)*sflux_factor)  
+        if (lroff_ref_to_local_salinity) then
+           WORK3 = TRACER(:,:,1,2,curtime,iblock)*c1000/ocn_ref_salinity
+           STF(:,:,2,iblock) = RCALCT(:,:,iblock)*(                             &
+                      (PREC_F(:,:,iblock)+EVAP_F(:,:,iblock))*salinity_factor + &
+                      (MELT_F(:,:,iblock)+ROFF_F(:,:,iblock) +                  &
+                       IOFF_F(:,:,iblock))*WORK3*salinity_factor              + &
+                       SALT_F(:,:,iblock)*sflux_factor)  
+        else
+           STF(:,:,2,iblock) = RCALCT(:,:,iblock)*(            &
+                      (PREC_F(:,:,iblock)+EVAP_F(:,:,iblock)+  &
+                       MELT_F(:,:,iblock)+ROFF_F(:,:,iblock)+  &
+                       IOFF_F(:,:,iblock))*salinity_factor  +  &
+                       SALT_F(:,:,iblock)*sflux_factor)  
+        endif
       enddo
       !$OMP END PARALLEL DO
  
@@ -1104,9 +1127,16 @@
          call accumulate_tavg_field(EVAP_F(:,:,iblock), tavg_EVAP_F,iblock,1)
          call accumulate_tavg_field(PREC_F(:,:,iblock), tavg_PREC_F,iblock,1)
          call accumulate_tavg_field(SNOW_F(:,:,iblock), tavg_SNOW_F,iblock,1)
-         call accumulate_tavg_field(MELT_F(:,:,iblock), tavg_MELT_F,iblock,1)
-         call accumulate_tavg_field(ROFF_F(:,:,iblock), tavg_ROFF_F,iblock,1)
-         call accumulate_tavg_field(IOFF_F(:,:,iblock), tavg_IOFF_F,iblock,1)
+         if (lroff_ref_to_local_salinity .and. lfw_as_salt_flx) then
+            WORK = TRACER(:,:,1,2,curtime,iblock)*c1000/ocn_ref_salinity
+            call accumulate_tavg_field(MELT_F(:,:,iblock)*WORK,tavg_MELT_F,iblock,1)
+            call accumulate_tavg_field(ROFF_F(:,:,iblock)*WORK,tavg_ROFF_F,iblock,1)
+            call accumulate_tavg_field(IOFF_F(:,:,iblock)*WORK,tavg_IOFF_F,iblock,1)
+         else
+            call accumulate_tavg_field(MELT_F(:,:,iblock),tavg_MELT_F,iblock,1)
+            call accumulate_tavg_field(ROFF_F(:,:,iblock),tavg_ROFF_F,iblock,1)
+            call accumulate_tavg_field(IOFF_F(:,:,iblock),tavg_IOFF_F,iblock,1)
+         endif
          call accumulate_tavg_field(SALT_F(:,:,iblock), tavg_SALT_F,iblock,1)
          call accumulate_tavg_field(SENH_F(:,:,iblock), tavg_SENH_F,iblock,1)
          call accumulate_tavg_field(LWUP_F(:,:,iblock), tavg_LWUP_F,iblock,1)

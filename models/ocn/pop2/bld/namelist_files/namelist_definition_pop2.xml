@@ -2885,6 +2885,16 @@ CESM Default: .true.
 </entry>
 
 <entry 
+id="lroff_ref_to_local_salinity"
+type="logical"
+category="forcing"
+group="forcing_sfwf_nml" >
+Flag for using local salinity to convert ROFF, IOFF and MELT to virtual salt flux
+
+Default: .false.
+</entry>
+
+<entry 
 id="lsend_precip_fact"
 type="logical"
 category="forcing"
