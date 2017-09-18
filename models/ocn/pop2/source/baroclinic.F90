@@ -1214,7 +1214,6 @@
 
    nTS = 2
    if (pseudotracers_on) nTS = 4
-   print*, 'nTS: ',nTS
 
    !$OMP PARALLEL DO PRIVATE(iblock,this_block,n,RHS1)
 
