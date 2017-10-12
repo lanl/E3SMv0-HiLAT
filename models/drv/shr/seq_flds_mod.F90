@@ -2104,7 +2104,7 @@ module seq_flds_mod
         call seq_flds_add(x2a_fluxes, "Faoo_fdms_ocn")
         longname = 'Surface flux of DMS'
         stdname  = 'surface_upward_flux_of_dimethyl_sulfide'
-        units    = 'moles m-2 s-1'
+        units    = 'kg m-2 s-1'
         attname  = 'Faoo_fdms_ocn'
         call metadata_set(attname, longname, stdname, units)
         
