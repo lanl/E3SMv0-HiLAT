@@ -1055,6 +1055,9 @@
 !-----------------------------------------------------------------------
 
    if (tracegas_on) then
+ !  if (my_task == master_task) then
+ !      write(stdout,*) 'smb: Call tracegas_set_sflux'
+ !  endif
       call tracegas_set_sflux(                                       &
          U10_SQR, ICE_FRAC, PRESS,                                 &
          SST_FILT, SSS_FILT,                                       &

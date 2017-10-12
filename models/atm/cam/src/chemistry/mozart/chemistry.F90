@@ -1062,7 +1062,7 @@ end function chem_is_active
   subroutine chem_emissions( state, cam_in )
     use aero_model,       only: aero_model_emissions
     use camsrfexch,       only: cam_in_t     
-    use constituents,     only: sflxnam
+    use constituents,     only: sflxnam, dms_tracer_idx  ![pjc] added dms_tracer_idx
     use cam_history,      only: outfld
     use mo_srf_emissions, only: set_srf_emissions
     use cam_cpl_indices,     only : index_x2a_Fall_flxvoc
@@ -1087,7 +1087,13 @@ end function chem_is_active
     ! initialize chemistry constituent surface fluxes to zero
     do m = 2,pcnst
        n = map2chm(m)
-       if (n>0) cam_in%cflx(:,m) = 0._r8 
+    ! SMB - note that this is a hack for DMS flux coupling.
+    !       For a more robust implementation, logic should be
+    !       added so that DMS is only excluded here in the
+    !       case of dynamic coupling.
+       if (.not. ( dms_tracer_idx==m )) then
+          if (n>0) cam_in%cflx(:,m) = 0._r8
+       endif
     enddo
 
     ! aerosol emissions ...

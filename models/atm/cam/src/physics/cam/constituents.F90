@@ -74,6 +74,10 @@ module constituents
    character(len=16), public :: sflxnam   (pcnst)   ! names of surface fluxes of species
    character(len=16), public :: tottnam   (pcnst)   ! names for horz + vert + fixer tendencies
 
+  integer, public, save :: dms_tracer_idx    !pjc to store DMS tracer index (CAM numbering)
+  integer, public, save :: dms_ndx           !pjc to store DMS tracer index (chem numbering)
+
+
 ! Private data
 
   integer :: padv = 0                      ! index pointer to last advected tracer

@@ -45,6 +45,7 @@ module cam_cpl_indices
   integer :: index_a2x_Faxa_dstdry4    ! flux: Size 4 dust -- dry deposition
   integer :: index_a2x_Sa_co2prog      ! bottom atm level prognostic co2
   integer :: index_a2x_Sa_co2diag      ! bottom atm level diagnostic co2
+  integer :: index_a2x_Sa_DMS          ! bottom atm level prognostic DMS
 
   integer :: index_x2a_Sx_t            ! surface temperature             
   integer :: index_x2a_So_t            ! sea surface temperature         
@@ -75,7 +76,7 @@ module cam_cpl_indices
   integer :: index_x2a_Fall_flxvoc     ! MEGAN emissions fluxes   
   integer :: index_x2a_Fall_fco2_lnd   ! co2 flux from land   
   integer :: index_x2a_Faoo_fco2_ocn   ! co2 flux from ocean  
-  integer :: index_x2a_Faoo_fdms_ocn   ! dms flux from ocean
+  integer :: index_x2a_Faoo_fdms_ocn   ! DMS flux from ocean
   integer :: index_x2a_So_ustar	       ! surface friction velocity in ocean
   integer :: index_x2a_So_re           ! square of atm/ocn exch. coeff 
   integer :: index_x2a_So_ssq          ! surface saturation specific humidity in ocean 
@@ -134,7 +135,8 @@ contains
     index_x2a_Fall_flxdst4  = mct_avect_indexra(x2a,'Fall_flxdst4')
     index_x2a_Fall_fco2_lnd = mct_avect_indexra(x2a,'Fall_fco2_lnd',perrWith='quiet')
     index_x2a_Faoo_fco2_ocn = mct_avect_indexra(x2a,'Faoo_fco2_ocn',perrWith='quiet')
-    index_x2a_Faoo_fdms_ocn = mct_avect_indexra(x2a,'Faoo_fdms_ocn',perrWith='quiet')
+    index_x2a_Faoo_fdms_ocn = mct_avect_indexra(x2a,'Faoo_fdms_ocn',perrWith='quiet') ! Surface flux into the atmosphere [kg/m2/sec]
+    
 
     if (shr_megan_mechcomps_n>0) then
        index_x2a_Fall_flxvoc = mct_avect_indexra(x2a,trim(shr_megan_fields_token))
@@ -183,6 +185,7 @@ contains
     index_a2x_Faxa_dstwet4  = mct_avect_indexra(a2x,'Faxa_dstwet4')
     index_a2x_Sa_co2prog    = mct_avect_indexra(a2x,'Sa_co2prog',perrWith='quiet')
     index_a2x_Sa_co2diag    = mct_avect_indexra(a2x,'Sa_co2diag',perrWith='quiet')
+    index_a2x_Sa_DMS        = mct_avect_indexra(a2x,'Sa_DMS',    perrWith='quiet') ! partial pressure at surface [Pa]
 
     call mct_aVect_clean(x2a)
     call mct_aVect_clean(a2x)

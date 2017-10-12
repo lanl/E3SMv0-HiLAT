@@ -14,12 +14,14 @@ contains
     use ppgrid    ,     only: begchunk, endchunk       
     use shr_const_mod,  only: shr_const_stebol
     use seq_drydep_mod, only: n_drydep
+    use constituents,   only: cnst_get_ind, dms_tracer_idx
     use co2_cycle     , only: c_i, co2_readFlux_ocn, co2_readFlux_fuel
     use co2_cycle     , only: co2_transport, co2_time_interp_ocn, co2_time_interp_fuel
     use co2_cycle     , only: data_flux_ocn, data_flux_fuel
     use physconst     , only: mwco2
     use time_manager  , only: is_first_step
     !
+    use cam_logfile   , only : iulog
     ! Arguments
     !
     real(r8)      , intent(in)    :: x2a(:,:)
@@ -35,6 +37,13 @@ contains
     integer, pointer   :: dst_a5_ndx, dst_a7_ndx
     integer, pointer   :: dst_a1_ndx, dst_a3_ndx
     !-----------------------------------------------------------------------
+
+    if (first_time) then
+       call cnst_get_ind ("DMS", dms_tracer_idx ) ! If you don't want to check for an error, then add third argument:  abort=.false.
+ !      write(iulog,*)'[pjc, atm_comp_mct.F90] dms_tracer_idx          =',dms_tracer_idx
+ !      write(iulog,*)'[pjc, atm_comp_mct.F90] index_x2a_Faoo_fdms_ocn =',index_x2a_Faoo_fdms_ocn
+
+    end if
 
     ! ccsm sign convention is that fluxes are positive downward
 
@@ -105,11 +114,14 @@ contains
           end if
           if (index_x2a_Faoo_fdms_ocn /= 0) then
              cam_in(c)%fdms(i)     = -x2a(index_x2a_Faoo_fdms_ocn,ig)
+ !            write(iulog,*)'[pjc] x2a_a%rAttr(index_x2a_Faoo_fdms_ocn,ig) =',x2a(index_x2a_Faoo_fdms_ocn,ig)
           end if
 
           ig=ig+1
 
        end do
+ !      write(iulog,*)'[pjc,atm_comp_mct.F90] cam_in(c)%fdms(:ncols) =', cam_in(c)%fdms(:ncols)  
+    !pjc
     end do
 
     ! Get total co2 flux from components,
@@ -165,6 +177,19 @@ contains
           end do
        end do
     end if
+
+![pjc] load DMS flux into cam_in%cflx
+    if (index_x2a_Faoo_fdms_ocn /= 0 .AND. dms_tracer_idx /= 0) then
+       do c=begchunk,endchunk
+          ncols = get_ncols_p(c)                                                 
+          do i=1,ncols                                                               
+            cam_in(c)%cflx(i,dms_tracer_idx)  = cam_in(c)%fdms(i)
+          end do !i
+ !         write(iulog,*)'[pjc,atm_comp_mct.F90] cam_in(c)%cflx(:ncols,dms_tracer_idx) =', cam_in(c)%cflx(:ncols,dms_tracer_idx)      !pjc
+
+       end do   !c
+    end if
+
     !
     ! if first step, determine longwave up flux from the surface temperature 
     !
