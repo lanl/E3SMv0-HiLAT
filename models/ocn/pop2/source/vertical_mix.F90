@@ -41,10 +41,11 @@
    use vmix_kpp
    use exit_mod
    use prognostic
-   use passive_tracers, only:pseudotracers_on,        &
-                             pseudotracers_ind_begin, &
-                             pseudotracers_ind_end,   &
-                             pvdc_for_passive_tracers
+   use passive_tracers, only:ptracers_on,        &
+                             ptracers_ind_begin, &
+                             ptracers_ind_end,   &
+                             pvdc_for_passive_tracers,&
+                             pptracers_on
    use global_reductions
 
 
@@ -75,7 +76,7 @@
 
    real (r8), dimension(:,:,:,:), allocatable, public, target :: &
       HMXL, KPP_HBLT  ! Mixed layer depth for KPP, made public to 
-                      ! allow modification in case of pseudotracers
+                      ! allow modification in case of pseudo-tracers
 
    real (r8), dimension(:,:,:,:), allocatable, public, target :: &
       VDC_GM              ! Gent-McWilliams contribution to VDC
@@ -407,7 +408,7 @@
                     'Implicit vertical mixing required for KPP')
    endif
 
-   if (pseudotracers_on .and. &
+   if (ptracers_on .and. &
        vmix_itype /= vmix_type_kpp) then
       call exit_POP(sigAbort, &
                     'Pseudotracers only work with KPP')
@@ -452,19 +453,21 @@
                                   nblocks_clinic, distrb_clinic%nprocs)
 
    case(vmix_type_kpp)
-      if (pseudotracers_on) then
+      if (ptracers_on) then
          allocate (VDC(nx_block,ny_block,0:km+1,4,nblocks_clinic), &
                    VVC(nx_block,ny_block,km,      nblocks_clinic),  &
                    HMXL(nx_block,ny_block,2,nblocks_clinic),    &
                    KPP_HBLT(nx_block,ny_block,2,nblocks_clinic))
          VDC_pick(1) = 1
          VDC_pick(2) = 2
-         VDC_pick(3) = 3
-         VDC_pick(4) = 4
+         VDC_pick(3) = 1
+         VDC_pick(4) = 2
          if (pvdc_for_passive_tracers) then
             VDC_pick(5:nt) = 4
+            if (pptracers_on) VDC_pick(5) = 3
          else
             VDC_pick(5:nt) = 2
+            if (pptracers_on) VDC_pick(5) = 1
          endif
       else
          allocate (VDC(nx_block,ny_block,0:km+1,2,nblocks_clinic), &
@@ -534,7 +537,7 @@
           units='cm^2/s', grid_loc='3113',                      &
           coordinates='TLONG TLAT z_w_bot time')
 
-       if (pseudotracers_on) then
+       if (ptracers_on) then
           call define_tavg_field(tavg_VDC_pT,'VDC_pT',3,             &
              long_name='total diabatic vertical pTEMP diffusivity', &
              units='cm^2/s', grid_loc='3113',                      &
@@ -629,7 +632,7 @@
                           units='centimeter', grid_loc='2110',        &
                           coordinates='TLONG TLAT time')
 
-   if (pseudotracers_on) then
+   if (ptracers_on) then
 
      call define_tavg_field(tavg_pHMXL,'pHMXL',2,                       &
                             tavg_method=tavg_method_avg,                &
@@ -816,7 +819,7 @@
             call exit_POP(sigAbort, &
                     'vmix_coeffs: must supply either SMF,SMFT')
 
-         if (pseudotracers_on) then
+         if (ptracers_on) then
             allocate(WORK_GHAT(nx_block,ny_block,km,2))
          else
             allocate(WORK_GHAT(nx_block,ny_block,km,1))
@@ -824,59 +827,59 @@
 
          if (present(SMFT)) then
 
-            if (pseudotracers_on) then
-               call vmix_coeffs_kpp(                                            & 
-                  VDC(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end,bid), &
-                  VVC(:,:,:,  bid),                                             &
-                  HMXL(:,:,2,bid),                                              &
-                  KPP_HBLT(:,:,2,bid),                                          &
-                  TMIX(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end),    &
-                  UMIX,VMIX,UCUR,VCUR,RHOMIX,                                   &
-                  STF(:,:,pseudotracers_ind_begin:pseudotracers_ind_end),       &
-                  SHF_QSW,                                                      &
-                  this_block,                                                   &
-                  convect_diff, convect_visc,                                   &
-                  WORK_GHAT(:,:,:,2),                                      &
+            if (ptracers_on) then
+               call vmix_coeffs_kpp(                                  & 
+                  VDC(:,:,:,ptracers_ind_begin:ptracers_ind_end,bid), &
+                  VVC(:,:,:,  bid),                                   &
+                  HMXL(:,:,2,bid),                                    &
+                  KPP_HBLT(:,:,2,bid),                                &
+                  TMIX(:,:,:,ptracers_ind_begin:ptracers_ind_end),    &
+                  UMIX,VMIX,UCUR,VCUR,RHOMIX,                         &
+                  STF(:,:,ptracers_ind_begin:ptracers_ind_end),       &
+                  SHF_QSW,                                            &
+                  this_block,                                         &
+                  convect_diff, convect_visc,                         &
+                  WORK_GHAT(:,:,:,2),                                 &
                   SMFT=SMFT)
             endif
             call vmix_coeffs_kpp(VDC(:,:,:,1:2,bid),         &
                                  VVC(:,:,:,  bid),           &
-                                 HMXL(:,:,1,bid),        &
+                                 HMXL(:,:,1,bid),            &
                                  KPP_HBLT(:,:,1,bid),        &
                                  TMIX(:,:,:,1:2),            &
                                  UMIX,VMIX,UCUR,VCUR,RHOMIX, &
                                  STF(:,:,1:2),SHF_QSW,       &
                                  this_block,                 &
                                  convect_diff, convect_visc, &
-                                 WORK_GHAT(:,:,:,1),    &
+                                 WORK_GHAT(:,:,:,1),         &
                                  SMFT=SMFT)
          else
 
-            if (pseudotracers_on) then
-               call vmix_coeffs_kpp(                                            & 
-                  VDC(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end,bid), &
-                  VVC(:,:,:,  bid),                                             &
-                  HMXL(:,:,2,bid),                                              &
-                  KPP_HBLT(:,:,2,bid),                                          &
-                  TMIX(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end),    &
-                  UMIX,VMIX,UCUR,VCUR,RHOMIX,                                   &
-                  STF(:,:,pseudotracers_ind_begin:pseudotracers_ind_end),       &
-                  SHF_QSW,                                                      &
-                  this_block,                                                   &
-                  convect_diff, convect_visc,                                   &
-                  WORK_GHAT(:,:,:,2),                                      &
+            if (ptracers_on) then
+               call vmix_coeffs_kpp(                                  & 
+                  VDC(:,:,:,ptracers_ind_begin:ptracers_ind_end,bid), &
+                  VVC(:,:,:,  bid),                                   &
+                  HMXL(:,:,2,bid),                                    &
+                  KPP_HBLT(:,:,2,bid),                                &
+                  TMIX(:,:,:,ptracers_ind_begin:ptracers_ind_end),    &
+                  UMIX,VMIX,UCUR,VCUR,RHOMIX,                         &
+                  STF(:,:,ptracers_ind_begin:ptracers_ind_end),       &
+                  SHF_QSW,                                            &
+                  this_block,                                         &
+                  convect_diff, convect_visc,                         &
+                  WORK_GHAT(:,:,:,2),                                 &
                   SMFT=SMF)
             endif
             call vmix_coeffs_kpp(VDC(:,:,:,1:2,bid),         &
                                  VVC(:,:,:,  bid),           &
-                                 HMXL(:,:,1,bid),        &
+                                 HMXL(:,:,1,bid),            &
                                  KPP_HBLT(:,:,1,bid),        &
                                  TMIX(:,:,:,1:2),            &
                                  UMIX,VMIX,UCUR,VCUR,RHOMIX, &
                                  STF(:,:,1:2),SHF_QSW,       &
                                  this_block,                 &
                                  convect_diff, convect_visc, &
-                                 WORK_GHAT(:,:,:,1),        &
+                                 WORK_GHAT(:,:,:,1),         &
                                  SMFT=SMF)
          endif
 
@@ -925,7 +928,7 @@
             end do
          endif
 
-         if (pseudotracers_on) then
+         if (ptracers_on) then
             if (accumulate_tavg_now(tavg_VDC_pT) ) then
                  do kk=1,km
                  ! kk index is no longer shifted because z_w_bot is now an output coordinate
@@ -982,7 +985,7 @@
             call accumulate_tavg_field(KPP_HBLT(:,:,1,bid), tavg_TBLT, bid, 1)
          endif
 
-         if (pseudotracers_on) then
+         if (ptracers_on) then
             if (accumulate_tavg_now(tavg_pHMXL) ) then
                call accumulate_tavg_field(HMXL(:,:,2,bid), tavg_pHMXL,   bid, 1)
             endif

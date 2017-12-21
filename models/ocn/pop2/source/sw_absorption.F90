@@ -60,7 +60,8 @@
    use tavg, only: define_tavg_field, accumulate_tavg_field
    use exit_mod
    use registry, only: registry_match
-   use passive_tracers, only:pseudotracers_on, pseudotracers_ind_begin
+   use passive_tracers, only:ptracers_on, ptracers_ind_begin, &
+                             pptracers_on, pptracers_ind_begin
 
    implicit none
    private
@@ -940,8 +941,11 @@
  
       end select
 
-      if (pseudotracers_on) then
-         T_SOURCE(:,:,pseudotracers_ind_begin) = T_SOURCE(:,:,1)
+      if (ptracers_on) then
+         T_SOURCE(:,:,ptracers_ind_begin) = T_SOURCE(:,:,1)
+      endif
+      if (pptracers_on) then
+         T_SOURCE(:,:,pptracers_ind_begin) = T_SOURCE(:,:,1)
       endif
 
    endif

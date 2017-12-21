@@ -16,17 +16,11 @@ endif
 
 @ s1 = 1   # use base-model stream 1
 
-cat >! $CASEROOT/Buildconf/pop2conf/pseudotracers_tavg_contents << EOF
-$s1  pTEMP
-$s1  pSALT
-$s1  VDC_pT
-$s1  VDC_pS
-$s1  KPP_SRC_pTEMP
-$s1  KPP_SRC_pSALT
-$s1  pHMXL
-$s1  pXMXL
-$s1  pTMXL
-$s1  pHBLT
-$s1  pXBLT
-$s1  pTBLT
+cat >! $CASEROOT/Buildconf/pop2conf/pptracers_tavg_contents << EOF
+$s1  ppTEMP
+$s1  ppSALT
+$s1  STF_ppTEMP
+$s1  STF_ppSALT
+$s1  KPP_SRC_ppTEMP
+$s1  KPP_SRC_ppSALT
 EOF

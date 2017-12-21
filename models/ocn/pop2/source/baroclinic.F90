@@ -66,7 +66,7 @@
    use exit_mod, only: sigAbort, exit_pop, flushm
    use overflows
    use overflow_type
-   use passive_tracers, only:pseudotracers_on, pseudotracers_ind_begin
+   use passive_tracers, only:ptracers_on, ptracers_ind_begin
 
 
    implicit none
@@ -499,7 +499,7 @@
    integer (int_kind) ::  &
       i,j,                &! dummy indices for horizontal directions
       n,k,                &! dummy indices for vertical level, tracer
-      nTS,                &! number of dynamic tracers (4 if pseudotracers_on)
+      nTS,                &! number of dynamic tracers (4 if pseudo-tracers_on)
       iblock,             &! counter for block loops
       kp1,km1              ! level index for k+1, k-1 levels
 
@@ -516,12 +516,12 @@
 
 !-----------------------------------------------------------------------
 !
-!  Set number of dynamic tracers (including pseudotracers)
+!  Set number of dynamic tracers (including pseudo-tracers)
 !
 !-----------------------------------------------------------------------
 
    nTS = 2
-   if (pseudotracers_on) nTS = 4
+   if (ptracers_on) nTS = 4
 
 !-----------------------------------------------------------------------
 !
@@ -1189,7 +1189,7 @@
    integer (int_kind) ::  & 
       k,                  &! vertical level index
       n,                  &! tracer index
-      nTS,                &! number of dynamic tracers (4 if pseudotracers_on)
+      nTS,                &! number of dynamic tracers (4 if pseudo-tracers_on)
       iblock               ! block index
 
    real (r8), dimension(nx_block,ny_block,nt) :: &
@@ -1213,7 +1213,7 @@
 !-----------------------------------------------------------------------
 
    nTS = 2
-   if (pseudotracers_on) nTS = 4
+   if (ptracers_on) nTS = 4
 
    !$OMP PARALLEL DO PRIVATE(iblock,this_block,n,RHS1)
 
@@ -1375,9 +1375,9 @@
       if (reset_to_freezing .and. .not. liceform) then
          TRACER(:,:,1,1,newtime,iblock) = &
             max(TRACER(:,:,1,1,newtime,iblock),-c2)
-         if (pseudotracers_on) then
-           TRACER(:,:,1,pseudotracers_ind_begin,newtime,iblock) = &
-              max(TRACER(:,:,1,pseudotracers_ind_begin,newtime,iblock),-c2)
+         if (ptracers_on) then
+           TRACER(:,:,1,ptracers_ind_begin,newtime,iblock) = &
+              max(TRACER(:,:,1,ptracers_ind_begin,newtime,iblock),-c2)
          endif
       endif
 
@@ -1744,7 +1744,7 @@
 
    integer (int_kind) :: &
       n,                 &! dummy tracer index
-      nTS,               &! number of dynamic tracers (4 if pseudotracers on)
+      nTS,               &! number of dynamic tracers (4 if pseudo-tracers on)
       bid                 ! local_block id
 
    real (r8), dimension(nx_block,ny_block,nt) :: &
@@ -1756,12 +1756,12 @@
  
 !-----------------------------------------------------------------------
 !
-!  Set number of dynamic tracers (including pseudotracers)
+!  Set number of dynamic tracers (including pseudo-tracers)
 !
 !-----------------------------------------------------------------------
 
    nTS = 2
-   if (pseudotracers_on) nTS = 4
+   if (ptracers_on) nTS = 4
 
 !-----------------------------------------------------------------------
 !

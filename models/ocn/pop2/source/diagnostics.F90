@@ -37,7 +37,6 @@
    use registry
    use io_tools
    use gather_scatter
-   use passive_tracers, only: pseudotracers_on
 
    implicit none
    private

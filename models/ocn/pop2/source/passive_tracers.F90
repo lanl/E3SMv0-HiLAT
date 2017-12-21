@@ -81,10 +81,15 @@
        surfdyes_init,              &
        surfdyes_set_sflux
 
-   use pseudotracers_mod, only:    &
-       pseudotracers_tracer_cnt,   &
-       pseudotracers_init,         &
-       pseudotracers_set_sflux
+   use ptracers_mod, only:         &
+       ptracers_tracer_cnt,        &
+       ptracers_init,              &
+       ptracers_set_sflux
+
+   use pptracers_mod, only:        &
+       pptracers_tracer_cnt,       &
+       pptracers_init,             &
+       pptracers_set_sflux
 
    use moby_mod, only:             &
        moby_init,                  &
@@ -125,9 +130,12 @@
       tracer_ref_val,                        &
       tadvect_ctype_passive_tracers,         &
       ecosys_on, moby_on, tracegas_on,       &
-      pseudotracers_on,                      &
-      pseudotracers_ind_begin,               &
-      pseudotracers_ind_end,                 &
+      ptracers_on,                           &
+      ptracers_ind_begin,                    &
+      ptracers_ind_end,                      &
+      pptracers_on,                          &
+      pptracers_ind_begin,                   &
+      pptracers_ind_end,                     &
       pvdc_for_passive_tracers
 
 !EOP
@@ -179,23 +187,24 @@
 
    logical (kind=log_kind) ::  &
       ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, &
-      surfdyes_on, IRF_on, pseudotracers_on
+      surfdyes_on, IRF_on, ptracers_on, pptracers_on
 
    namelist /passive_tracers_on_nml/  &
       ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, &
-      surfdyes_on, IRF_on, pseudotracers_on
+      surfdyes_on, IRF_on, ptracers_on, pptracers_on
 
 !-----------------------------------------------------------------------
 !     index bounds of passive tracer module variables in TRACER
 !-----------------------------------------------------------------------
 
-   integer (kind=int_kind) ::                       &
+   integer (kind=int_kind) ::                          &
       ecosys_ind_begin,        ecosys_ind_end,         &
       tracegas_ind_begin,      tracegas_ind_end,       &
       iage_ind_begin,          iage_ind_end,           &
       sectdyes_ind_begin,      sectdyes_ind_end,       &
       surfdyes_ind_begin,      surfdyes_ind_end,       &
-      pseudotracers_ind_begin, pseudotracers_ind_end,&
+      ptracers_ind_begin,      ptracers_ind_end,       &
+      pptracers_ind_begin,     pptracers_ind_end,      &
       cfc_ind_begin,           cfc_ind_end,            &
       moby_ind_begin,          moby_ind_end,           &
       IRF_ind_begin,           IRF_ind_end
@@ -274,7 +283,8 @@
    iage_on           = .false.
    sectdyes_on       = .false.
    surfdyes_on       = .false.
-   pseudotracers_on  = .false.
+   ptracers_on       = .false.
+   pptracers_on      = .false.
    moby_on           = .false.
    IRF_on            = .false.
 
@@ -309,15 +319,16 @@
    endif
 
 
-   call broadcast_scalar(ecosys_on,         master_task)
-   call broadcast_scalar(tracegas_on,       master_task)
-   call broadcast_scalar(cfc_on,            master_task)
-   call broadcast_scalar(iage_on,           master_task)
-   call broadcast_scalar(sectdyes_on,       master_task)
-   call broadcast_scalar(surfdyes_on,       master_task)
-   call broadcast_scalar(pseudotracers_on,  master_task)
-   call broadcast_scalar(moby_on,           master_task)
-   call broadcast_scalar(IRF_on,            master_task)
+   call broadcast_scalar(ecosys_on,    master_task)
+   call broadcast_scalar(tracegas_on,  master_task)
+   call broadcast_scalar(cfc_on,       master_task)
+   call broadcast_scalar(iage_on,      master_task)
+   call broadcast_scalar(sectdyes_on,  master_task)
+   call broadcast_scalar(surfdyes_on,  master_task)
+   call broadcast_scalar(ptracers_on,  master_task)
+   call broadcast_scalar(pptracers_on, master_task)
+   call broadcast_scalar(moby_on,      master_task)
+   call broadcast_scalar(IRF_on,       master_task)
 
 !-----------------------------------------------------------------------
 !  check for modules that require the flux coupler
@@ -346,16 +357,31 @@
    cumulative_nt = 2
 
 !-----------------------------------------------------------------------
-!  If pseudotracers selected, these will be first
+!  If pseudo-tracers selected, these will be first
 !-----------------------------------------------------------------------
 
-   if (pseudotracers_on) then
-      call set_tracer_indices('PSEUDOTRACERS', pseudotracers_tracer_cnt, &
+   if (ptracers_on) then
+      call set_tracer_indices('PTRACERS', ptracers_tracer_cnt, &
                               cumulative_nt,  &
-                              pseudotracers_ind_begin, pseudotracers_ind_end)
-      if (pseudotracers_ind_begin /= 3 .or. pseudotracers_ind_end /= 4) then
+                              ptracers_ind_begin, ptracers_ind_end)
+      if (ptracers_ind_begin /= 3 .or. ptracers_ind_end /= 4) then
          call exit_POP(sigAbort, &
-            'ERROR in init_passive_tracers: pseudotracers must be numbers 3 and 4')
+            'ERROR in init_passive_tracers: ptracers must be numbers 3 and 4')
+      end if
+   end if
+
+   if (pptracers_on) then
+      if (.not. ptracers_on) then
+         call exit_POP(sigAbort, &
+          'ERROR in init_passive_tracers: pptracers only valid with ptracers')
+      end if
+
+      call set_tracer_indices('PPTRACERS', pptracers_tracer_cnt, &
+                              cumulative_nt,  &
+                              pptracers_ind_begin, pptracers_ind_end)
+      if (pptracers_ind_begin /= 5 .or. pptracers_ind_end /= 6) then
+         call exit_POP(sigAbort, &
+            'ERROR in init_passive_tracers: pptracers must be numbers 5 and 6')
       end if
    end if
 
@@ -532,21 +558,41 @@
 
 
 !-----------------------------------------------------------------------
-!  Pseudotracers (PSEUDOTRACERS) block
+!  Pseudo-tracers (PTRACERS) block
 !-----------------------------------------------------------------------
 
-   if (pseudotracers_on) then
-      call pseudotracers_init(init_ts_file_fmt, read_restart_filename, &
-                     tracer_d(pseudotracers_ind_begin:pseudotracers_ind_end), &
-                     TRACER(:,:,:,pseudotracers_ind_begin:pseudotracers_ind_end,:,:), &
-                     TRACER(:,:,:,1,:,:), TRACER(:,:,:,2,:,:),&
-                     tadvect_ctype_passive_tracers(pseudotracers_ind_begin:pseudotracers_ind_end), &
-                     pvdc_for_passive_tracers,  &
-                     errorCode)
+   if (ptracers_on) then
+      call ptracers_init(init_ts_file_fmt, read_restart_filename, &
+                tracer_d(ptracers_ind_begin:ptracers_ind_end), &
+                TRACER(:,:,:,ptracers_ind_begin:ptracers_ind_end,:,:), &
+                TRACER(:,:,:,1,:,:), TRACER(:,:,:,2,:,:),&
+                tadvect_ctype_passive_tracers(ptracers_ind_begin:ptracers_ind_end), &
+                pvdc_for_passive_tracers,  &
+                errorCode)
 
       if (errorCode /= POP_Success) then
          call POP_ErrorSet(errorCode, &
-            'init_passive_tracers: error in pseudotracers_init')
+            'init_passive_tracers: error in ptracers_init')
+         return
+      endif
+
+   end if
+
+!-----------------------------------------------------------------------
+!  Pseudo-pseudo-tracers (PPTRACERS) block
+!-----------------------------------------------------------------------
+
+   if (pptracers_on) then
+      call pptracers_init(init_ts_file_fmt, read_restart_filename, &
+             tracer_d(pptracers_ind_begin:pptracers_ind_end), &
+             TRACER(:,:,:,pptracers_ind_begin:pptracers_ind_end,:,:), &
+             TRACER(:,:,:,1,:,:), TRACER(:,:,:,2,:,:),&
+             tadvect_ctype_passive_tracers(pptracers_ind_begin:pptracers_ind_end), &
+             errorCode)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'init_passive_tracers: error in pptracers_init')
          return
       endif
 
@@ -1153,12 +1199,22 @@
     end if
 
 !-----------------------------------------------------------------------
-!  PSEUDOTRACERS block
+!  PTRACERS block
 !-----------------------------------------------------------------------
 
-    if (pseudotracers_on) then
-       call pseudotracers_set_sflux( &
-           STF(:,:,pseudotracers_ind_begin:pseudotracers_ind_end,:),&
+    if (ptracers_on) then
+       call ptracers_set_sflux( &
+           STF(:,:,ptracers_ind_begin:ptracers_ind_end,:),&
+           STF(:,:,1,:),STF(:,:,2,:)) 
+    end if
+
+!-----------------------------------------------------------------------
+!  PPTRACERS block
+!-----------------------------------------------------------------------
+
+    if (pptracers_on) then
+       call pptracers_set_sflux( &
+           STF(:,:,pptracers_ind_begin:pptracers_ind_end,:),&
            STF(:,:,1,:),STF(:,:,2,:)) 
     end if
 

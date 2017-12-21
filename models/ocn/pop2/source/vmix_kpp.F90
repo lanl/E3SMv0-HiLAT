@@ -3139,7 +3139,7 @@
 !  on HBLT or HMXL to reduce any horizontal two-grid-point noise.
 !  If HBLT is overwritten, KBL is adjusted after smoothing.
 !  WW: copied original version and customized for call in coeffs 
-!  to simplify implementation of pseudotracers
+!  to simplify implementation of pseudo-tracers
 !
 ! !REVISION HISTORY:
 !  same as module

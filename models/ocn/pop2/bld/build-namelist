@@ -1179,14 +1179,25 @@ if (any(\@OCN_TRACER_MODULES, "surfdyes")) {
 }
 
 ##########################################
-# namelist group: pseudotracers_nml           #
+# namelist group: ptracers_nml      #
 ##########################################
 
-if (any(\@OCN_TRACER_MODULES, "pseudotracers")) {
-    add_default($nl, 'init_pseudotracers_option',    'val'=>"ccsm_${RUN_TYPE}");
-    add_default($nl, 'init_pseudotracers_init_file', 'val'=>'same_as_TS', 'noprepend'=>1);
-    add_default($nl, 'pseudotracers_tadvect_ctype',  'val'=>'base_model');
+if (any(\@OCN_TRACER_MODULES, "ptracers")) {
+    add_default($nl, 'init_ptracers_option',    'val'=>"ccsm_${RUN_TYPE}");
+    add_default($nl, 'init_ptracers_init_file', 'val'=>'same_as_TS', 'noprepend'=>1);
+    add_default($nl, 'ptracers_tadvect_ctype',  'val'=>'base_model');
     add_default($nl, 'use_pvdc_for_passive_tracers', 'val'=>".false.");
+}
+
+#########################################
+# namelist group: pptracers_nml     #
+##########################################
+
+if (any(\@OCN_TRACER_MODULES, "pptracers")) {
+    add_default($nl, 'init_pptracers_option',    'val'=>"ccsm_${RUN_TYPE}");
+    add_default($nl, 'init_pptracers_init_file', 'val'=>'same_as_TS', 'noprepend'=>1);
+    add_default($nl, 'pptracers_tadvect_ctype',  'val'=>'base_model');
+    add_default($nl, 'use_pvdc_for_passive_tracers',       'val'=>".false.");
 }
 
 ##########################################
@@ -1876,8 +1887,11 @@ if (any(\@OCN_TRACER_MODULES, "sectdyes")) {
 if (any(\@OCN_TRACER_MODULES, "surfdyes")) {
     push @groups, qw(surfdyes_nml);
 }    
-if (any(\@OCN_TRACER_MODULES, "pseudotracers")) {
-    push @groups, qw(pseudotracers_nml);
+if (any(\@OCN_TRACER_MODULES, "ptracers")) {
+    push @groups, qw(ptracers_nml);
+}    
+if (any(\@OCN_TRACER_MODULES, "pptracers")) {
+    push @groups, qw(pptracers_nml);
 }    
 if (any(\@OCN_TRACER_MODULES, "cfc")) {
     push @groups, qw(cfc_nml);
@@ -2110,8 +2124,14 @@ sub check_input_files {
         $is_a_file = 0;
       }
 
-      # init_pseudotracers_file could be 'same_as_TS'
-      if (($var eq 'init_pseudotracers_init_file') and 
+      # init_ptracers_file could be 'same_as_TS'
+      if (($var eq 'init_ptracers_init_file') and 
+          ($pathname eq 'same_as_TS')) {
+        $is_a_file = 0;
+      }
+
+      # init_pptracers_file could be 'same_as_TS'
+      if (($var eq 'init_pptracers_init_file') and 
           ($pathname eq 'same_as_TS')) {
         $is_a_file = 0;
       }

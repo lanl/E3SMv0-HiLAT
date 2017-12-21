@@ -38,8 +38,9 @@
    use prognostic
    use passive_tracers, only: tracer_ref_val
    use grid, only: sfc_layer_varthick, sfc_layer_type
-   use passive_tracers, only:pseudotracers_on,pseudotracers_ind_begin,        &
-       pseudotracers_ind_end
+   use passive_tracers, only:ptracers_on, ptracers_ind_begin,                &
+       ptracers_ind_end, pptracers_on, pptracers_ind_begin,                  &
+       pptracers_ind_end
 
 
    implicit none
@@ -471,15 +472,23 @@
 
        if (partial_bottom_cells) then
          TNEW(:,:,k,1) = TNEW(:,:,k,1) + POTICE/DZT(:,:,k,bid)
-         if (pseudotracers_on) then
-            TNEW(:,:,k,pseudotracers_ind_begin) =            &
-                TNEW(:,:,k,pseudotracers_ind_begin) + POTICE/DZT(:,:,k,bid)
+         if (ptracers_on) then
+            TNEW(:,:,k,ptracers_ind_begin) =            &
+                TNEW(:,:,k,ptracers_ind_begin) + POTICE/DZT(:,:,k,bid)
+         endif 
+         if (pptracers_on) then
+            TNEW(:,:,k,pptracers_ind_begin) =            &
+                TNEW(:,:,k,pptracers_ind_begin) + POTICE/DZT(:,:,k,bid)
          endif 
        else
          TNEW(:,:,k,1) = TNEW(:,:,k,1) + POTICE/dz(k)
-         if (pseudotracers_on) then
-            TNEW(:,:,k,pseudotracers_ind_begin) =             &
-                TNEW(:,:,k,pseudotracers_ind_begin) + POTICE/dz(k)
+         if (ptracers_on) then
+            TNEW(:,:,k,ptracers_ind_begin) =             &
+                TNEW(:,:,k,ptracers_ind_begin) + POTICE/dz(k)
+         endif 
+         if (pptracers_on) then
+            TNEW(:,:,k,pptracers_ind_begin) =             &
+                TNEW(:,:,k,pptracers_ind_begin) + POTICE/dz(k)
          endif 
        endif
 
@@ -490,10 +499,16 @@
             * (DZT(:,:,k,bid) + cp_over_lhfusion * QICE(:,:,bid))         &
             + cp_over_lhfusion * (TNEW(:,:,k-1,2)                         &
             * (POTICE - QICE(:,:,bid)) - salice * POTICE) )/DZT(:,:,k,bid)
-            if (pseudotracers_on) then
-               TNEW(:,:,k,pseudotracers_ind_end) = ( TNEW(:,:,k,pseudotracers_ind_end) &
+            if (ptracers_on) then
+               TNEW(:,:,k,ptracers_ind_end) = ( TNEW(:,:,k,ptracers_ind_end) &
                * (DZT(:,:,k,bid) + cp_over_lhfusion * QICE(:,:,bid))                   &
-               + cp_over_lhfusion * (TNEW(:,:,k-1,pseudotracers_ind_end)               &
+               + cp_over_lhfusion * (TNEW(:,:,k-1,ptracers_ind_end)               &
+               * (POTICE - QICE(:,:,bid)) - salice * POTICE) )/DZT(:,:,k,bid)
+            endif 
+            if (pptracers_on) then
+               TNEW(:,:,k,pptracers_ind_end) = ( TNEW(:,:,k,pptracers_ind_end) &
+               * (DZT(:,:,k,bid) + cp_over_lhfusion * QICE(:,:,bid))                   &
+               + cp_over_lhfusion * (TNEW(:,:,k-1,pptracers_ind_end)               &
                * (POTICE - QICE(:,:,bid)) - salice * POTICE) )/DZT(:,:,k,bid)
             endif 
          else
@@ -501,10 +516,16 @@
             * (dz(k) + cp_over_lhfusion * QICE(:,:,bid))                  &
             + cp_over_lhfusion * (TNEW(:,:,k-1,2)                         &
             * (POTICE - QICE(:,:,bid)) - salice * POTICE) )/dz(k)
-            if (pseudotracers_on) then
-               TNEW(:,:,k,pseudotracers_ind_end) = ( TNEW(:,:,k,pseudotracers_ind_end) &
+            if (ptracers_on) then
+               TNEW(:,:,k,ptracers_ind_end) = ( TNEW(:,:,k,ptracers_ind_end) &
                * (dz(k) + cp_over_lhfusion * QICE(:,:,bid))                            &
-               + cp_over_lhfusion * (TNEW(:,:,k-1,pseudotracers_ind_end)               &
+               + cp_over_lhfusion * (TNEW(:,:,k-1,ptracers_ind_end)               &
+               * (POTICE - QICE(:,:,bid)) - salice * POTICE) )/dz(k)
+            endif 
+            if (pptracers_on) then
+               TNEW(:,:,k,pptracers_ind_end) = ( TNEW(:,:,k,pptracers_ind_end) &
+               * (dz(k) + cp_over_lhfusion * QICE(:,:,bid))                            &
+               + cp_over_lhfusion * (TNEW(:,:,k-1,pptracers_ind_end)               &
                * (POTICE - QICE(:,:,bid)) - salice * POTICE) )/dz(k)
             endif 
          endif
@@ -513,7 +534,9 @@
              ref_val = salref - salice
              if (n > 2)  &
                 ref_val = ref_val * (tracer_ref_val(n) / salref)
-             if (pseudotracers_on .and. n == pseudotracers_ind_end)  &
+             if (ptracers_on .and. n == ptracers_ind_end)  &
+                ref_val = salref - salice
+             if (pptracers_on .and. n == pptracers_ind_end)  &
                 ref_val = salref - salice
              if (ref_val /= c0)  then
                 if (partial_bottom_cells) then
@@ -560,24 +583,35 @@
      POTICE = max(POTICE, QICE(:,:,bid))
 
      TNEW(:,:,k,1) = TNEW(:,:,k,1) + POTICE/WORK1
-     if (pseudotracers_on) then
-        TNEW(:,:,k,pseudotracers_ind_begin) = TNEW(:,:,k,pseudotracers_ind_begin) & 
+     if (ptracers_on) then
+        TNEW(:,:,k,ptracers_ind_begin) = TNEW(:,:,k,ptracers_ind_begin) & 
+                                            + POTICE/WORK1
+     endif 
+     if (pptracers_on) then
+        TNEW(:,:,k,pptracers_ind_begin) = TNEW(:,:,k,pptracers_ind_begin) & 
                                             + POTICE/WORK1
      endif 
      if (sfc_layer_type == sfc_layer_varthick .and. .not. lfw_as_salt_flx) then
        TNEW(:,:,k,2) =  &
           (TNEW(:,:,k,2)*(WORK1 + cp_over_lhfusion*QICE(:,:,bid)) - &
            salice*QICE(:,:,bid)*cp_over_lhfusion )/WORK1
-       if (pseudotracers_on) then
-          TNEW(:,:,k,pseudotracers_ind_end) =  &
-             (TNEW(:,:,k,pseudotracers_ind_end)*(WORK1 + cp_over_lhfusion*QICE(:,:,bid)) - &
+       if (ptracers_on) then
+          TNEW(:,:,k,ptracers_ind_end) =  &
+             (TNEW(:,:,k,ptracers_ind_end)*(WORK1 + cp_over_lhfusion*QICE(:,:,bid)) - &
+              salice*QICE(:,:,bid)*cp_over_lhfusion )/WORK1
+       endif 
+       if (pptracers_on) then
+          TNEW(:,:,k,pptracers_ind_end) =  &
+             (TNEW(:,:,k,pptracers_ind_end)*(WORK1 + cp_over_lhfusion*QICE(:,:,bid)) - &
               salice*QICE(:,:,bid)*cp_over_lhfusion )/WORK1
        endif 
      else
         do n=2,nt 
            ref_val = salref - salice
            if (n > 2) ref_val = ref_val * (tracer_ref_val(n) / salref)
-           if (pseudotracers_on .and. n == pseudotracers_ind_end) &
+           if (ptracers_on .and. n == ptracers_ind_end) &
+                ref_val = salref - salice
+           if (pptracers_on .and. n == pptracers_ind_end) &
                 ref_val = salref - salice
            if (ref_val /= c0)  &
               TNEW(:,:,k,n) = TNEW(:,:,k,n)  &
@@ -615,8 +649,11 @@
      POTICE = max(POTICE, AQICE(:,:,bid))
 
      TNEW(:,:,k,1) = TNEW(:,:,k,1) + POTICE/WORK1
-     if (pseudotracers_on) then
-        TNEW(:,:,k,pseudotracers_ind_begin) = TNEW(:,:,k,pseudotracers_ind_begin) + POTICE/WORK1
+     if (ptracers_on) then
+        TNEW(:,:,k,ptracers_ind_begin) = TNEW(:,:,k,ptracers_ind_begin) + POTICE/WORK1
+     endif 
+     if (pptracers_on) then
+        TNEW(:,:,k,pptracers_ind_begin) = TNEW(:,:,k,pptracers_ind_begin) + POTICE/WORK1
      endif 
 
      if ( sfc_layer_type == sfc_layer_varthick .and. .not. lfw_as_salt_flx ) then
@@ -626,7 +663,9 @@
        do n=2,nt
           ref_val = salref - salice
           if (n > 2) ref_val = ref_val * (tracer_ref_val(n)/salref)
-          if (pseudotracers_on .and. n == pseudotracers_ind_end) &
+          if (ptracers_on .and. n == ptracers_ind_end) &
+               ref_val = salref - salice
+          if (pptracers_on .and. n == pptracers_ind_end) &
                ref_val = salref - salice
           if (ref_val /= c0) &
              TNEW(:,:,k,n) = TNEW(:,:,k,n)  &

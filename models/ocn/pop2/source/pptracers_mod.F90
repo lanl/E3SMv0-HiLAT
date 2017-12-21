@@ -1,14 +1,14 @@
 !||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
-module pseudotracers_mod
+module pptracers_mod
 
 !BOP
-! !MODULE: pseudotracers_mod
+! !MODULE: pptracers_mod
 !
 ! !DESCRIPTION:
 !
 ! !REVISION HISTORY:
-!  SVN:$Id: pseudotracers_mod.F90 26603 2011-01-28 23:09:02Z njn01 $
+!  SVN:$Id: pptracers_mod.F90 26603 2011-01-28 23:09:02Z njn01 $
 
 ! !USES:
 
@@ -35,36 +35,36 @@ module pseudotracers_mod
 
 ! !PUBLIC MEMBER FUNCTIONS:
 
-   public :: pseudotracers_tracer_cnt,        &
-             pseudotracers_init,              &
-             pseudotracers_set_sflux
+   public :: pptracers_tracer_cnt,        &
+             pptracers_init,              &
+             pptracers_set_sflux
 
 !EOP
 !BOC
 
 !-----------------------------------------------------------------------
-!  module variables required by pseudotracers
+!  module variables required by pseudo-pseudo-tracers
 !-----------------------------------------------------------------------
 
    integer(int_kind), parameter :: &
-      pseudotracers_tracer_cnt     = 2    ! All pseudo tracers
+      pptracers_tracer_cnt     = 2    ! All pseudo-pseudo-tracers
 
 !-----------------------------------------------------------------------
 !  relative tracer indices
 !-----------------------------------------------------------------------
 
    integer (int_kind), parameter :: &
-      pTEMP_ind = 1,   &! pseudo-temperature
-      pSALT_ind = 2     ! pseudo-salinity
+      ppTEMP_ind = 1,   &! pseudo-pseudo-temperature
+      ppSALT_ind = 2     ! pseudo-pseudo-salinity
 
 !-----------------------------------------------------------------------
 !  derived type & parameter for tracer index lookup
 !-----------------------------------------------------------------------
 
-   type(ind_name_pair), dimension(pseudotracers_tracer_cnt) :: &
+   type(ind_name_pair), dimension(pptracers_tracer_cnt) :: &
       ind_name_table = (/ &
-      ind_name_pair(pTEMP_ind, 'pTEMP'), &
-      ind_name_pair(pSALT_ind, 'pSALT') /)
+      ind_name_pair(ppTEMP_ind, 'ppTEMP'), &
+      ind_name_pair(ppSALT_ind, 'ppSALT') /)
 
 !EOC
 !*****************************************************************************
@@ -73,15 +73,15 @@ contains
 
 !*****************************************************************************
 !BOP
-! !IROUTINE: pseudotracers_init
+! !IROUTINE: pptracers_init
 ! !INTERFACE:
 
- subroutine pseudotracers_init(init_ts_file_fmt, read_restart_filename, &
+ subroutine pptracers_init(init_ts_file_fmt, read_restart_filename, &
                       tracer_d_module, TRACER_MODULE, TEMP, SALT, tadvect_ctype, &
-                      use_pvdc,errorCode)
+                      errorCode)
 
 ! !DESCRIPTION:
-!  Initialize pseudotracers tracer module. This involves setting metadata, reading
+!  Initialize pptracers tracer module. This involves setting metadata, reading
 !  the module namelist and setting initial conditions.
 !
 ! !REVISION HISTORY:
@@ -104,20 +104,16 @@ contains
 
 ! !INPUT/OUTPUT PARAMETERS:
 
-   type (tracer_field), dimension(pseudotracers_tracer_cnt), intent(inout) :: &
+   type (tracer_field), dimension(pptracers_tracer_cnt), intent(inout) :: &
       tracer_d_module   ! descriptors for each tracer
 
-   real(r8), dimension(nx_block,ny_block,km,pseudotracers_tracer_cnt,3,max_blocks_clinic), &
+   real(r8), dimension(nx_block,ny_block,km,pptracers_tracer_cnt,3,max_blocks_clinic), &
       intent(inout) :: TRACER_MODULE
 
 ! !OUTPUT PARAMETERS:
 
    character (char_len), dimension(:), intent(out) :: &
-      tadvect_ctype     ! advection method for pseudotracers tracers
-
-   logical(log_kind), intent(inout) :: &
-      use_pvdc          ! specifies whether the pseudo-diffusivity
-                        ! should be used for passive tracers
+      tadvect_ctype     ! advection method for pseudo-pseudo-tracers tracers
 
    integer (POP_i4), intent(out) :: &
       errorCode            ! returned error code
@@ -128,20 +124,16 @@ contains
 !  local variables
 !-----------------------------------------------------------------------
 
-   character(*), parameter :: subname = 'pseudotracers_mod:pseudotracers_init'
+   character(*), parameter :: subname = 'pptracers_mod:pptracers_init'
 
    character(char_len) :: &
-      init_pseudotracers_option,           & ! option for initialization of pseudotracers
-      init_pseudotracers_init_file,        & ! filename for option 'file'
-      init_pseudotracers_init_file_fmt,    & ! file format for option 'file'
-      pseudotracers_tadvect_ctype            ! advection method for pseudotracers
+      init_pptracers_option,           & ! option for initialization of pseudo-pseudo-tracers
+      init_pptracers_init_file,        & ! filename for option 'file'
+      init_pptracers_init_file_fmt,    & ! file format for option 'file'
+      pptracers_tadvect_ctype            ! advection method for pseudo-pseudo-tracers
 
    logical(log_kind) :: &
-      use_pvdc_for_passive_tracers  ! specifies whether the pseudo-diffusivity
-                                    ! should be used for passive tracers
-
-   logical(log_kind) :: &
-      lnml_found             ! Was pseudotracers_nml found ?
+      lnml_found             ! Was pptracers_nml found ?
 
    integer(int_kind) :: &
       n,                   & ! index for looping over tracers
@@ -151,16 +143,15 @@ contains
 
 !     l,                   & ! index for looping over time levels
 
-   type(tracer_read), dimension(pseudotracers_tracer_cnt) :: &
+   type(tracer_read), dimension(pptracers_tracer_cnt) :: &
       tracer_init_ext        ! namelist variable for initializing tracers
 
-   namelist /pseudotracers_nml/ &
-      init_pseudotracers_option, init_pseudotracers_init_file, tracer_init_ext, &
-      init_pseudotracers_init_file_fmt, pseudotracers_tadvect_ctype,&
-      use_pvdc_for_passive_tracers
+   namelist /pptracers_nml/ &
+      init_pptracers_option, init_pptracers_init_file, tracer_init_ext, &
+      init_pptracers_init_file_fmt, pptracers_tadvect_ctype
 
    character (char_len) ::  &
-      pseudotracers_restart_filename  ! modified file name for restart file
+      pptracers_restart_filename  ! modified file name for restart file
 
 !-----------------------------------------------------------------------
 !  initialize tracer_d values
@@ -168,33 +159,31 @@ contains
 
    errorCode = POP_Success
 
-   tracer_d_module(pTEMP_ind)%short_name = 'pTEMP'
-   tracer_d_module(pTEMP_ind)%long_name  = 'Pseudo-temperature'
-   tracer_d_module(pTEMP_ind)%units      = 'degC'
-   tracer_d_module(pTEMP_ind)%tend_units = 'degC/s'
-   tracer_d_module(pTEMP_ind)%flux_units = 'degC cm/s'
-   tracer_d_module(pTEMP_ind)%scale_factor = 1.0_rtavg
+   tracer_d_module(ppTEMP_ind)%short_name = 'ppTEMP'
+   tracer_d_module(ppTEMP_ind)%long_name  = 'Pseudo-pseudo-temperature'
+   tracer_d_module(ppTEMP_ind)%units      = 'degC'
+   tracer_d_module(ppTEMP_ind)%tend_units = 'degC/s'
+   tracer_d_module(ppTEMP_ind)%flux_units = 'degC cm/s'
+   tracer_d_module(ppTEMP_ind)%scale_factor = 1.0_rtavg
 
-   tracer_d_module(pSALT_ind)%short_name = 'pSALT'
-   tracer_d_module(pSALT_ind)%long_name  = 'Pseudo-salinity'
-   tracer_d_module(pSALT_ind)%units      = 'g/kg'
-   tracer_d_module(pSALT_ind)%tend_units = 'g/kg/s'
-   tracer_d_module(pSALT_ind)%flux_units = 'g/kg cm/s'
-   tracer_d_module(pSALT_ind)%scale_factor = 1000.0_rtavg
+   tracer_d_module(ppSALT_ind)%short_name = 'ppSALT'
+   tracer_d_module(ppSALT_ind)%long_name  = 'Pseudo-pseudo-salinity'
+   tracer_d_module(ppSALT_ind)%units      = 'g/kg'
+   tracer_d_module(ppSALT_ind)%tend_units = 'g/kg/s'
+   tracer_d_module(ppSALT_ind)%flux_units = 'g/kg cm/s'
+   tracer_d_module(ppSALT_ind)%scale_factor = 1000.0_rtavg
 
 !-----------------------------------------------------------------------
 !  default namelist settings
 !-----------------------------------------------------------------------
 
-   init_pseudotracers_option = 'unknown'
-   init_pseudotracers_init_file = 'unknown'
-   init_pseudotracers_init_file_fmt = 'bin'
+   init_pptracers_option = 'unknown'
+   init_pptracers_init_file = 'unknown'
+   init_pptracers_init_file_fmt = 'bin'
 
-   pseudotracers_tadvect_ctype = 'base_model'
+   pptracers_tadvect_ctype = 'base_model'
 
-   use_pvdc_for_passive_tracers = .false.
-
-   do n = 1,pseudotracers_tracer_cnt
+   do n = 1,pptracers_tracer_cnt
       tracer_init_ext(n)%mod_varname  = 'unknown'
       tracer_init_ext(n)%filename     = 'unknown'
       tracer_init_ext(n)%file_varname = 'unknown'
@@ -211,14 +200,14 @@ contains
          nml_error =  1      
       endif
       do while (nml_error > 0)
-         read(nml_in, nml=pseudotracers_nml,iostat=nml_error)
+         read(nml_in, nml=pptracers_nml,iostat=nml_error)
       end do
       if (nml_error == 0) close(nml_in)
    endif
 
    call broadcast_scalar(nml_error, master_task)
    if (nml_error /= 0) then
-      call document(subname, 'pseudotracers_nml not found')
+      call document(subname, 'pptracers_nml not found')
       call exit_POP(sigAbort, 'stopping in ' /&
                            &/ subname)
    endif
@@ -227,17 +216,14 @@ contains
 !  broadcast all namelist variables
 !-----------------------------------------------------------------------
 
-   call broadcast_scalar(init_pseudotracers_option , master_task)
-   call broadcast_scalar(init_pseudotracers_init_file, master_task)
-   call broadcast_scalar(init_pseudotracers_init_file_fmt, master_task)
+   call broadcast_scalar(init_pptracers_option , master_task)
+   call broadcast_scalar(init_pptracers_init_file, master_task)
+   call broadcast_scalar(init_pptracers_init_file_fmt, master_task)
 
-   call broadcast_scalar(pseudotracers_tadvect_ctype, master_task)
-   tadvect_ctype = pseudotracers_tadvect_ctype
+   call broadcast_scalar(pptracers_tadvect_ctype, master_task)
+   tadvect_ctype = pptracers_tadvect_ctype
 
-   call broadcast_scalar(use_pvdc_for_passive_tracers, master_task)
-   use_pvdc = use_pvdc_for_passive_tracers
-
-   do n = 1,pseudotracers_tracer_cnt
+   do n = 1,pptracers_tracer_cnt
       call broadcast_scalar(tracer_init_ext(n)%mod_varname, master_task)
       call broadcast_scalar(tracer_init_ext(n)%filename, master_task)
       call broadcast_scalar(tracer_init_ext(n)%file_varname, master_task)
@@ -250,7 +236,7 @@ contains
 !  initialize tracers
 !-----------------------------------------------------------------------
 
-   select case (init_pseudotracers_option)
+   select case (init_pptracers_option)
 
    case ('ccsm_startup', 'ccsm_startup_spunup')
       TRACER_MODULE(:,:,:,1,:,:) = TEMP
@@ -258,7 +244,7 @@ contains
 
       if (my_task == master_task) then
           write(stdout,delim_fmt)
-          write(stdout,*) ' Initial 3-d pseudo-tracers same as T and S' 
+          write(stdout,*) ' Initial 3-d pseudo-pseudo-tracers same as T and S' 
           write(stdout,delim_fmt)
           call POP_IOUnitsFlush(POP_stdout) ; call POP_IOUnitsFlush(stdout)
       endif
@@ -267,32 +253,32 @@ contains
       TRACER_MODULE = c0
       if (my_task == master_task) then
           write(stdout,delim_fmt)
-          write(stdout,*) ' Initial 3-d pseudo-tracers set to zero'
+          write(stdout,*) ' Initial 3-d pseudo-pseudo-tracers set to zero'
           write(stdout,delim_fmt)
           call POP_IOUnitsFlush(POP_stdout) ; call POP_IOUnitsFlush(stdout)
       endif
        
    case ('restart', 'ccsm_continue', 'ccsm_branch', 'ccsm_hybrid' )
 
-      pseudotracers_restart_filename = char_blank
+      pptracers_restart_filename = char_blank
 
-      if (init_pseudotracers_init_file == 'same_as_TS') then
+      if (init_pptracers_init_file == 'same_as_TS') then
          if (read_restart_filename == 'undefined') then
-            call document(subname, 'no restart file to read pseudotracers from')
+            call document(subname, 'no restart file to read pseudo-pseudo-tracers from')
             call exit_POP(sigAbort, 'stopping in ' /&
                                  &/ subname)
          endif
-         pseudotracers_restart_filename = read_restart_filename
-         init_pseudotracers_init_file_fmt = init_ts_file_fmt
+         pptracers_restart_filename = read_restart_filename
+         init_pptracers_init_file_fmt = init_ts_file_fmt
 
       else  ! do not read from TS restart file
 
-         pseudotracers_restart_filename = trim(init_pseudotracers_init_file)
+         pptracers_restart_filename = trim(init_pptracers_init_file)
 
       endif
 
-      call rest_read_tracer_block(init_pseudotracers_init_file_fmt, &
-                                  pseudotracers_restart_filename,   &
+      call rest_read_tracer_block(init_pptracers_init_file_fmt, &
+                                  pptracers_restart_filename,   &
                                   tracer_d_module,         &
                                   TRACER_MODULE)
 
@@ -312,24 +298,24 @@ contains
 !        endif
 
    case ('file')
-      call document(subname, 'pseudotracers being read from separate file')
+      call document(subname, 'pseudo-pseudo-tracers being read from separate file')
 
-      call file_read_tracer_block(init_pseudotracers_init_file_fmt, &
-                                  init_pseudotracers_init_file,     &
+      call file_read_tracer_block(init_pptracers_init_file_fmt, &
+                                  init_pptracers_init_file,     &
                                   tracer_d_module,         &
                                   ind_name_table,          &
                                   tracer_init_ext,         &
                                   TRACER_MODULE)
  
       if (n_topo_smooth > 0) then
-         do n = 1, pseudotracers_tracer_cnt
+         do n = 1, pptracers_tracer_cnt
             do k = 1, km
                call fill_points(k,TRACER_MODULE(:,:,k,n,curtime,:), &
                                 errorCode)
 
                if (errorCode /= POP_Success) then
                   call POP_ErrorSet(errorCode, &
-                     'pseudotracers_init: error in fill_points')
+                     'pptracers_init: error in fill_points')
                   return
                endif
             end do
@@ -337,7 +323,7 @@ contains
       endif
 
    case default
-      call document(subname, 'unknown init_pseudotracers_option = ', init_pseudotracers_option)
+      call document(subname, 'unknown init_pptracers_option = ', init_pptracers_option)
       call exit_POP(sigAbort, 'stopping in ' /&
                            &/ subname)
 
@@ -348,7 +334,7 @@ contains
 !-----------------------------------------------------------------------
 
    do iblock=1,nblocks_clinic
-      do n = 1,pseudotracers_tracer_cnt
+      do n = 1,pptracers_tracer_cnt
          do k = 1,km
             where (k > KMT(:,:,iblock))
                TRACER_MODULE(:,:,k,n,curtime,iblock) = c0
@@ -361,16 +347,16 @@ contains
 !-----------------------------------------------------------------------
 !EOC
 
- end subroutine pseudotracers_init
+ end subroutine pptracers_init
 
 !BOP
-! !IROUTINE: pseudotracers_set_sflux
+! !IROUTINE: pptracers_set_sflux
 ! !INTERFACE:
 
- subroutine pseudotracers_set_sflux(STF_MODULE,SHF,SFWF)
+ subroutine pptracers_set_sflux(STF_MODULE,SHF,SFWF)
 
 ! !DESCRIPTION:
-!  Compute surface fluxes for pseudotracers tracer module.
+!  Compute surface fluxes for pptracers tracer module.
 !
 ! !REVISION HISTORY:
 !  same as module
@@ -383,7 +369,7 @@ contains
 
 ! !INPUT/OUTPUT PARAMETERS:
 
-   real (r8), dimension(nx_block,ny_block,pseudotracers_tracer_cnt,max_blocks_clinic), &
+   real (r8), dimension(nx_block,ny_block,pptracers_tracer_cnt,max_blocks_clinic), &
       intent(inout) :: STF_MODULE    ! Surface fluxes
 
 !EOP
@@ -398,10 +384,10 @@ contains
 !-----------------------------------------------------------------------
 !EOC
 
- end subroutine pseudotracers_set_sflux
+ end subroutine pptracers_set_sflux
 
 !*****************************************************************************
 
-end module pseudotracers_mod
+end module pptracers_mod
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
