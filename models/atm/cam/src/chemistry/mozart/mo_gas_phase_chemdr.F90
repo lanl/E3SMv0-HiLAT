@@ -2,7 +2,7 @@ module mo_gas_phase_chemdr
 
   use shr_kind_mod,     only : r8 => shr_kind_r8
   use shr_const_mod,    only : pi => shr_const_pi
-  use constituents,     only : pcnst
+  use constituents,     only : pcnst, dms_ndx    !pjc, added dms_ndx
   use cam_history,      only : fieldname_len
   use chem_mods,        only : phtcnt, rxntot, gas_pcnst
   use chem_mods,        only : rxt_tag_cnt, rxt_tag_lst, rxt_tag_map, extcnt
@@ -46,6 +46,7 @@ contains
     use physics_buffer,    only : pbuf_get_index
     use rate_diags,        only : rate_diags_init
     use rad_constituents,  only : rad_cnst_get_info
+    use cam_logfile,       only : iulog !pjc debugging
 
     implicit none
 
@@ -66,6 +67,8 @@ contains
     o2_ndx  = get_spc_ndx('O2')
     so4_ndx = get_spc_ndx('SO4')
     h2o_ndx = get_spc_ndx('H2O')
+    dms_ndx = get_spc_ndx('DMS')
+ !   write(iulog,*)'[pjc, mo_gas_phase_chemdr.F90] dms_ndx =',dms_ndx    !pjc diagnostic
     hno3_ndx = get_spc_ndx('HNO3')
     dst_ndx = get_spc_ndx( dust_names(1) )
     synoz_ndx = get_extfrc_ndx( 'SYNOZ' )
@@ -225,6 +228,8 @@ contains
 ! for aqueous chemistry and aerosol growth
 !
     use aero_model,        only : aero_model_gasaerexch
+
+    use cam_logfile,       only : iulog !pjc debugging
 
     implicit none
 
@@ -411,6 +416,11 @@ contains
        if( n > 0 ) then
           mmr(:ncol,:,n) = q(:ncol,:,m)
        end if
+ !      if( n == dms_ndx ) then      !pjc diagnostic
+ !         write(iulog,*)'[pjc, mo_gas_phase_chemdr.F90] solsym(n),m,n = ',solsym(n),m,n
+ !         write(iulog,*)'[pjc, mo_gas_phase_chemdr.F90] sflx(:ncol,n)  =',sflx(:ncol,n) 
+ !         write(iulog,*)'[pjc, mo_gas_phase_chemdr.F90] mmr(:ncol,:,n) =',mmr(:ncol,:,n)
+ !      end if
     end do
 
     call get_short_lived_species( mmr, lchnk, ncol, pbuf )

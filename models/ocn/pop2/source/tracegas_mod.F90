@@ -1999,6 +1999,10 @@ contains
 
 !-----------------------------------------------------------------------
 
+!   if (my_task == master_task) then
+!       write(stdout,*) 'smb: Start tracegas_init_sflux'
+!   endif
+
    luse_INTERP_WORK = .false.
 
 !-----------------------------------------------------------------------
@@ -2240,6 +2244,10 @@ contains
 
    call timer_start(tracegas_sflux_timer)
 
+!   if (my_task == master_task) then
+!       write(stdout,*) 'smb: Start tracegas_set_sflux'
+!   endif
+
 !-----------------------------------------------------------------------
 
    if (check_time_flag(comp_surf_avg_flag))  &
@@ -2380,6 +2388,11 @@ contains
 !  calculate gas flux quantities if necessary
 !-----------------------------------------------------------------------
 
+!   if (my_task == master_task) then
+!       write(stdout,*) 'smb: Start calculating DMS flux in tracegas_set_sflux'
+!       write(stdout,*) 'smb: lflux_gas_dms: ', lflux_gas_dms
+!   endif
+
    if (lflux_gas_dms) then
 
       do iblock = 1, nblocks_clinic
@@ -2492,7 +2505,10 @@ SCHMIDT_USED = max(SCHMIDT_USED,1.)
           end where
 
           call named_field_set(sflux_dms_nf_ind, iblock, FLUX)
-   
+!          if (my_task == master_task) then
+!             write(stdout,*) 'smb: sflux_dms_nf_ind: ', sflux_dms_nf_ind
+!          endif
+
 !maltrud debug
 !           TRACEGAS_SFLUX_TAVG(:,:,2,iblock) = XKW_ICE
             where (LAND_MASK(:,:,iblock))

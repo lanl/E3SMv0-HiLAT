@@ -391,9 +391,13 @@
 
    call set_ap(ATM_PRESS)
 
-   if (nt > 2)  &
+   if (nt > 2)  then
+ !     if (my_task == master_task) then
+ !         write(stdout,*) 'smb: Call set_sflux_passive_tracers'
+ !     endif
       call set_sflux_passive_tracers(U10_SQR,IFRAC,ATM_PRESS,STF, &
                    EVAP_F,PREC_F,MELT_F,ROFF_F,IOFF_F)
+   endif
 
    call set_chl   
 
