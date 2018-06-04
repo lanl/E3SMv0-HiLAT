@@ -292,6 +292,18 @@
      call exit_POP(sigAbort,'ERROR reading forcing_sfwf_nml')
    endif
 
+   if (my_task == master_task) then
+       write(stdout,blank_fmt)
+       write(stdout,ndelim_fmt)
+       write(stdout,blank_fmt)
+       write(stdout,*) ' Forcing sfwf:'
+       write(stdout,blank_fmt)
+       write(stdout,*) ' forcing_sfwf_nml namelist settings:'
+       write(stdout,blank_fmt)
+       write(stdout, forcing_sfwf_nml)
+       write(stdout,blank_fmt)
+   endif
+
    call broadcast_scalar(sfwf_data_type,         master_task)
    call broadcast_scalar(sfwf_data_inc,          master_task)
    call broadcast_scalar(sfwf_interp_type,       master_task)
@@ -389,7 +401,7 @@
       tfw_num_comps  = 3
       tfw_comp_cpl   = 1
       tfw_comp_flxio = 2
-      tfw_comp_bergs = 2
+      tfw_comp_bergs = 3
 
    case default
       call exit_POP(sigAbort, &
@@ -588,21 +600,29 @@
                        field_loc = sfwf_bndy_loc(sfwf_data_flxio),   &
                        field_type = sfwf_bndy_type(sfwf_data_flxio), &
                        d2d_array=SFWF_DATA(:,:,:,sfwf_data_flxio,1))
-         io_bergs = construct_io_field( &
-                       trim(sfwf_data_names(sfwf_data_bergs)),       &
-                       dim1=i_dim, dim2=j_dim,                                 &
-                       field_loc = sfwf_bndy_loc(sfwf_data_bergs),   &
-                       field_type = sfwf_bndy_type(sfwf_data_bergs), &
-                       d2d_array=SFWF_DATA(:,:,:,sfwf_data_bergs,1))
          call data_set(forcing_file,'define',io_sss)
          call data_set(forcing_file,'define',io_flxio)
-         call data_set(forcing_file,'define',io_bergs)
          call data_set(forcing_file,'read'  ,io_sss)
          call data_set(forcing_file,'read'  ,io_flxio)
-         call data_set(forcing_file,'read'  ,io_bergs)
          call destroy_io_field(io_sss)
          call destroy_io_field(io_flxio)
-         call destroy_io_field(io_bergs)
+
+! Only read icebergs field if icebergs actually requested
+
+         if (licebergs) then
+            io_bergs = construct_io_field( &
+                          trim(sfwf_data_names(sfwf_data_bergs)),       &
+                          dim1=i_dim, dim2=j_dim,                                 &
+                          field_loc = sfwf_bndy_loc(sfwf_data_bergs),   &
+                          field_type = sfwf_bndy_type(sfwf_data_bergs), &
+                          d2d_array=SFWF_DATA(:,:,:,sfwf_data_bergs,1))
+            call data_set(forcing_file,'define',io_bergs)
+            call data_set(forcing_file,'read'  ,io_bergs)
+            call destroy_io_field(io_bergs)
+         else
+            SFWF_DATA(:,:,:,sfwf_data_bergs,1) = c0
+         endif
+!
 
          allocate( SFWF_COMP(nx_block,ny_block,max_blocks_clinic, &
                              sfwf_num_comps))
@@ -711,21 +731,29 @@
                        field_loc = sfwf_bndy_loc(sfwf_data_flxio ),   &
                        field_type = sfwf_bndy_type(sfwf_data_flxio ), &
                        d3d_array=TEMP_DATA(:,:,:,:,sfwf_data_flxio ))
-         io_bergs  = construct_io_field( &
-                       trim(sfwf_data_names(sfwf_data_bergs )),       &
-                       dim1=i_dim, dim2=j_dim, dim3=month_dim,                  &
-                       field_loc = sfwf_bndy_loc(sfwf_data_bergs ),   &
-                       field_type = sfwf_bndy_type(sfwf_data_bergs ), &
-                       d3d_array=TEMP_DATA(:,:,:,:,sfwf_data_bergs ))
          call data_set(forcing_file,'define',io_sss)
          call data_set(forcing_file,'define',io_flxio )
-         call data_set(forcing_file,'define',io_bergs )
          call data_set(forcing_file,'read'  ,io_sss)
          call data_set(forcing_file,'read'  ,io_flxio )
-         call data_set(forcing_file,'read'  ,io_bergs )
          call destroy_io_field(io_sss)
          call destroy_io_field(io_flxio )
-         call destroy_io_field(io_bergs )
+
+! Only read icebergs field if icebergs actually requested
+
+         if (licebergs) then
+            io_bergs  = construct_io_field( &
+                          trim(sfwf_data_names(sfwf_data_bergs )),       &
+                          dim1=i_dim, dim2=j_dim, dim3=month_dim,                  &
+                          field_loc = sfwf_bndy_loc(sfwf_data_bergs ),   &
+                          field_type = sfwf_bndy_type(sfwf_data_bergs ), &
+                          d3d_array=TEMP_DATA(:,:,:,:,sfwf_data_bergs ))
+            call data_set(forcing_file,'define',io_bergs )
+            call data_set(forcing_file,'read'  ,io_bergs )
+            call destroy_io_field(io_bergs )
+         else
+            TEMP_DATA(:,:,:,:,sfwf_data_bergs) = c0
+         endif
+!
 
          allocate(SFWF_COMP(nx_block,ny_block,max_blocks_clinic, &
                                                  sfwf_num_comps))
