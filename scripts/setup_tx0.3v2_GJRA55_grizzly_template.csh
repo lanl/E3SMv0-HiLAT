@@ -6,9 +6,11 @@
 # the local salinity fix for run-off (in forcing_coupled.F90); 
 # and the correct value of ksno (in ice_constants_colpkg.F90)
 #
+# Add  init_ts_option = 'file' to user_nl_pop2
+#
 # The decomposition is appropriate for 1920 OCN pes, and 480 ICE pes
 # 
-export CaseName=JRA55_t32_NewSSS_v1.3
+export CaseName=JRA55_t32_Test2_grizzly
 echo "casename = $CaseName"
 export CaseDir=/turquoise/usr/projects/climate/wilbert/HiLAT-JRA55/
 echo "casedir = $CaseDir/$CaseName"
@@ -17,15 +19,15 @@ echo "casedir = $CaseDir/$CaseName"
 cd $CaseDir/$CaseName
 
 ./xmlchange -file env_build.xml -id POP_AUTO_DECOMP -val false
-./xmlchange -file env_build.xml -id POP_BLCKX -val 25
+./xmlchange -file env_build.xml -id POP_BLCKX -val 20
 ./xmlchange -file env_build.xml -id POP_BLCKY -val 20
-./xmlchange -file env_build.xml -id POP_NX_BLOCKS -val 48
+./xmlchange -file env_build.xml -id POP_NX_BLOCKS -val 60
 ./xmlchange -file env_build.xml -id POP_NY_BLOCKS -val 40
 ./xmlchange -file env_build.xml -id POP_MXBLCKS -val 4
 ./xmlchange -file env_build.xml -id POP_DECOMPTYPE -val cartesian
 ./xmlchange -file env_build.xml -id CICE_MODE -val prognostic
 ./xmlchange -file env_build.xml -id CICE_AUTO_DECOMP -val false
-./xmlchange -file env_build.xml -id CICE_BLCKX -val 5
+./xmlchange -file env_build.xml -id CICE_BLCKX -val 10
 ./xmlchange -file env_build.xml -id CICE_BLCKY -val 400
 ./xmlchange -file env_build.xml -id CICE_MXBLCKS -val 1
 ./xmlchange -file env_build.xml -id CICE_DECOMPTYPE -val cartesian
@@ -73,3 +75,20 @@ cd $CaseDir/$CaseName
 ./xmlchange -file env_run.xml -id WAV_PIO_ROOT -val -1
 ./xmlchange -file env_run.xml -id WAV_PIO_NUMTASKS -val -1
 ./xmlchange -file env_run.xml -id WAV_PIO_TYPENAME -val pnetcdf
+
+./xmlchange -file env_mach_pes.xml -id NTASKS_ATM -val 240
+./xmlchange -file env_mach_pes.xml -id ROOTPE_ATM -val 2400
+./xmlchange -file env_mach_pes.xml -id NTASKS_LND -val 16
+./xmlchange -file env_mach_pes.xml -id ROOTPE_LND -val 2640
+./xmlchange -file env_mach_pes.xml -id NTASKS_ICE -val 240
+./xmlchange -file env_mach_pes.xml -id ROOTPE_ICE -val 2400
+./xmlchange -file env_mach_pes.xml -id NTASKS_OCN -val 2400
+./xmlchange -file env_mach_pes.xml -id ROOTPE_OCN -val 0
+./xmlchange -file env_mach_pes.xml -id NTASKS_CPL -val 240
+./xmlchange -file env_mach_pes.xml -id ROOTPE_CPL -val 2400
+./xmlchange -file env_mach_pes.xml -id NTASKS_GLC -val 16
+./xmlchange -file env_mach_pes.xml -id ROOTPE_GLC -val 2640
+./xmlchange -file env_mach_pes.xml -id NTASKS_ROF -val 240
+./xmlchange -file env_mach_pes.xml -id ROOTPE_ROF -val 2400
+./xmlchange -file env_mach_pes.xml -id NTASKS_WAV -val 16
+./xmlchange -file env_mach_pes.xml -id ROOTPE_WAV -val 2640
