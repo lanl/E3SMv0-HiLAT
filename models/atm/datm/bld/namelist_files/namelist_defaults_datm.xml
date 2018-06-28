@@ -43,6 +43,7 @@ Currently the following streams are supported (term definitions precede the stre
     CLM1PT          = Run with supplied single point data (force CLM)
     CORE2_NYF       = CORE2 normal year forcing (for forcing POP and CICE)
     CORE2_IAF       = CORE2 intra-annual year forcing (for forcing POP and CICE)
+    JRA55           = JRA55 inter-annual year forcing (for forcing POP and CICE)
     CPLHIST3HrWx    = Run with CESM 3-hourly coupler history output
     presaero        = Prescribed aerosol forcing 
     co2tseries      = Time series of prescribed CO2 forcing
@@ -109,6 +110,15 @@ Currently the following streams are supported (term definitions precede the stre
     CORE2_IAF.NCEP.V_10
     CORE2_IAF.CORE2.ArcFactor
 
+    JRA55.JRA55.PREC
+    JRA55.JRA55.LWDN
+    JRA55.JRA55.SWDN
+    JRA55.JRA55.Q_10
+    JRA55.JRA55.SLP_
+    JRA55.JRA55.T_10
+    JRA55.JRA55.U_10
+    JRA55.JRA55.V_10
+
     presaero.1x1_brazil
     presaero.1x1_camdenNJ
     presaero.1x1_tropicAtl
@@ -146,6 +156,7 @@ Currently the following streams are supported (term definitions precede the stre
 <datamode datm_mode="CPLHIST3HrWx"  >CPLHIST</datamode>
 <datamode datm_mode="CORE2_NYF"     >CORE2_NYF</datamode>
 <datamode datm_mode="CORE2_IAF"     >CORE2_IAF</datamode>
+<datamode datm_mode="JRA55"         >JRA55</datamode>
 <datamode datm_mode="WW3"           >COPYALL</datamode>
 
 <!-- =========================================  -->
@@ -157,6 +168,7 @@ Currently the following streams are supported (term definitions precede the stre
 <streamslist datm_mode="CLMCRUNCEP">CLMCRUNCEP.Solar,CLMCRUNCEP.Precip,CLMCRUNCEP.TPQW</streamslist>
 <streamslist datm_mode="CORE2_NYF" >CORE2_NYF.GISS,CORE2_NYF.GXGXS,CORE2_NYF.NCEP</streamslist>
 <streamslist datm_mode="CORE2_IAF" >CORE2_IAF.GCGCS.PREC,CORE2_IAF.GISS.LWDN,CORE2_IAF.GISS.SWDN,CORE2_IAF.GISS.SWUP,CORE2_IAF.NCEP.DN10,CORE2_IAF.NCEP.Q_10,CORE2_IAF.NCEP.SLP_,CORE2_IAF.NCEP.T_10,CORE2_IAF.NCEP.U_10,CORE2_IAF.NCEP.V_10,CORE2_IAF.CORE2.ArcFactor</streamslist>
+<streamslist datm_mode="JRA55" >JRA55.JRA55.PREC,JRA55.JRA55.LWDN,JRA55.JRA55.SWDN,JRA55.JRA55.Q_10,JRA55.JRA55.SLP_,JRA55.JRA55.T_10,JRA55.JRA55.U_10,JRA55.JRA55.V_10</streamslist>
 <streamslist datm_mode="CPLHIST3HrWx">CPLHIST3HrWx.Solar,CPLHIST3HrWx.Precip,CPLHIST3HrWx.nonSolarNonPrecip</streamslist>
 <streamslist datm_mode="WW3"      >WW3</streamslist>
 
@@ -171,6 +183,7 @@ Currently the following streams are supported (term definitions precede the stre
 <vectors datm_mode="CPLHIST3HrWx"  >null</vectors>
 <vectors datm_mode="CORE2_NYF"     >u:v</vectors>
 <vectors datm_mode="CORE2_IAF"     >u:v</vectors>
+<vectors datm_mode="JRA55"         >u:v</vectors>
 <vectors datm_mode="WW3"           >u:v</vectors>
 
 <!-- =========================================  -->
@@ -1521,6 +1534,686 @@ ncep.v_10.T62.2009.20120412.nc
 </strm_domvar>
 <strm_datvar     stream="CORE2_IAF.CORE2.ArcFactor">
   TarcFactor tarcf
+</strm_datvar>
+
+<!-- =========================================  -->
+<!-- JRA55                                      -->
+<!-- The most current versions of forcing files -->
+<!-- (those recommended for use) are duplicated -->
+<!-- below and stored at input_data/ocn/jra55/):-->
+<!-- JRA.v1.3.prec.TL319.current                -->
+<!-- JRA.v1.3.lwdn.TL319.current                -->
+<!-- JRA.v1.3.swdn.TL319.current                -->
+<!-- JRA.v1.3.slp_.TL319.current                -->
+<!-- JRA.v1.3.q_10.TL319.current                -->
+<!-- JRA.v1.3.t_10.TL319.current                -->
+<!-- JRA.v1.3.u_10.TL319.current                -->
+<!-- JRA.v1.3.v_10.TL319.current                -->
+<!-- =========================================  -->
+
+<!-- == JRA55 Precip === -->
+
+<strm_year_start stream="JRA55.JRA55.PREC">1958</strm_year_start>
+<strm_year_end   stream="JRA55.JRA55.PREC">2016</strm_year_end>
+<strm_year_align stream="JRA55.JRA55.PREC">1</strm_year_align>
+<strm_domdir     stream="JRA55.JRA55.PREC">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
+<strm_domfil     stream="JRA55.JRA55.PREC">domain.TL319.170621.nc</strm_domfil>
+<strm_datdir     stream="JRA55.JRA55.PREC">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap</strm_datdir>
+<strm_datfil     stream="JRA55.JRA55.PREC">
+           JRA.v1.3.prec.TL319.1958.171019.nc
+           JRA.v1.3.prec.TL319.1959.171019.nc
+           JRA.v1.3.prec.TL319.1960.171019.nc
+           JRA.v1.3.prec.TL319.1961.171019.nc
+           JRA.v1.3.prec.TL319.1962.171019.nc
+           JRA.v1.3.prec.TL319.1963.171019.nc
+           JRA.v1.3.prec.TL319.1964.171019.nc
+           JRA.v1.3.prec.TL319.1965.171019.nc
+           JRA.v1.3.prec.TL319.1966.171019.nc
+           JRA.v1.3.prec.TL319.1967.171019.nc
+           JRA.v1.3.prec.TL319.1968.171019.nc
+           JRA.v1.3.prec.TL319.1969.171019.nc
+           JRA.v1.3.prec.TL319.1970.171019.nc
+           JRA.v1.3.prec.TL319.1971.171019.nc
+           JRA.v1.3.prec.TL319.1972.171019.nc
+           JRA.v1.3.prec.TL319.1973.171019.nc
+           JRA.v1.3.prec.TL319.1974.171019.nc
+           JRA.v1.3.prec.TL319.1975.171019.nc
+           JRA.v1.3.prec.TL319.1976.171019.nc
+           JRA.v1.3.prec.TL319.1977.171019.nc
+           JRA.v1.3.prec.TL319.1978.171019.nc
+           JRA.v1.3.prec.TL319.1979.171019.nc
+           JRA.v1.3.prec.TL319.1980.171019.nc
+           JRA.v1.3.prec.TL319.1981.171019.nc
+           JRA.v1.3.prec.TL319.1982.171019.nc
+           JRA.v1.3.prec.TL319.1983.171019.nc
+           JRA.v1.3.prec.TL319.1984.171019.nc
+           JRA.v1.3.prec.TL319.1985.171019.nc
+           JRA.v1.3.prec.TL319.1986.171019.nc
+           JRA.v1.3.prec.TL319.1987.171019.nc
+           JRA.v1.3.prec.TL319.1988.171019.nc
+           JRA.v1.3.prec.TL319.1989.171019.nc
+           JRA.v1.3.prec.TL319.1990.171019.nc
+           JRA.v1.3.prec.TL319.1991.171019.nc
+           JRA.v1.3.prec.TL319.1992.171019.nc
+           JRA.v1.3.prec.TL319.1993.171019.nc
+           JRA.v1.3.prec.TL319.1994.171019.nc
+           JRA.v1.3.prec.TL319.1995.171019.nc
+           JRA.v1.3.prec.TL319.1996.171019.nc
+           JRA.v1.3.prec.TL319.1997.171019.nc
+           JRA.v1.3.prec.TL319.1998.171019.nc
+           JRA.v1.3.prec.TL319.1999.171019.nc
+           JRA.v1.3.prec.TL319.2000.171019.nc
+           JRA.v1.3.prec.TL319.2001.171019.nc
+           JRA.v1.3.prec.TL319.2002.171019.nc
+           JRA.v1.3.prec.TL319.2003.171019.nc
+           JRA.v1.3.prec.TL319.2004.171019.nc
+           JRA.v1.3.prec.TL319.2005.171019.nc
+           JRA.v1.3.prec.TL319.2006.171019.nc
+           JRA.v1.3.prec.TL319.2007.171019.nc
+           JRA.v1.3.prec.TL319.2008.171019.nc
+           JRA.v1.3.prec.TL319.2009.171019.nc
+           JRA.v1.3.prec.TL319.2010.171019.nc
+           JRA.v1.3.prec.TL319.2011.171019.nc
+           JRA.v1.3.prec.TL319.2012.171019.nc
+           JRA.v1.3.prec.TL319.2013.171019.nc
+           JRA.v1.3.prec.TL319.2014.171019.nc
+           JRA.v1.3.prec.TL319.2015.171019.nc
+           JRA.v1.3.prec.TL319.2016.171019.nc
+</strm_datfil>
+
+<strm_tintalgo   stream="JRA55.JRA55.PREC">linear</strm_tintalgo>
+<strm_dtlimit    stream="JRA55.JRA55.PREC">1.5</strm_dtlimit>
+<strm_offset     stream="JRA55.JRA55.PREC">0</strm_offset>
+<strm_domvar     stream="JRA55.JRA55.PREC">
+  time    time
+  xc      lon
+  yc      lat
+  area    area
+  mask    mask
+</strm_domvar>
+<strm_datvar     stream="JRA55.JRA55.PREC">
+  prec  prec
+</strm_datvar>
+
+<!-- == JRA55 LW down == -->
+
+<strm_year_start stream="JRA55.JRA55.LWDN">1958</strm_year_start>
+<strm_year_end   stream="JRA55.JRA55.LWDN">2016</strm_year_end>
+<strm_year_align stream="JRA55.JRA55.LWDN">   1</strm_year_align>
+<strm_domdir     stream="JRA55.JRA55.LWDN">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
+<strm_domfil     stream="JRA55.JRA55.LWDN">domain.TL319.170621.nc</strm_domfil>
+<strm_datdir     stream="JRA55.JRA55.LWDN">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap</strm_datdir>
+<strm_datfil     stream="JRA55.JRA55.LWDN">
+           JRA.v1.3.lwdn.TL319.1958.171019.nc
+           JRA.v1.3.lwdn.TL319.1959.171019.nc
+           JRA.v1.3.lwdn.TL319.1960.171019.nc
+           JRA.v1.3.lwdn.TL319.1961.171019.nc
+           JRA.v1.3.lwdn.TL319.1962.171019.nc
+           JRA.v1.3.lwdn.TL319.1963.171019.nc
+           JRA.v1.3.lwdn.TL319.1964.171019.nc
+           JRA.v1.3.lwdn.TL319.1965.171019.nc
+           JRA.v1.3.lwdn.TL319.1966.171019.nc
+           JRA.v1.3.lwdn.TL319.1967.171019.nc
+           JRA.v1.3.lwdn.TL319.1968.171019.nc
+           JRA.v1.3.lwdn.TL319.1969.171019.nc
+           JRA.v1.3.lwdn.TL319.1970.171019.nc
+           JRA.v1.3.lwdn.TL319.1971.171019.nc
+           JRA.v1.3.lwdn.TL319.1972.171019.nc
+           JRA.v1.3.lwdn.TL319.1973.171019.nc
+           JRA.v1.3.lwdn.TL319.1974.171019.nc
+           JRA.v1.3.lwdn.TL319.1975.171019.nc
+           JRA.v1.3.lwdn.TL319.1976.171019.nc
+           JRA.v1.3.lwdn.TL319.1977.171019.nc
+           JRA.v1.3.lwdn.TL319.1978.171019.nc
+           JRA.v1.3.lwdn.TL319.1979.171019.nc
+           JRA.v1.3.lwdn.TL319.1980.171019.nc
+           JRA.v1.3.lwdn.TL319.1981.171019.nc
+           JRA.v1.3.lwdn.TL319.1982.171019.nc
+           JRA.v1.3.lwdn.TL319.1983.171019.nc
+           JRA.v1.3.lwdn.TL319.1984.171019.nc
+           JRA.v1.3.lwdn.TL319.1985.171019.nc
+           JRA.v1.3.lwdn.TL319.1986.171019.nc
+           JRA.v1.3.lwdn.TL319.1987.171019.nc
+           JRA.v1.3.lwdn.TL319.1988.171019.nc
+           JRA.v1.3.lwdn.TL319.1989.171019.nc
+           JRA.v1.3.lwdn.TL319.1990.171019.nc
+           JRA.v1.3.lwdn.TL319.1991.171019.nc
+           JRA.v1.3.lwdn.TL319.1992.171019.nc
+           JRA.v1.3.lwdn.TL319.1993.171019.nc
+           JRA.v1.3.lwdn.TL319.1994.171019.nc
+           JRA.v1.3.lwdn.TL319.1995.171019.nc
+           JRA.v1.3.lwdn.TL319.1996.171019.nc
+           JRA.v1.3.lwdn.TL319.1997.171019.nc
+           JRA.v1.3.lwdn.TL319.1998.171019.nc
+           JRA.v1.3.lwdn.TL319.1999.171019.nc
+           JRA.v1.3.lwdn.TL319.2000.171019.nc
+           JRA.v1.3.lwdn.TL319.2001.171019.nc
+           JRA.v1.3.lwdn.TL319.2002.171019.nc
+           JRA.v1.3.lwdn.TL319.2003.171019.nc
+           JRA.v1.3.lwdn.TL319.2004.171019.nc
+           JRA.v1.3.lwdn.TL319.2005.171019.nc
+           JRA.v1.3.lwdn.TL319.2006.171019.nc
+           JRA.v1.3.lwdn.TL319.2007.171019.nc
+           JRA.v1.3.lwdn.TL319.2008.171019.nc
+           JRA.v1.3.lwdn.TL319.2009.171019.nc
+           JRA.v1.3.lwdn.TL319.2010.171019.nc
+           JRA.v1.3.lwdn.TL319.2011.171019.nc
+           JRA.v1.3.lwdn.TL319.2012.171019.nc
+           JRA.v1.3.lwdn.TL319.2013.171019.nc
+           JRA.v1.3.lwdn.TL319.2014.171019.nc
+           JRA.v1.3.lwdn.TL319.2015.171019.nc
+           JRA.v1.3.lwdn.TL319.2016.171019.nc
+</strm_datfil>
+<strm_offset     stream="JRA55.JRA55.LWDN">0</strm_offset>
+<strm_tintalgo   stream="JRA55.JRA55.LWDN">linear</strm_tintalgo>
+<strm_dtlimit    stream="JRA55.JRA55.LWDN">1.5</strm_dtlimit>
+<strm_domvar     stream="JRA55.JRA55.LWDN">
+  time    time
+  xc      lon
+  yc      lat
+  area    area
+  mask    mask
+</strm_domvar>
+<strm_datvar     stream="JRA55.JRA55.LWDN">
+  lwdn  lwdn
+</strm_datvar>
+
+<!-- == JRA55 SW down == -->
+
+<strm_year_start stream="JRA55.JRA55.SWDN">1958</strm_year_start>
+<strm_year_end   stream="JRA55.JRA55.SWDN">2016</strm_year_end>
+<strm_year_align stream="JRA55.JRA55.SWDN">   1</strm_year_align>
+<strm_domdir     stream="JRA55.JRA55.SWDN">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
+<strm_domfil     stream="JRA55.JRA55.SWDN">domain.TL319.170621.nc</strm_domfil>
+<strm_datdir     stream="JRA55.JRA55.SWDN">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap</strm_datdir>
+<strm_datfil     stream="JRA55.JRA55.SWDN">
+           JRA.v1.3.swdn.TL319.1958.171019.nc
+           JRA.v1.3.swdn.TL319.1959.171019.nc
+           JRA.v1.3.swdn.TL319.1960.171019.nc
+           JRA.v1.3.swdn.TL319.1961.171019.nc
+           JRA.v1.3.swdn.TL319.1962.171019.nc
+           JRA.v1.3.swdn.TL319.1963.171019.nc
+           JRA.v1.3.swdn.TL319.1964.171019.nc
+           JRA.v1.3.swdn.TL319.1965.171019.nc
+           JRA.v1.3.swdn.TL319.1966.171019.nc
+           JRA.v1.3.swdn.TL319.1967.171019.nc
+           JRA.v1.3.swdn.TL319.1968.171019.nc
+           JRA.v1.3.swdn.TL319.1969.171019.nc
+           JRA.v1.3.swdn.TL319.1970.171019.nc
+           JRA.v1.3.swdn.TL319.1971.171019.nc
+           JRA.v1.3.swdn.TL319.1972.171019.nc
+           JRA.v1.3.swdn.TL319.1973.171019.nc
+           JRA.v1.3.swdn.TL319.1974.171019.nc
+           JRA.v1.3.swdn.TL319.1975.171019.nc
+           JRA.v1.3.swdn.TL319.1976.171019.nc
+           JRA.v1.3.swdn.TL319.1977.171019.nc
+           JRA.v1.3.swdn.TL319.1978.171019.nc
+           JRA.v1.3.swdn.TL319.1979.171019.nc
+           JRA.v1.3.swdn.TL319.1980.171019.nc
+           JRA.v1.3.swdn.TL319.1981.171019.nc
+           JRA.v1.3.swdn.TL319.1982.171019.nc
+           JRA.v1.3.swdn.TL319.1983.171019.nc
+           JRA.v1.3.swdn.TL319.1984.171019.nc
+           JRA.v1.3.swdn.TL319.1985.171019.nc
+           JRA.v1.3.swdn.TL319.1986.171019.nc
+           JRA.v1.3.swdn.TL319.1987.171019.nc
+           JRA.v1.3.swdn.TL319.1988.171019.nc
+           JRA.v1.3.swdn.TL319.1989.171019.nc
+           JRA.v1.3.swdn.TL319.1990.171019.nc
+           JRA.v1.3.swdn.TL319.1991.171019.nc
+           JRA.v1.3.swdn.TL319.1992.171019.nc
+           JRA.v1.3.swdn.TL319.1993.171019.nc
+           JRA.v1.3.swdn.TL319.1994.171019.nc
+           JRA.v1.3.swdn.TL319.1995.171019.nc
+           JRA.v1.3.swdn.TL319.1996.171019.nc
+           JRA.v1.3.swdn.TL319.1997.171019.nc
+           JRA.v1.3.swdn.TL319.1998.171019.nc
+           JRA.v1.3.swdn.TL319.1999.171019.nc
+           JRA.v1.3.swdn.TL319.2000.171019.nc
+           JRA.v1.3.swdn.TL319.2001.171019.nc
+           JRA.v1.3.swdn.TL319.2002.171019.nc
+           JRA.v1.3.swdn.TL319.2003.171019.nc
+           JRA.v1.3.swdn.TL319.2004.171019.nc
+           JRA.v1.3.swdn.TL319.2005.171019.nc
+           JRA.v1.3.swdn.TL319.2006.171019.nc
+           JRA.v1.3.swdn.TL319.2007.171019.nc
+           JRA.v1.3.swdn.TL319.2008.171019.nc
+           JRA.v1.3.swdn.TL319.2009.171019.nc
+           JRA.v1.3.swdn.TL319.2010.171019.nc
+           JRA.v1.3.swdn.TL319.2011.171019.nc
+           JRA.v1.3.swdn.TL319.2012.171019.nc
+           JRA.v1.3.swdn.TL319.2013.171019.nc
+           JRA.v1.3.swdn.TL319.2014.171019.nc
+           JRA.v1.3.swdn.TL319.2015.171019.nc
+           JRA.v1.3.swdn.TL319.2016.171019.nc
+</strm_datfil>
+<strm_offset     stream="JRA55.JRA55.SWDN">0</strm_offset>
+<strm_tintalgo   stream="JRA55.JRA55.SWDN">linear</strm_tintalgo>
+<strm_dtlimit    stream="JRA55.JRA55.SWDN">1.5</strm_dtlimit>
+<strm_domvar     stream="JRA55.JRA55.SWDN">
+  time    time
+  xc      lon
+  yc      lat
+  area    area
+  mask    mask
+</strm_domvar>
+<strm_datvar     stream="JRA55.JRA55.SWDN">
+  swdn  swdn
+</strm_datvar>
+
+<!-- == JRA55 humidity == -->
+
+<strm_year_start stream="JRA55.JRA55.Q_10">1958</strm_year_start>
+<strm_year_end   stream="JRA55.JRA55.Q_10">2016</strm_year_end>
+<strm_year_align stream="JRA55.JRA55.Q_10">   1</strm_year_align>
+<strm_domdir     stream="JRA55.JRA55.Q_10">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
+<strm_domfil     stream="JRA55.JRA55.Q_10">domain.TL319.170621.nc</strm_domfil>
+<strm_datdir     stream="JRA55.JRA55.Q_10">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap</strm_datdir>
+<strm_datfil     stream="JRA55.JRA55.Q_10">
+           JRA.v1.3.q_10.TL319.1958.171019.nc
+           JRA.v1.3.q_10.TL319.1959.171019.nc
+           JRA.v1.3.q_10.TL319.1960.171019.nc
+           JRA.v1.3.q_10.TL319.1961.171019.nc
+           JRA.v1.3.q_10.TL319.1962.171019.nc
+           JRA.v1.3.q_10.TL319.1963.171019.nc
+           JRA.v1.3.q_10.TL319.1964.171019.nc
+           JRA.v1.3.q_10.TL319.1965.171019.nc
+           JRA.v1.3.q_10.TL319.1966.171019.nc
+           JRA.v1.3.q_10.TL319.1967.171019.nc
+           JRA.v1.3.q_10.TL319.1968.171019.nc
+           JRA.v1.3.q_10.TL319.1969.171019.nc
+           JRA.v1.3.q_10.TL319.1970.171019.nc
+           JRA.v1.3.q_10.TL319.1971.171019.nc
+           JRA.v1.3.q_10.TL319.1972.171019.nc
+           JRA.v1.3.q_10.TL319.1973.171019.nc
+           JRA.v1.3.q_10.TL319.1974.171019.nc
+           JRA.v1.3.q_10.TL319.1975.171019.nc
+           JRA.v1.3.q_10.TL319.1976.171019.nc
+           JRA.v1.3.q_10.TL319.1977.171019.nc
+           JRA.v1.3.q_10.TL319.1978.171019.nc
+           JRA.v1.3.q_10.TL319.1979.171019.nc
+           JRA.v1.3.q_10.TL319.1980.171019.nc
+           JRA.v1.3.q_10.TL319.1981.171019.nc
+           JRA.v1.3.q_10.TL319.1982.171019.nc
+           JRA.v1.3.q_10.TL319.1983.171019.nc
+           JRA.v1.3.q_10.TL319.1984.171019.nc
+           JRA.v1.3.q_10.TL319.1985.171019.nc
+           JRA.v1.3.q_10.TL319.1986.171019.nc
+           JRA.v1.3.q_10.TL319.1987.171019.nc
+           JRA.v1.3.q_10.TL319.1988.171019.nc
+           JRA.v1.3.q_10.TL319.1989.171019.nc
+           JRA.v1.3.q_10.TL319.1990.171019.nc
+           JRA.v1.3.q_10.TL319.1991.171019.nc
+           JRA.v1.3.q_10.TL319.1992.171019.nc
+           JRA.v1.3.q_10.TL319.1993.171019.nc
+           JRA.v1.3.q_10.TL319.1994.171019.nc
+           JRA.v1.3.q_10.TL319.1995.171019.nc
+           JRA.v1.3.q_10.TL319.1996.171019.nc
+           JRA.v1.3.q_10.TL319.1997.171019.nc
+           JRA.v1.3.q_10.TL319.1998.171019.nc
+           JRA.v1.3.q_10.TL319.1999.171019.nc
+           JRA.v1.3.q_10.TL319.2000.171019.nc
+           JRA.v1.3.q_10.TL319.2001.171019.nc
+           JRA.v1.3.q_10.TL319.2002.171019.nc
+           JRA.v1.3.q_10.TL319.2003.171019.nc
+           JRA.v1.3.q_10.TL319.2004.171019.nc
+           JRA.v1.3.q_10.TL319.2005.171019.nc
+           JRA.v1.3.q_10.TL319.2006.171019.nc
+           JRA.v1.3.q_10.TL319.2007.171019.nc
+           JRA.v1.3.q_10.TL319.2008.171019.nc
+           JRA.v1.3.q_10.TL319.2009.171019.nc
+           JRA.v1.3.q_10.TL319.2010.171019.nc
+           JRA.v1.3.q_10.TL319.2011.171019.nc
+           JRA.v1.3.q_10.TL319.2012.171019.nc
+           JRA.v1.3.q_10.TL319.2013.171019.nc
+           JRA.v1.3.q_10.TL319.2014.171019.nc
+           JRA.v1.3.q_10.TL319.2015.171019.nc
+           JRA.v1.3.q_10.TL319.2016.171019.nc
+</strm_datfil>
+<strm_offset     stream="JRA55.JRA55.Q_10">0</strm_offset>
+<strm_tintalgo   stream="JRA55.JRA55.Q_10">linear</strm_tintalgo>
+<strm_dtlimit    stream="JRA55.JRA55.Q_10">1.5</strm_dtlimit>
+<strm_domvar     stream="JRA55.JRA55.Q_10">
+  time    time
+  xc      lon
+  yc      lat
+  area    area
+  mask    mask
+</strm_domvar>
+<strm_datvar     stream="JRA55.JRA55.Q_10">
+  q_10  shum
+</strm_datvar>
+
+<!-- == JRA55 Sea-level Presure == -->
+
+<strm_year_start stream="JRA55.JRA55.SLP_">1958</strm_year_start>
+<strm_year_end   stream="JRA55.JRA55.SLP_">2016</strm_year_end>
+<strm_year_align stream="JRA55.JRA55.SLP_">   1</strm_year_align>
+<strm_domdir     stream="JRA55.JRA55.SLP_">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
+<strm_domfil     stream="JRA55.JRA55.SLP_">domain.TL319.170621.nc</strm_domfil>
+<strm_datdir     stream="JRA55.JRA55.SLP_">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap</strm_datdir>
+<strm_datfil     stream="JRA55.JRA55.SLP_">
+           JRA.v1.3.slp.TL319.1958.171019.nc
+           JRA.v1.3.slp.TL319.1959.171019.nc
+           JRA.v1.3.slp.TL319.1960.171019.nc
+           JRA.v1.3.slp.TL319.1961.171019.nc
+           JRA.v1.3.slp.TL319.1962.171019.nc
+           JRA.v1.3.slp.TL319.1963.171019.nc
+           JRA.v1.3.slp.TL319.1964.171019.nc
+           JRA.v1.3.slp.TL319.1965.171019.nc
+           JRA.v1.3.slp.TL319.1966.171019.nc
+           JRA.v1.3.slp.TL319.1967.171019.nc
+           JRA.v1.3.slp.TL319.1968.171019.nc
+           JRA.v1.3.slp.TL319.1969.171019.nc
+           JRA.v1.3.slp.TL319.1970.171019.nc
+           JRA.v1.3.slp.TL319.1971.171019.nc
+           JRA.v1.3.slp.TL319.1972.171019.nc
+           JRA.v1.3.slp.TL319.1973.171019.nc
+           JRA.v1.3.slp.TL319.1974.171019.nc
+           JRA.v1.3.slp.TL319.1975.171019.nc
+           JRA.v1.3.slp.TL319.1976.171019.nc
+           JRA.v1.3.slp.TL319.1977.171019.nc
+           JRA.v1.3.slp.TL319.1978.171019.nc
+           JRA.v1.3.slp.TL319.1979.171019.nc
+           JRA.v1.3.slp.TL319.1980.171019.nc
+           JRA.v1.3.slp.TL319.1981.171019.nc
+           JRA.v1.3.slp.TL319.1982.171019.nc
+           JRA.v1.3.slp.TL319.1983.171019.nc
+           JRA.v1.3.slp.TL319.1984.171019.nc
+           JRA.v1.3.slp.TL319.1985.171019.nc
+           JRA.v1.3.slp.TL319.1986.171019.nc
+           JRA.v1.3.slp.TL319.1987.171019.nc
+           JRA.v1.3.slp.TL319.1988.171019.nc
+           JRA.v1.3.slp.TL319.1989.171019.nc
+           JRA.v1.3.slp.TL319.1990.171019.nc
+           JRA.v1.3.slp.TL319.1991.171019.nc
+           JRA.v1.3.slp.TL319.1992.171019.nc
+           JRA.v1.3.slp.TL319.1993.171019.nc
+           JRA.v1.3.slp.TL319.1994.171019.nc
+           JRA.v1.3.slp.TL319.1995.171019.nc
+           JRA.v1.3.slp.TL319.1996.171019.nc
+           JRA.v1.3.slp.TL319.1997.171019.nc
+           JRA.v1.3.slp.TL319.1998.171019.nc
+           JRA.v1.3.slp.TL319.1999.171019.nc
+           JRA.v1.3.slp.TL319.2000.171019.nc
+           JRA.v1.3.slp.TL319.2001.171019.nc
+           JRA.v1.3.slp.TL319.2002.171019.nc
+           JRA.v1.3.slp.TL319.2003.171019.nc
+           JRA.v1.3.slp.TL319.2004.171019.nc
+           JRA.v1.3.slp.TL319.2005.171019.nc
+           JRA.v1.3.slp.TL319.2006.171019.nc
+           JRA.v1.3.slp.TL319.2007.171019.nc
+           JRA.v1.3.slp.TL319.2008.171019.nc
+           JRA.v1.3.slp.TL319.2009.171019.nc
+           JRA.v1.3.slp.TL319.2010.171019.nc
+           JRA.v1.3.slp.TL319.2011.171019.nc
+           JRA.v1.3.slp.TL319.2012.171019.nc
+           JRA.v1.3.slp.TL319.2013.171019.nc
+           JRA.v1.3.slp.TL319.2014.171019.nc
+           JRA.v1.3.slp.TL319.2015.171019.nc
+           JRA.v1.3.slp.TL319.2016.171019.nc
+</strm_datfil>
+<strm_offset     stream="JRA55.JRA55.SLP_">0</strm_offset>
+<strm_tintalgo   stream="JRA55.JRA55.SLP_">linear</strm_tintalgo>
+<strm_dtlimit    stream="JRA55.JRA55.SLP_">1.5</strm_dtlimit>
+<strm_domvar     stream="JRA55.JRA55.SLP_">
+  time    time
+  xc      lon
+  yc      lat
+  area    area
+  mask    mask
+</strm_domvar>
+<strm_datvar     stream="JRA55.JRA55.SLP_">
+  slp  pslv
+</strm_datvar>
+
+<!-- == JRA55 Temperature == -->
+
+<strm_year_start stream="JRA55.JRA55.T_10">1958</strm_year_start>
+<strm_year_end   stream="JRA55.JRA55.T_10">2016</strm_year_end>
+<strm_year_align stream="JRA55.JRA55.T_10">   1</strm_year_align>
+<strm_domdir     stream="JRA55.JRA55.T_10">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
+<strm_domfil     stream="JRA55.JRA55.T_10">domain.TL319.170621.nc</strm_domfil>
+<strm_datdir     stream="JRA55.JRA55.T_10">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap</strm_datdir>
+<strm_datfil     stream="JRA55.JRA55.T_10">
+           JRA.v1.3.t_10.TL319.1958.171019.nc
+           JRA.v1.3.t_10.TL319.1959.171019.nc
+           JRA.v1.3.t_10.TL319.1960.171019.nc
+           JRA.v1.3.t_10.TL319.1961.171019.nc
+           JRA.v1.3.t_10.TL319.1962.171019.nc
+           JRA.v1.3.t_10.TL319.1963.171019.nc
+           JRA.v1.3.t_10.TL319.1964.171019.nc
+           JRA.v1.3.t_10.TL319.1965.171019.nc
+           JRA.v1.3.t_10.TL319.1966.171019.nc
+           JRA.v1.3.t_10.TL319.1967.171019.nc
+           JRA.v1.3.t_10.TL319.1968.171019.nc
+           JRA.v1.3.t_10.TL319.1969.171019.nc
+           JRA.v1.3.t_10.TL319.1970.171019.nc
+           JRA.v1.3.t_10.TL319.1971.171019.nc
+           JRA.v1.3.t_10.TL319.1972.171019.nc
+           JRA.v1.3.t_10.TL319.1973.171019.nc
+           JRA.v1.3.t_10.TL319.1974.171019.nc
+           JRA.v1.3.t_10.TL319.1975.171019.nc
+           JRA.v1.3.t_10.TL319.1976.171019.nc
+           JRA.v1.3.t_10.TL319.1977.171019.nc
+           JRA.v1.3.t_10.TL319.1978.171019.nc
+           JRA.v1.3.t_10.TL319.1979.171019.nc
+           JRA.v1.3.t_10.TL319.1980.171019.nc
+           JRA.v1.3.t_10.TL319.1981.171019.nc
+           JRA.v1.3.t_10.TL319.1982.171019.nc
+           JRA.v1.3.t_10.TL319.1983.171019.nc
+           JRA.v1.3.t_10.TL319.1984.171019.nc
+           JRA.v1.3.t_10.TL319.1985.171019.nc
+           JRA.v1.3.t_10.TL319.1986.171019.nc
+           JRA.v1.3.t_10.TL319.1987.171019.nc
+           JRA.v1.3.t_10.TL319.1988.171019.nc
+           JRA.v1.3.t_10.TL319.1989.171019.nc
+           JRA.v1.3.t_10.TL319.1990.171019.nc
+           JRA.v1.3.t_10.TL319.1991.171019.nc
+           JRA.v1.3.t_10.TL319.1992.171019.nc
+           JRA.v1.3.t_10.TL319.1993.171019.nc
+           JRA.v1.3.t_10.TL319.1994.171019.nc
+           JRA.v1.3.t_10.TL319.1995.171019.nc
+           JRA.v1.3.t_10.TL319.1996.171019.nc
+           JRA.v1.3.t_10.TL319.1997.171019.nc
+           JRA.v1.3.t_10.TL319.1998.171019.nc
+           JRA.v1.3.t_10.TL319.1999.171019.nc
+           JRA.v1.3.t_10.TL319.2000.171019.nc
+           JRA.v1.3.t_10.TL319.2001.171019.nc
+           JRA.v1.3.t_10.TL319.2002.171019.nc
+           JRA.v1.3.t_10.TL319.2003.171019.nc
+           JRA.v1.3.t_10.TL319.2004.171019.nc
+           JRA.v1.3.t_10.TL319.2005.171019.nc
+           JRA.v1.3.t_10.TL319.2006.171019.nc
+           JRA.v1.3.t_10.TL319.2007.171019.nc
+           JRA.v1.3.t_10.TL319.2008.171019.nc
+           JRA.v1.3.t_10.TL319.2009.171019.nc
+           JRA.v1.3.t_10.TL319.2010.171019.nc
+           JRA.v1.3.t_10.TL319.2011.171019.nc
+           JRA.v1.3.t_10.TL319.2012.171019.nc
+           JRA.v1.3.t_10.TL319.2013.171019.nc
+           JRA.v1.3.t_10.TL319.2014.171019.nc
+           JRA.v1.3.t_10.TL319.2015.171019.nc
+           JRA.v1.3.t_10.TL319.2016.171019.nc
+</strm_datfil>
+<strm_offset     stream="JRA55.JRA55.T_10">0</strm_offset>
+<strm_tintalgo   stream="JRA55.JRA55.T_10">linear</strm_tintalgo>
+<strm_dtlimit    stream="JRA55.JRA55.T_10">1.5</strm_dtlimit>
+<strm_domvar     stream="JRA55.JRA55.T_10">
+  time    time
+  xc      lon
+  yc      lat
+  area    area
+  mask    mask
+</strm_domvar>
+<strm_datvar     stream="JRA55.JRA55.T_10">
+  t_10  tbot
+</strm_datvar>
+
+<!-- == IAF NCEP U-Wind === -->
+
+<strm_year_start stream="JRA55.JRA55.U_10">1958</strm_year_start>
+<strm_year_end   stream="JRA55.JRA55.U_10">2016</strm_year_end>
+<strm_year_align stream="JRA55.JRA55.U_10">   1</strm_year_align>
+<strm_domdir     stream="JRA55.JRA55.U_10">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
+<strm_domfil     stream="JRA55.JRA55.U_10">domain.TL319.170621.nc</strm_domfil>
+<strm_datdir     stream="JRA55.JRA55.U_10">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap</strm_datdir>
+<strm_datfil     stream="JRA55.JRA55.U_10">
+           JRA.v1.3.u_10.TL319.1958.171019.nc
+           JRA.v1.3.u_10.TL319.1959.171019.nc
+           JRA.v1.3.u_10.TL319.1960.171019.nc
+           JRA.v1.3.u_10.TL319.1961.171019.nc
+           JRA.v1.3.u_10.TL319.1962.171019.nc
+           JRA.v1.3.u_10.TL319.1963.171019.nc
+           JRA.v1.3.u_10.TL319.1964.171019.nc
+           JRA.v1.3.u_10.TL319.1965.171019.nc
+           JRA.v1.3.u_10.TL319.1966.171019.nc
+           JRA.v1.3.u_10.TL319.1967.171019.nc
+           JRA.v1.3.u_10.TL319.1968.171019.nc
+           JRA.v1.3.u_10.TL319.1969.171019.nc
+           JRA.v1.3.u_10.TL319.1970.171019.nc
+           JRA.v1.3.u_10.TL319.1971.171019.nc
+           JRA.v1.3.u_10.TL319.1972.171019.nc
+           JRA.v1.3.u_10.TL319.1973.171019.nc
+           JRA.v1.3.u_10.TL319.1974.171019.nc
+           JRA.v1.3.u_10.TL319.1975.171019.nc
+           JRA.v1.3.u_10.TL319.1976.171019.nc
+           JRA.v1.3.u_10.TL319.1977.171019.nc
+           JRA.v1.3.u_10.TL319.1978.171019.nc
+           JRA.v1.3.u_10.TL319.1979.171019.nc
+           JRA.v1.3.u_10.TL319.1980.171019.nc
+           JRA.v1.3.u_10.TL319.1981.171019.nc
+           JRA.v1.3.u_10.TL319.1982.171019.nc
+           JRA.v1.3.u_10.TL319.1983.171019.nc
+           JRA.v1.3.u_10.TL319.1984.171019.nc
+           JRA.v1.3.u_10.TL319.1985.171019.nc
+           JRA.v1.3.u_10.TL319.1986.171019.nc
+           JRA.v1.3.u_10.TL319.1987.171019.nc
+           JRA.v1.3.u_10.TL319.1988.171019.nc
+           JRA.v1.3.u_10.TL319.1989.171019.nc
+           JRA.v1.3.u_10.TL319.1990.171019.nc
+           JRA.v1.3.u_10.TL319.1991.171019.nc
+           JRA.v1.3.u_10.TL319.1992.171019.nc
+           JRA.v1.3.u_10.TL319.1993.171019.nc
+           JRA.v1.3.u_10.TL319.1994.171019.nc
+           JRA.v1.3.u_10.TL319.1995.171019.nc
+           JRA.v1.3.u_10.TL319.1996.171019.nc
+           JRA.v1.3.u_10.TL319.1997.171019.nc
+           JRA.v1.3.u_10.TL319.1998.171019.nc
+           JRA.v1.3.u_10.TL319.1999.171019.nc
+           JRA.v1.3.u_10.TL319.2000.171019.nc
+           JRA.v1.3.u_10.TL319.2001.171019.nc
+           JRA.v1.3.u_10.TL319.2002.171019.nc
+           JRA.v1.3.u_10.TL319.2003.171019.nc
+           JRA.v1.3.u_10.TL319.2004.171019.nc
+           JRA.v1.3.u_10.TL319.2005.171019.nc
+           JRA.v1.3.u_10.TL319.2006.171019.nc
+           JRA.v1.3.u_10.TL319.2007.171019.nc
+           JRA.v1.3.u_10.TL319.2008.171019.nc
+           JRA.v1.3.u_10.TL319.2009.171019.nc
+           JRA.v1.3.u_10.TL319.2010.171019.nc
+           JRA.v1.3.u_10.TL319.2011.171019.nc
+           JRA.v1.3.u_10.TL319.2012.171019.nc
+           JRA.v1.3.u_10.TL319.2013.171019.nc
+           JRA.v1.3.u_10.TL319.2014.171019.nc
+           JRA.v1.3.u_10.TL319.2015.171019.nc
+           JRA.v1.3.u_10.TL319.2016.171019.nc
+</strm_datfil>
+<strm_offset     stream="JRA55.JRA55.U_10">0</strm_offset>
+<strm_tintalgo   stream="JRA55.JRA55.U_10">linear</strm_tintalgo>
+<strm_dtlimit    stream="JRA55.JRA55.U_10">1.5</strm_dtlimit>
+<strm_domvar     stream="JRA55.JRA55.U_10">
+  time    time
+  xc      lon
+  yc      lat
+  area    area
+  mask    mask
+</strm_domvar>
+<strm_datvar     stream="JRA55.JRA55.U_10">
+  u_10  u
+</strm_datvar>
+
+<!-- == IAF NCEP V-Wind === -->
+
+<strm_year_start stream="JRA55.JRA55.V_10">1958</strm_year_start>
+<strm_year_end   stream="JRA55.JRA55.V_10">2016</strm_year_end>
+<strm_year_align stream="JRA55.JRA55.V_10">   1</strm_year_align>
+<strm_domdir     stream="JRA55.JRA55.V_10">$DIN_LOC_ROOT/atm/datm7</strm_domdir>
+<strm_domfil     stream="JRA55.JRA55.V_10">domain.TL319.170621.nc</strm_domfil>
+<strm_datdir     stream="JRA55.JRA55.V_10">$DIN_LOC_ROOT/ocn/jra55/v1.3_noleap</strm_datdir>
+<strm_datfil     stream="JRA55.JRA55.V_10">
+           JRA.v1.3.v_10.TL319.1958.171019.nc
+           JRA.v1.3.v_10.TL319.1959.171019.nc
+           JRA.v1.3.v_10.TL319.1960.171019.nc
+           JRA.v1.3.v_10.TL319.1961.171019.nc
+           JRA.v1.3.v_10.TL319.1962.171019.nc
+           JRA.v1.3.v_10.TL319.1963.171019.nc
+           JRA.v1.3.v_10.TL319.1964.171019.nc
+           JRA.v1.3.v_10.TL319.1965.171019.nc
+           JRA.v1.3.v_10.TL319.1966.171019.nc
+           JRA.v1.3.v_10.TL319.1967.171019.nc
+           JRA.v1.3.v_10.TL319.1968.171019.nc
+           JRA.v1.3.v_10.TL319.1969.171019.nc
+           JRA.v1.3.v_10.TL319.1970.171019.nc
+           JRA.v1.3.v_10.TL319.1971.171019.nc
+           JRA.v1.3.v_10.TL319.1972.171019.nc
+           JRA.v1.3.v_10.TL319.1973.171019.nc
+           JRA.v1.3.v_10.TL319.1974.171019.nc
+           JRA.v1.3.v_10.TL319.1975.171019.nc
+           JRA.v1.3.v_10.TL319.1976.171019.nc
+           JRA.v1.3.v_10.TL319.1977.171019.nc
+           JRA.v1.3.v_10.TL319.1978.171019.nc
+           JRA.v1.3.v_10.TL319.1979.171019.nc
+           JRA.v1.3.v_10.TL319.1980.171019.nc
+           JRA.v1.3.v_10.TL319.1981.171019.nc
+           JRA.v1.3.v_10.TL319.1982.171019.nc
+           JRA.v1.3.v_10.TL319.1983.171019.nc
+           JRA.v1.3.v_10.TL319.1984.171019.nc
+           JRA.v1.3.v_10.TL319.1985.171019.nc
+           JRA.v1.3.v_10.TL319.1986.171019.nc
+           JRA.v1.3.v_10.TL319.1987.171019.nc
+           JRA.v1.3.v_10.TL319.1988.171019.nc
+           JRA.v1.3.v_10.TL319.1989.171019.nc
+           JRA.v1.3.v_10.TL319.1990.171019.nc
+           JRA.v1.3.v_10.TL319.1991.171019.nc
+           JRA.v1.3.v_10.TL319.1992.171019.nc
+           JRA.v1.3.v_10.TL319.1993.171019.nc
+           JRA.v1.3.v_10.TL319.1994.171019.nc
+           JRA.v1.3.v_10.TL319.1995.171019.nc
+           JRA.v1.3.v_10.TL319.1996.171019.nc
+           JRA.v1.3.v_10.TL319.1997.171019.nc
+           JRA.v1.3.v_10.TL319.1998.171019.nc
+           JRA.v1.3.v_10.TL319.1999.171019.nc
+           JRA.v1.3.v_10.TL319.2000.171019.nc
+           JRA.v1.3.v_10.TL319.2001.171019.nc
+           JRA.v1.3.v_10.TL319.2002.171019.nc
+           JRA.v1.3.v_10.TL319.2003.171019.nc
+           JRA.v1.3.v_10.TL319.2004.171019.nc
+           JRA.v1.3.v_10.TL319.2005.171019.nc
+           JRA.v1.3.v_10.TL319.2006.171019.nc
+           JRA.v1.3.v_10.TL319.2007.171019.nc
+           JRA.v1.3.v_10.TL319.2008.171019.nc
+           JRA.v1.3.v_10.TL319.2009.171019.nc
+           JRA.v1.3.v_10.TL319.2010.171019.nc
+           JRA.v1.3.v_10.TL319.2011.171019.nc
+           JRA.v1.3.v_10.TL319.2012.171019.nc
+           JRA.v1.3.v_10.TL319.2013.171019.nc
+           JRA.v1.3.v_10.TL319.2014.171019.nc
+           JRA.v1.3.v_10.TL319.2015.171019.nc
+           JRA.v1.3.v_10.TL319.2016.171019.nc
+</strm_datfil>
+<strm_offset     stream="JRA55.JRA55.V_10">0</strm_offset>
+<strm_tintalgo   stream="JRA55.JRA55.V_10">linear</strm_tintalgo>
+<strm_dtlimit    stream="JRA55.JRA55.V_10">1.5</strm_dtlimit>
+<strm_domvar     stream="JRA55.JRA55.V_10">
+  time    time
+  xc      lon
+  yc      lat
+  area    area
+  mask    mask
+</strm_domvar>
+<strm_datvar     stream="JRA55.JRA55.V_10">
+  v_10  v
 </strm_datvar>
 
 <!-- == WW3 ==== -->

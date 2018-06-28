@@ -1771,7 +1771,7 @@ runs; for branch runs, it MUST BE FALSE."
 
 <entry id="DATM_MODE" 
  type="char"
- valid_values="CORE2_NYF,CORE2_IAF,TN460,CLM_QIAN,CLM1PT,CLMCRUNCEP,CLMCRUNCEP_V5,CPLHIST3HrWx,COPYALL_NPS_v1,COPYALL_NPS_CORE2_v1,WRF,WW3"  
+ valid_values="CORE2_NYF,CORE2_IAF,JRA55,TN460,CLM_QIAN,CLM1PT,CLMCRUNCEP,CLMCRUNCEP_V5,CPLHIST3HrWx,COPYALL_NPS_v1,COPYALL_NPS_CORE2_v1,WRF,WW3"  
  value="CORE2_NYF" 
  group="run_component_datm"
  sdesc="DATM mode"
@@ -1955,10 +1955,10 @@ Default is prescribed."
 
 <entry id="DROF_MODE" 
  type="char"
- valid_values="CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,NULL"
+ valid_values="CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,NULL,JRA55"
  value="DIATREN_ANN_RX1" 
  group="run_component_drof"
- sdesc="valid values: CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,NULL"
+ sdesc="valid values: CPLHIST,DIATREN_ANN_RX1,DIATREN_IAF_RX1,NULL,JRA55"
  ldesc="
 DROF mode. Values are CPLHIST, *_RX1, and NULL. In *_RX1 mode,
 observational climatological or interannual

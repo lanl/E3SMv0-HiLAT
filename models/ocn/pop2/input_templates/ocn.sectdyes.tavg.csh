@@ -14,7 +14,7 @@ if ($my_stream < 1) then
    exit 5
 endif
 
-@ s1 = 1   # use base-model stream 1
+@ s1 = 2   # use base-model stream 1
 
 cat >! $CASEROOT/Buildconf/pop2conf/sectdyes_tavg_contents << EOF
 $s1  DYE01

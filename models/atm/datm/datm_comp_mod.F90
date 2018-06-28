@@ -422,6 +422,7 @@ subroutine datm_comp_init( EClock, cdata, x2a, a2x, NLFilename )
     if (trim(atm_mode) == 'NULL'      .or. &
         trim(atm_mode) == 'CORE2_NYF' .or. &
         trim(atm_mode) == 'CORE2_IAF' .or. &
+        trim(atm_mode) == 'JRA55'     .or. &
         trim(atm_mode) == 'WRF'       .or. &
         trim(atm_mode) == 'CLMNCEP'   .or. &
         trim(atm_mode) == 'CPLHIST'   .or. &
@@ -1060,6 +1061,55 @@ subroutine datm_comp_run( EClock, cdata,  x2a, a2x)
             factor = MIN(1.0_R8, 0.1_R8*(yc(n)-60.0_R8) )
             a2x%rAttr(klwdn,n) = a2x%rAttr(klwdn,n) + factor * dLWarc
          endif
+
+      enddo   ! lsize
+
+   case('JRA55')
+
+      if (firstcall) then
+         if (sprec < 1 .or. sswdn < 1) then
+            write(logunit,F00) 'ERROR: prec and swdn must be in streams for JRA'
+            call shr_sys_abort(trim(subname)//'ERROR: prec and swdn must be in streams for JRA55')
+         endif
+      endif
+
+      lsize = mct_avect_lsize(a2x)
+      do n = 1,lsize
+         a2x%rAttr(kz,n) = 10.0_R8
+         a2x%rAttr(kpbot,n) = a2x%rAttr(kpslv,n)
+         a2x%rAttr(kptem,n) = a2x%rAttr(ktbot,n)
+
+         !--- density ---
+         a2x%rAttr(kdens,n) = a2x%rAttr(kpbot,n)/(rdair*a2x%rAttr(ktbot,n) &
+                               *(1+0.608* a2x%rAttr(kshum,n)))
+
+         !-------------------------------------------------------------------------
+         ! PRECIPITATION DATA
+         !-------------------------------------------------------------------------
+
+         a2x%rAttr(krc,n) = 0.0_R8                    ! default zero
+         a2x%rAttr(ksc,n) = 0.0_R8
+         if (a2x%rAttr(ktbot,n) < tKFrz ) then        ! assign precip to rain/snow components
+            a2x%rAttr(krl,n) = 0.0_R8
+            a2x%rAttr(ksl,n) = avstrm%rAttr(sprec,n)
+         else
+            a2x%rAttr(krl,n) = avstrm%rAttr(sprec,n)
+            a2x%rAttr(ksl,n) = 0.0_R8
+         endif
+
+         !-------------------------------------------------------------------------
+         ! RADIATION DATA 
+         !-------------------------------------------------------------------------
+
+         !--- fabricate required swdn components from net swdn ---
+         a2x%rAttr(kswvdr,n) = avstrm%rAttr(sswdn,n)*(0.28_R8)
+         a2x%rAttr(kswndr,n) = avstrm%rAttr(sswdn,n)*(0.31_R8)
+         a2x%rAttr(kswvdf,n) = avstrm%rAttr(sswdn,n)*(0.24_R8)
+         a2x%rAttr(kswndf,n) = avstrm%rAttr(sswdn,n)*(0.17_R8)
+
+         !--- compute net short-wave based on LY08 latitudinally-varying albedo ---
+         avg_alb = ( 0.069 - 0.011*cos(2.0_R8*yc(n)*degtorad ) )
+         a2x%rAttr(kswnet,n) = avstrm%rAttr(sswdn,n)*(1.0_R8 - avg_alb)
 
       enddo   ! lsize
 
