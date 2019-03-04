@@ -7,9 +7,9 @@
 #
 # The decomposition is appropriate for 1920 OCN pes, and 480 ICE pes
 # 
-export CaseName=t32_GNYF_ArgentineBasin_upwind3
+export CaseName=t32_GIAF_Griz
 echo "casename = $CaseName"
-export CaseDir=/turquoise/usr/projects/climate/wilbert/HiLAT-JRA55/
+export CaseDir=/turquoise/usr/projects/climate/jiaxu/tx0.3v2_IAF/
 echo "casedir = $CaseDir/$CaseName"
 
 ./create_newcase -case $CaseDir/$CaseName -res T62_t32 -compset G -mach grizzly -proj climatehilat

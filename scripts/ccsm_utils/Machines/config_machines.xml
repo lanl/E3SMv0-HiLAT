@@ -856,7 +856,7 @@
 </machine>
 
 <machine MACH="wolf">
-         <DESC>LANL Linux Cluster, 16 pes/node, batch system Moab</DESC>
+         <DESC>LANL Linux Cluster, 16 pes/node, batch system Slurm</DESC>
          <COMPILERS>intel,pgi,gnu</COMPILERS>
          <MPILIBS>openmpi,mvapich,mpi-serial</MPILIBS>
          <OS>LINUX</OS>
@@ -878,7 +878,7 @@
 </machine>
 
 <machine MACH="grizzly">
-        <DESC>LANL Linux Cluster, 36 pes/node, batch system Moab</DESC>
+        <DESC>LANL Linux Cluster, 36 pes/node, batch system Slurm</DESC>
         <COMPILERS>intel,gnu</COMPILERS>
         <MPILIBS>openmpi</MPILIBS>
         <OS>LINUX</OS>

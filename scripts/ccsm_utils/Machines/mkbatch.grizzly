@@ -43,12 +43,14 @@ endif
 
 cat >! $file << EOF1
 #!/bin/csh
-#SBATCH --job-name ${jobname}
-#SBATCH --nodes=${nodes}
+#SBATCH -J ${jobname}
+#SBATCH -N ${nodes}
 #SBATCH --ntasks-per-node=${MAX_TASKS_PER_NODE}
-#SBATCH --time=${walltime}
-#SBATCH --output $CASEROOT/log.o
-#SBATCH --error $CASEROOT/log.e
+#SBATCH -t ${walltime}
+#SBATCH -o $CASEROOT/log.o
+#SBATCH -e $CASEROOT/log.e
+#SBATCH --mail-user=${USER}@lanl.gov
+#SBATCH --mail-type=FAIL,END
 ${account}
 ${queuetype}
 

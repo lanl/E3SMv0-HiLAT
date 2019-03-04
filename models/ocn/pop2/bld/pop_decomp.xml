@@ -51,14 +51,70 @@
 
 <!-- -------------------------------------------------------------------------------- -->
   <!-- tx0.3v2 resolution -->
+  <decomp nproc="480" res="tx0.3v2" >
+    <maxblocks >1</maxblocks>
+    <bsize_x   >50</bsize_x>
+    <bsize_y   >40</bsize_y>
+    <nx_blocks >24</nx_blocks>
+    <ny_blocks >20</ny_blocks>
+    <decomptype>spacecurve</decomptype>
+  </decomp>
+
+  <decomp nproc="960" res="tx0.3v2" >
+    <maxblocks >1</maxblocks>
+    <bsize_x   >40</bsize_x>
+    <bsize_y   >25</bsize_y>
+    <nx_blocks >30</nx_blocks>
+    <ny_blocks >32</ny_blocks>
+    <decomptype>spacecurve</decomptype>
+  </decomp>
+
+  <decomp nproc="1280" res="tx0.3v2" >
+    <maxblocks >1</maxblocks>
+    <bsize_x   >30</bsize_x>
+    <bsize_y   >25</bsize_y>
+    <nx_blocks >40</nx_blocks>
+    <ny_blocks >32</ny_blocks>
+    <decomptype>spacecurve</decomptype>
+  </decomp>
+
+  <decomp nproc="1536" res="tx0.3v2" >
+    <maxblocks >1</maxblocks>
+    <bsize_x   >25</bsize_x>
+    <bsize_y   >25</bsize_y>
+    <nx_blocks >48</nx_blocks>
+    <ny_blocks >32</ny_blocks>
+    <decomptype>spacecurve</decomptype>
+  </decomp>
+
   <decomp nproc="1920" res="tx0.3v2" >
     <maxblocks >1</maxblocks>
     <bsize_x   >25</bsize_x>
     <bsize_y   >20</bsize_y>
+    <nx_blocks >48</nx_blocks>
+    <ny_blocks >40</ny_blocks>
     <decomptype>spacecurve</decomptype>
   </decomp>
 
+  <decomp nproc="2400" res="tx0.3v2" >
+    <maxblocks >1</maxblocks>
+    <bsize_x   >20</bsize_x>
+    <bsize_y   >20</bsize_y>
+    <nx_blocks >60</nx_blocks>
+    <ny_blocks >40</ny_blocks>
+    <decomptype>spacecurve</decomptype>
+  </decomp>
 
+  <decomp nproc="3000" res="tx0.3v2" >
+    <maxblocks >1</maxblocks>
+    <bsize_x   >20</bsize_x>
+    <bsize_y   >16</bsize_y>
+    <nx_blocks >60</nx_blocks>
+    <ny_blocks >50</ny_blocks>
+    <decomptype>spacecurve</decomptype>
+  </decomp>
+
+<!-- -------------------------------------------------------------------------------- -->
   <!-- tx0.1v2 resolution -->
   <decomp nproc="480" res="tx0.1v2" >
     <maxblocks >1</maxblocks>
