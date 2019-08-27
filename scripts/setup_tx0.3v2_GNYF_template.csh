@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # Make sure to set:
-# - the correct advective scheme ('lw_lim' in user_nl_pop2);
-# - diffusive settings ('del2', ah&hmix_del2t_nml = 0.0e7 in user_nl_pop2);
-# - lroff_ref_to_local_salinity to .true., to activate the local salinity fix for run-off and sea ice melt
+# the correct advective scheme ('lw_lim' in user_nl_pop2);
+# diffusive settings ('del2', ah&hmix_del2t_nml = 0.0e7 in user_nl_pop2);
+# the local salinity fix for run-off (in forcing_coupled.F90); 
+# and the correct value of ksno (in ice_constants_colpkg.F90)
 #
 # The decomposition is appropriate for 1920 OCN pes, and 480 ICE pes
 # 
-export CaseName=t32_GIAF_Griz
+export CaseName=t32_GNYF_Griz
 echo "casename = $CaseName"
 export CaseDir=/turquoise/usr/projects/climate/jiaxu/tx0.3v2_IAF/
 echo "casedir = $CaseDir/$CaseName"
