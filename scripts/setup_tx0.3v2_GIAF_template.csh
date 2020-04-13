@@ -3,13 +3,13 @@
 # Make sure to set:
 # - the correct advective scheme ('lw_lim' in user_nl_pop2);
 # - diffusive settings ('del2', ah&hmix_del2t_nml = 0.0e7 in user_nl_pop2);
-# - lroff_ref_to_local_salinity to .true., to activate the local salinity fix for run-off and sea ice melt
+# - lroff_ref_to_local_salinity to .true., to activate the local salinity fix for run-off
 #
 # The decomposition is appropriate for 1920 OCN pes, and 480 ICE pes
 # 
-export CaseName=t32_GIAF_Griz
+export CaseName=GIAF_t32_TestVSF_grizzly
 echo "casename = $CaseName"
-export CaseDir=/turquoise/usr/projects/climate/jiaxu/tx0.3v2_IAF/
+export CaseDir=/turquoise/usr/projects/climate/wilbert/HiLAT-PreReleaseUpdatesV2
 echo "casedir = $CaseDir/$CaseName"
 
 ./create_newcase -case $CaseDir/$CaseName -res T62_t32 -compset G -mach grizzly -proj climatehilat
