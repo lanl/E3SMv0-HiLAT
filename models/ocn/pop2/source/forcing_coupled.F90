@@ -816,16 +816,21 @@
 !
 !  ww: make glacial, fluvial, and melt runoff dependent on actual surface
 !  salinity.
+!  ww update: apply locally-referenced VSF only to ROFF and IOFF.
+!             This is to avoid inconsistencies between the way sea ice melting
+!             and freezing is treated. 
+!  
 !-----------------------------------------------------------------------
 
       !$OMP PARALLEL DO PRIVATE(iblock)
       do iblock = 1, nblocks_clinic
         if (lroff_ref_to_local_salinity) then
            WORK3 = TRACER(:,:,1,2,curtime,iblock)*c1000/ocn_ref_salinity
-           STF(:,:,2,iblock) = RCALCT(:,:,iblock)*(                             &
-                      (PREC_F(:,:,iblock)+EVAP_F(:,:,iblock))*salinity_factor + &
-                      (MELT_F(:,:,iblock)+ROFF_F(:,:,iblock) +                  &
-                       IOFF_F(:,:,iblock))*WORK3*salinity_factor              + &
+           STF(:,:,2,iblock) = RCALCT(:,:,iblock)*(            &
+                      (PREC_F(:,:,iblock)+EVAP_F(:,:,iblock) + &
+                       MELT_F(:,:,iblock))*salinity_factor   + &
+                      (ROFF_F(:,:,iblock)+IOFF_F(:,:,iblock))* &
+                       WORK3*salinity_factor                 + &
                        SALT_F(:,:,iblock)*sflux_factor)  
         else
            STF(:,:,2,iblock) = RCALCT(:,:,iblock)*(            &
@@ -1127,13 +1132,12 @@
          call accumulate_tavg_field(EVAP_F(:,:,iblock), tavg_EVAP_F,iblock,1)
          call accumulate_tavg_field(PREC_F(:,:,iblock), tavg_PREC_F,iblock,1)
          call accumulate_tavg_field(SNOW_F(:,:,iblock), tavg_SNOW_F,iblock,1)
+         call accumulate_tavg_field(MELT_F(:,:,iblock), tavg_MELT_F,iblock,1)
          if (lroff_ref_to_local_salinity .and. lfw_as_salt_flx) then
             WORK = TRACER(:,:,1,2,curtime,iblock)*c1000/ocn_ref_salinity
-            call accumulate_tavg_field(MELT_F(:,:,iblock)*WORK,tavg_MELT_F,iblock,1)
             call accumulate_tavg_field(ROFF_F(:,:,iblock)*WORK,tavg_ROFF_F,iblock,1)
             call accumulate_tavg_field(IOFF_F(:,:,iblock)*WORK,tavg_IOFF_F,iblock,1)
          else
-            call accumulate_tavg_field(MELT_F(:,:,iblock),tavg_MELT_F,iblock,1)
             call accumulate_tavg_field(ROFF_F(:,:,iblock),tavg_ROFF_F,iblock,1)
             call accumulate_tavg_field(IOFF_F(:,:,iblock),tavg_IOFF_F,iblock,1)
          endif

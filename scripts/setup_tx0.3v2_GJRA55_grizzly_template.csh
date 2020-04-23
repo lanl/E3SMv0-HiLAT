@@ -1,18 +1,17 @@
 #!/bin/bash
 
 # Make sure to set:
-# the correct advective scheme ('lw_lim' in user_nl_pop2);
-# diffusive settings ('del2', ah&hmix_del2t_nml = 0.0e7 in user_nl_pop2);
-# the local salinity fix for run-off (in forcing_coupled.F90); 
-# and the correct value of ksno (in ice_constants_colpkg.F90)
+# - the correct advective scheme ('lw_lim' in user_nl_pop2);
+# - diffusive settings ('del2', ah&hmix_del2t_nml = 0.0e7 in user_nl_pop2);
+# - lroff_ref_to_local_salinity to .true., to activate the local salinity fix for run-off
 #
 # Add  init_ts_option = 'file' to user_nl_pop2
 #
 # The decomposition is appropriate for 1920 OCN pes, and 480 ICE pes
 # 
-export CaseName=JRA55_t32_Test2_grizzly
+export CaseName=JRA55_t32_TestVSF_grizzly
 echo "casename = $CaseName"
-export CaseDir=/turquoise/usr/projects/climate/wilbert/HiLAT-JRA55/
+export CaseDir=/turquoise/usr/projects/climate/wilbert/HiLAT-PreReleaseUpdatesV2
 echo "casedir = $CaseDir/$CaseName"
 
 ./create_newcase -case $CaseDir/$CaseName -res TL319_t32 -compset GJRA55 -mach grizzly -proj climatehilat

@@ -68,7 +68,7 @@
       licebergs                ! if T, add meltwater from icebergs
                                ! (partially-coupled option)
    logical (log_kind), public :: &
-      lroff_ref_to_local_salinity ! When converting ROFF, IOFF and MELT to 
+      lroff_ref_to_local_salinity ! When converting ROFF and IOFF to 
                                ! virtual salt flux, refer to the local salinity,
                                ! rather than a constant reference salinity. 
 !EOP
