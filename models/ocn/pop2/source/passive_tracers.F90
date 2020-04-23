@@ -71,15 +71,25 @@
        iage_set_interior,          &
        iage_reset
 
-   use sectdyes_mod, only:             &
-       sectdyes_tracer_cnt,            &
-       sectdyes_init,                  &
+   use sectdyes_mod, only:         &
+       sectdyes_tracer_cnt,        &
+       sectdyes_init,              &
        sectdyes_reset
 
-   use surfdyes_mod, only:             &
-       surfdyes_tracer_cnt,            &
-       surfdyes_init,                  &
+   use surfdyes_mod, only:         &
+       surfdyes_tracer_cnt,        &
+       surfdyes_init,              &
        surfdyes_set_sflux
+
+   use ptracers_mod, only:         &
+       ptracers_tracer_cnt,        &
+       ptracers_init,              &
+       ptracers_set_sflux
+
+   use pptracers_mod, only:        &
+       pptracers_tracer_cnt,       &
+       pptracers_init,             &
+       pptracers_set_sflux
 
    use moby_mod, only:             &
        moby_init,                  &
@@ -119,7 +129,14 @@
       passive_tracers_send_time,             &
       tracer_ref_val,                        &
       tadvect_ctype_passive_tracers,         &
-      ecosys_on, moby_on, tracegas_on
+      ecosys_on, moby_on, tracegas_on,       &
+      ptracers_on,                           &
+      ptracers_ind_begin,                    &
+      ptracers_ind_end,                      &
+      pptracers_on,                          &
+      pptracers_ind_begin,                   &
+      pptracers_ind_end,                     &
+      pvdc_for_passive_tracers
 
 !EOP
 !BOC
@@ -151,6 +168,10 @@
    character (char_len), dimension(3:nt) :: &
       tadvect_ctype_passive_tracers
 
+   logical(log_kind)  :: &
+      pvdc_for_passive_tracers  ! specifies whether the pseudo-diffusivity
+                                ! should be used for passive tracers
+
 !-----------------------------------------------------------------------
 !  PER virtual fluxes. The application of the flux happens in surface
 !  forcing subroutines, before tavg flags are set, so the tavg accumulation
@@ -166,27 +187,28 @@
 
    logical (kind=log_kind) ::  &
       ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, &
-      surfdyes_on, IRF_on
+      surfdyes_on, IRF_on, ptracers_on, pptracers_on
 
    namelist /passive_tracers_on_nml/  &
       ecosys_on, cfc_on, iage_on, moby_on, tracegas_on, sectdyes_on, &
-      surfdyes_on, IRF_on
+      surfdyes_on, IRF_on, ptracers_on, pptracers_on
 
 !-----------------------------------------------------------------------
 !     index bounds of passive tracer module variables in TRACER
 !-----------------------------------------------------------------------
 
-   integer (kind=int_kind) ::                       &
-      ecosys_ind_begin,     ecosys_ind_end,         &
-      tracegas_ind_begin,   tracegas_ind_end,       &
-      iage_ind_begin,       iage_ind_end,           &
-      sectdyes_ind_begin,   sectdyes_ind_end,       &
-      surfdyes_ind_begin,   surfdyes_ind_end,       &
-      cfc_ind_begin,        cfc_ind_end,            &
-      moby_ind_begin,       moby_ind_end,           &
-      IRF_ind_begin,        IRF_ind_end
-
-
+   integer (kind=int_kind) ::                          &
+      ecosys_ind_begin,        ecosys_ind_end,         &
+      tracegas_ind_begin,      tracegas_ind_end,       &
+      iage_ind_begin,          iage_ind_end,           &
+      sectdyes_ind_begin,      sectdyes_ind_end,       &
+      surfdyes_ind_begin,      surfdyes_ind_end,       &
+      ptracers_ind_begin,      ptracers_ind_end,       &
+      pptracers_ind_begin,     pptracers_ind_end,      &
+      cfc_ind_begin,           cfc_ind_end,            &
+      moby_ind_begin,          moby_ind_end,           &
+      IRF_ind_begin,           IRF_ind_end
+ 
 !-----------------------------------------------------------------------
 !  filtered SST and SSS, if needed
 !-----------------------------------------------------------------------
@@ -261,8 +283,10 @@
    iage_on           = .false.
    sectdyes_on       = .false.
    surfdyes_on       = .false.
+   ptracers_on       = .false.
+   pptracers_on      = .false.
    moby_on           = .false.
-   IRF_on           = .false.
+   IRF_on            = .false.
 
    if (my_task == master_task) then
       open (nml_in, file=nml_filename, status='old', iostat=nml_error)
@@ -295,14 +319,16 @@
    endif
 
 
-   call broadcast_scalar(ecosys_on,         master_task)
-   call broadcast_scalar(tracegas_on,       master_task)
-   call broadcast_scalar(cfc_on,            master_task)
-   call broadcast_scalar(iage_on,           master_task)
-   call broadcast_scalar(sectdyes_on,       master_task)
-   call broadcast_scalar(surfdyes_on,       master_task)
-   call broadcast_scalar(moby_on,           master_task)
-   call broadcast_scalar(IRF_on,            master_task)
+   call broadcast_scalar(ecosys_on,    master_task)
+   call broadcast_scalar(tracegas_on,  master_task)
+   call broadcast_scalar(cfc_on,       master_task)
+   call broadcast_scalar(iage_on,      master_task)
+   call broadcast_scalar(sectdyes_on,  master_task)
+   call broadcast_scalar(surfdyes_on,  master_task)
+   call broadcast_scalar(ptracers_on,  master_task)
+   call broadcast_scalar(pptracers_on, master_task)
+   call broadcast_scalar(moby_on,      master_task)
+   call broadcast_scalar(IRF_on,       master_task)
 
 !-----------------------------------------------------------------------
 !  check for modules that require the flux coupler
@@ -319,10 +345,45 @@
    tadvect_ctype_passive_tracers(3:nt) = 'base_model'
 
 !-----------------------------------------------------------------------
+!  Default: use VDC_S for vertical diffusion of passive tracers
+!-----------------------------------------------------------------------
+
+   pvdc_for_passive_tracers = .false.
+
+!-----------------------------------------------------------------------
 !  set up indices for passive tracer modules that are on
 !-----------------------------------------------------------------------
 
    cumulative_nt = 2
+
+!-----------------------------------------------------------------------
+!  If pseudo-tracers selected, these will be first
+!-----------------------------------------------------------------------
+
+   if (ptracers_on) then
+      call set_tracer_indices('PTRACERS', ptracers_tracer_cnt, &
+                              cumulative_nt,  &
+                              ptracers_ind_begin, ptracers_ind_end)
+      if (ptracers_ind_begin /= 3 .or. ptracers_ind_end /= 4) then
+         call exit_POP(sigAbort, &
+            'ERROR in init_passive_tracers: ptracers must be numbers 3 and 4')
+      end if
+   end if
+
+   if (pptracers_on) then
+      if (.not. ptracers_on) then
+         call exit_POP(sigAbort, &
+          'ERROR in init_passive_tracers: pptracers only valid with ptracers')
+      end if
+
+      call set_tracer_indices('PPTRACERS', pptracers_tracer_cnt, &
+                              cumulative_nt,  &
+                              pptracers_ind_begin, pptracers_ind_end)
+      if (pptracers_ind_begin /= 5 .or. pptracers_ind_end /= 6) then
+         call exit_POP(sigAbort, &
+            'ERROR in init_passive_tracers: pptracers must be numbers 5 and 6')
+      end if
+   end if
 
    if (ecosys_on) then
       call set_tracer_indices('ECOSYS', ecosys_tracer_cnt, cumulative_nt,  &
@@ -495,6 +556,47 @@
 
    end if
 
+
+!-----------------------------------------------------------------------
+!  Pseudo-tracers (PTRACERS) block
+!-----------------------------------------------------------------------
+
+   if (ptracers_on) then
+      call ptracers_init(init_ts_file_fmt, read_restart_filename, &
+                tracer_d(ptracers_ind_begin:ptracers_ind_end), &
+                TRACER(:,:,:,ptracers_ind_begin:ptracers_ind_end,:,:), &
+                TRACER(:,:,:,1,:,:), TRACER(:,:,:,2,:,:),&
+                tadvect_ctype_passive_tracers(ptracers_ind_begin:ptracers_ind_end), &
+                pvdc_for_passive_tracers,  &
+                errorCode)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'init_passive_tracers: error in ptracers_init')
+         return
+      endif
+
+   end if
+
+!-----------------------------------------------------------------------
+!  Pseudo-pseudo-tracers (PPTRACERS) block
+!-----------------------------------------------------------------------
+
+   if (pptracers_on) then
+      call pptracers_init(init_ts_file_fmt, read_restart_filename, &
+             tracer_d(pptracers_ind_begin:pptracers_ind_end), &
+             TRACER(:,:,:,pptracers_ind_begin:pptracers_ind_end,:,:), &
+             TRACER(:,:,:,1,:,:), TRACER(:,:,:,2,:,:),&
+             tadvect_ctype_passive_tracers(pptracers_ind_begin:pptracers_ind_end), &
+             errorCode)
+
+      if (errorCode /= POP_Success) then
+         call POP_ErrorSet(errorCode, &
+            'init_passive_tracers: error in pptracers_init')
+         return
+      endif
+
+   end if
 
 !-----------------------------------------------------------------------
 !  MOBY block
@@ -1094,6 +1196,26 @@
        call surfdyes_set_sflux( &
            STF(:,:,surfdyes_ind_begin:surfdyes_ind_end,:),PREC_F,&
            MELT_F,ROFF_F,IOFF_F)
+    end if
+
+!-----------------------------------------------------------------------
+!  PTRACERS block
+!-----------------------------------------------------------------------
+
+    if (ptracers_on) then
+       call ptracers_set_sflux( &
+           STF(:,:,ptracers_ind_begin:ptracers_ind_end,:),&
+           STF(:,:,1,:),STF(:,:,2,:)) 
+    end if
+
+!-----------------------------------------------------------------------
+!  PPTRACERS block
+!-----------------------------------------------------------------------
+
+    if (pptracers_on) then
+       call pptracers_set_sflux( &
+           STF(:,:,pptracers_ind_begin:pptracers_ind_end,:),&
+           STF(:,:,1,:),STF(:,:,2,:)) 
     end if
 
 !-----------------------------------------------------------------------

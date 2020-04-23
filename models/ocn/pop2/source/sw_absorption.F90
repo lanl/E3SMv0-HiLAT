@@ -60,6 +60,8 @@
    use tavg, only: define_tavg_field, accumulate_tavg_field
    use exit_mod
    use registry, only: registry_match
+   use passive_tracers, only:ptracers_on, ptracers_ind_begin, &
+                             pptracers_on, pptracers_ind_begin
 
    implicit none
    private
@@ -938,6 +940,13 @@
         TRANSKM1(:,:,bid) = TRANS(:,:,bid)
  
       end select
+
+      if (ptracers_on) then
+         T_SOURCE(:,:,ptracers_ind_begin) = T_SOURCE(:,:,1)
+      endif
+      if (pptracers_on) then
+         T_SOURCE(:,:,pptracers_ind_begin) = T_SOURCE(:,:,1)
+      endif
 
    endif
 

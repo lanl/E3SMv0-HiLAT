@@ -1241,7 +1241,7 @@
 
         BL_DEPTH(:,:,bid) = zw(k)
         if ( vmix_itype == vmix_type_kpp )  &
-                    BL_DEPTH(:,:,bid) = KPP_HBLT(:,:,bid)
+                    BL_DEPTH(:,:,bid) = KPP_HBLT(:,:,1,bid)
 
       endif
 
@@ -1258,8 +1258,7 @@
 
           if ( vmix_itype == vmix_type_kpp ) then
 
-            call smooth_hblt ( .false., .true., bid,  &
-                               SMOOTH_OUT=TLT%DIABATIC_DEPTH(:,:,bid) )
+            call smooth_hmxl (bid, HMXL(:,:,1,bid),TLT%DIABATIC_DEPTH(:,:,bid) )
           else
             TLT%DIABATIC_DEPTH(:,:,bid) = zw(k)
           endif
@@ -3194,7 +3193,7 @@
       K_MIN = merge( km+1, 0, KMT(:,:,bid) /= 0 )  
 
       SDL = zw(1)
-      if ( vmix_itype == vmix_type_kpp )  SDL = KPP_HBLT(:,:,bid) 
+      if ( vmix_itype == vmix_type_kpp )  SDL = KPP_HBLT(:,:,1,bid) 
       if ( transition_layer_on )    SDL = TLT%INTERIOR_DEPTH(:,:,bid)
 
       if ( .not. read_n2_data ) then

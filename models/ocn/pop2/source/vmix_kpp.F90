@@ -1,4 +1,4 @@
-!|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
 
  module vmix_kpp
 
@@ -46,19 +46,26 @@
    public :: init_vmix_kpp,   &
              vmix_coeffs_kpp, &
              add_kpp_sources, &
-             smooth_hblt,     &
+             smooth_hmxl,     &
              linertial
 
 ! !PUBLIC DATA MEMBERS:
 
    real (r8), dimension(:,:,:), allocatable, public :: & 
-      HMXL,               &! mixed layer depth
-      KPP_HBLT,           &! boundary layer depth
       BOLUS_SP             ! scaled eddy-induced (bolus) speed used in inertial
                            !  mixing parameterization
 
    real (r8), public ::   &
       bckgrnd_vdc2         ! variation in diffusivity
+
+!-----------------------------------------------------------------------
+!
+!  non-local mixing (counter-gradient mixing), treated as source term
+!
+!-----------------------------------------------------------------------
+
+   real (r8), dimension(:,:,:,:,:), allocatable, public :: & 
+      KPP_SRC              ! non-local mixing (treated as source term)
 
 !EOP
 !BOC
@@ -96,15 +103,6 @@
    real (r8), dimension(:,:,:), allocatable :: &
       FSTOKES        ! ratio of stokes velocity to ustar used in Langmuir 
                      !  parameterization
-
-!-----------------------------------------------------------------------
-!
-!  non-local mixing (counter-gradient mixing), treated as source term
-!
-!-----------------------------------------------------------------------
-
-   real (r8), dimension(:,:,:,:,:), allocatable :: & 
-      KPP_SRC              ! non-local mixing (treated as source term)
 
 !-----------------------------------------------------------------------
 !
@@ -224,7 +222,7 @@
 ! !IROUTINE: init_vmix_kpp
 ! !INTERFACE:
 
- subroutine init_vmix_kpp(VDC, VVC)
+ subroutine init_vmix_kpp(VDC, VVC, HMXL, HBLT)
 
 ! !DESCRIPTION:
 !  Initializes constants and reads options for the KPP parameterization.
@@ -239,6 +237,9 @@
 
    real (r8), dimension(:,:,0:,:,:),intent(inout) :: &
       VDC        ! diffusivity for tracer diffusion
+
+   real (r8), dimension(:,:,:,:),intent(inout) :: &
+      HMXL,HBLT   ! Mixed layer depth
 
 !EOP
 !BOC
@@ -571,12 +572,10 @@
 !
 !-----------------------------------------------------------------------
 
-   allocate (HMXL     (nx_block,ny_block,nblocks_clinic), &
-             KPP_HBLT (nx_block,ny_block,nblocks_clinic), &
-             KPP_SRC  (nx_block,ny_block,km,nt,nblocks_clinic))
+   allocate (KPP_SRC  (nx_block,ny_block,km,nt,nblocks_clinic))
 
    HMXL     = c0
-   KPP_HBLT = c0
+   HBLT = c0
    KPP_SRC  = c0
    VDC      = c0
    VVC      = c0
@@ -703,9 +702,10 @@
 ! !IROUTINE: vmix_coeffs_kpp
 ! !INTERFACE:
 
- subroutine vmix_coeffs_kpp(VDC, VVC, TRCR, UUU, VVV, UCUR, VCUR, RHOMIX, STF, SHF_QSW, &
+ subroutine vmix_coeffs_kpp(VDC, VVC, HMXL, HBLT, TRCR, UUU, VVV, &
+                            UCUR, VCUR, RHOMIX, STF, SHF_QSW, &
                             this_block, convect_diff, convect_visc, &
-                            SMF, SMFT)
+                            GHAT, SMF, SMFT)
 
 ! !DESCRIPTION:
 !  This is the main driver routine which calculates the vertical
@@ -757,7 +757,7 @@
 
 ! !INPUT PARAMETERS:
 
-   real (r8), dimension(nx_block,ny_block,km,nt), intent(in) :: &
+   real (r8), dimension(nx_block,ny_block,km,2), intent(in) :: &
       TRCR                ! tracers at current time
 
    real (r8), dimension(nx_block,ny_block,km), intent(in) :: &
@@ -767,7 +767,7 @@
    real (r8), dimension(nx_block,ny_block,km), intent(in) :: &
       RHOMIX              ! density at mix time
 
-   real (r8), dimension(nx_block,ny_block,nt), intent(in) :: &
+   real (r8), dimension(nx_block,ny_block,2), intent(in) :: &
       STF                 ! surface forcing for all tracers
 
    real (r8), dimension(nx_block,ny_block), intent(in) :: &
@@ -794,6 +794,11 @@
    real (r8), dimension(nx_block,ny_block,0:km+1,2),intent(inout) :: &
       VDC        ! diffusivity for tracer diffusion
 
+   real (r8), dimension(nx_block,ny_block),intent(inout) :: &
+      HMXL,HBLT   ! Mixed layer depth
+
+   real (r8), dimension(nx_block,ny_block,km), intent(out) :: &
+      GHAT         ! non-local mixing coefficient
 !EOP
 !BOC
 !-----------------------------------------------------------------------
@@ -809,7 +814,6 @@
       k,                 &! vertical level index 
       i,j,               &! horizontal loop indices
       n,                 &! tracer index
-      mt2,               &! index for separating temp from other trcrs
       bid                 ! local block address for this block
 
    integer (int_kind), dimension(nx_block,ny_block) :: &
@@ -827,8 +831,7 @@
  
    real (r8), dimension(nx_block,ny_block,km) :: &
       DBLOC,      &! buoyancy difference between adjacent levels
-      DBSFC,      &! buoyancy difference between level and surface
-      GHAT         ! non-local mixing coefficient
+      DBSFC        ! buoyancy difference between level and surface
 
    real (r8), dimension(nx_block,ny_block,0:km+1) :: &
       VISC        ! local temp for viscosity
@@ -867,17 +870,17 @@
 
      if (present(SMFT)) then
         call bldepth (DBLOC, DBSFC, TRCR, UUU, VVV, UCUR, VCUR, STF, SHF_QSW,   &
-                      KPP_HBLT(:,:,bid), USTAR, BFSFC, STABLE, KBL, & 
+                      HBLT, USTAR, BFSFC, STABLE, KBL, & 
                       this_block, SMFT=SMFT)
      else
         call bldepth (DBLOC, DBSFC, TRCR, UUU, VVV, UCUR, VCUR, STF, SHF_QSW,   &
-                      KPP_HBLT(:,:,bid), USTAR, BFSFC, STABLE, KBL, & 
+                      HBLT, USTAR, BFSFC, STABLE, KBL, & 
                       this_block, SMF=SMF)
      endif
 
 
      call compute_niw_energy_flux(VISC,VDC,UUU,VVV,KE_mix,UCUR,VCUR,KE_cur,  &
-                                  DBLOC, KPP_HBLT(:,:,bid),KBL,En,this_block)
+                                  DBLOC, HBLT,KBL,En,this_block)
 
    endif ! if (lniw_mixing) then
 
@@ -908,11 +911,11 @@
    if (.not. lniw_mixing) then
      if (present(SMFT)) then
         call bldepth (DBLOC, DBSFC, TRCR, UUU, VVV, UCUR, VCUR, STF, SHF_QSW,   &
-                      KPP_HBLT(:,:,bid), USTAR, BFSFC, STABLE, KBL, & 
+                      HBLT, USTAR, BFSFC, STABLE, KBL, & 
                       this_block, SMFT=SMFT)
      else
         call bldepth (DBLOC, DBSFC, TRCR, UUU, VVV, UCUR, VCUR, STF, SHF_QSW,   &
-                      KPP_HBLT(:,:,bid), USTAR, BFSFC, STABLE, KBL, & 
+                      HBLT, USTAR, BFSFC, STABLE, KBL, & 
                       this_block, SMF=SMF)
      endif
    endif ! .not. lniw_mixing
@@ -923,7 +926,7 @@
 !
 !-----------------------------------------------------------------------
 
-   call blmix(VISC, VDC, KPP_HBLT(:,:,bid), USTAR, BFSFC, STABLE, &
+   call blmix(VISC, VDC, HBLT, USTAR, BFSFC, STABLE, &
               KBL, GHAT, this_block) 
 
 !-----------------------------------------------------------------------
@@ -999,32 +1002,6 @@
 
 !-----------------------------------------------------------------------
 !
-!  add ghatp term from previous computation to right-hand-side 
-!  source term on current row
-!
-!-----------------------------------------------------------------------
-
-   do n=1,nt
-      mt2=min(n,2)
-      KPP_SRC(:,:,1,n,bid) = STF(:,:,n)/dz(1)           &
-                             *(-VDC(:,:,1,mt2)*GHAT(:,:,1))
-      if (partial_bottom_cells) then
-         do k=2,km
-            KPP_SRC(:,:,k,n,bid) = STF(:,:,n)/DZT(:,:,k,bid)         &
-                                 *( VDC(:,:,k-1,mt2)*GHAT(:,:,k-1)   &
-                                   -VDC(:,:,k  ,mt2)*GHAT(:,:,k  ))
-         enddo
-      else
-         do k=2,km
-            KPP_SRC(:,:,k,n,bid) = STF(:,:,n)/dz(k)                  &
-                                 *( VDC(:,:,k-1,mt2)*GHAT(:,:,k-1)   &
-                                   -VDC(:,:,k  ,mt2)*GHAT(:,:,k  ))
-         enddo
-      endif
-   enddo
-
-!-----------------------------------------------------------------------
-!
 !  compute diagnostic mixed layer depth (cm) using a max buoyancy 
 !  gradient criterion.  Use USTAR and BFSFC as temps.
 !
@@ -1032,9 +1009,9 @@
 
    USTAR = c0
    where (KMT(:,:,bid) == 1)
-      HMXL(:,:,bid) = zt(1)
+      HMXL = zt(1)
    elsewhere
-      HMXL(:,:,bid) = c0
+      HMXL = c0
    endwhere
 
    if (partial_bottom_cells) then
@@ -1042,7 +1019,7 @@
          where (k <= KMT(:,:,bid))
             STABLE = zt(k-1) + p5*(DZT(:,:,k-1,bid) + DZT(:,:,k,bid))
             USTAR = max(DBSFC(:,:,k)/STABLE,USTAR)
-            HMXL(:,:,bid) = STABLE
+            HMXL = STABLE
          endwhere
       enddo
 
@@ -1057,11 +1034,9 @@
                  USTAR > c0 )   ! avoid divide by zero
             BFSFC = (VISC(:,:,k) - USTAR)/ &
                     (VISC(:,:,k)-VISC(:,:,k-1))
-! tqian
-!            HMXL(:,:,bid) =   (zt(k-1) + p5*DZT(:,:,k-1,bid))*(c1-BFSFC) &
-!                            + (zt(k-1) - p5*DZT(:,:,k-1,bid))*BFSFC
-             HMXL(:,:,bid) =   (zt(k-1) + p25*(DZT(:,:,k-1,bid)+DZT(:,:,k,bid)))*(c1-BFSFC) &
-                             + (zt(k-1) - p25*(DZT(:,:,k-2,bid)+DZT(:,:,k-1,bid)))*BFSFC
+
+            HMXL      =   (zt(k-1) + p25*(DZT(:,:,k-1,bid)+DZT(:,:,k,bid)))*(c1-BFSFC) &
+                        + (zt(k-1) - p25*(DZT(:,:,k-2,bid)+DZT(:,:,k-1,bid)))*BFSFC
 
             USTAR(:,:) = c0
          endwhere
@@ -1070,7 +1045,7 @@
       do k=2,km
          where (k <= KMT(:,:,bid))
             USTAR = max(DBSFC(:,:,k)/zt(k),USTAR)
-            HMXL(:,:,bid) = zt(k)
+            HMXL          = zt(k)
          endwhere
       enddo
 
@@ -1085,7 +1060,7 @@
                  USTAR > c0 )   ! avoid divide by zero
             BFSFC = (VISC(:,:,k) - USTAR)/ &
                     (VISC(:,:,k)-VISC(:,:,k-1))
-            HMXL(:,:,bid) = -p5*(zgrid(k  ) + zgrid(k-1))*(c1-BFSFC) &
+            HMXL          = -p5*(zgrid(k  ) + zgrid(k-1))*(c1-BFSFC) &
                             -p5*(zgrid(k-1) + zgrid(k-2))*BFSFC
             USTAR(:,:) = c0
          endwhere
@@ -1547,7 +1522,7 @@
 
 ! !INPUT PARAMETERS:
 
-   real (r8), dimension(nx_block,ny_block,km,nt), intent(in) :: &
+   real (r8), dimension(nx_block,ny_block,km,2), intent(in) :: &
       TRCR                ! tracers at current time
 
    real (r8), dimension(nx_block,ny_block,km), intent(in) :: &
@@ -1557,7 +1532,7 @@
       DBSFC           ! buoyancy difference between level and surface
 
 
-   real (r8), dimension(nx_block,ny_block,nt), intent(in) :: &
+   real (r8), dimension(nx_block,ny_block,2), intent(in) :: &
       STF                 ! surface forcing for all tracers
 
    real (r8), dimension(nx_block,ny_block), intent(in) :: &
@@ -2122,7 +2097,7 @@
 !
 !-----------------------------------------------------------------------
 
-   call smooth_hblt (.true., .false., bid, HBLT=HBLT, KBL=KBL)
+   call smooth_hblt (bid, HBLT, KBL)
 
 !-----------------------------------------------------------------------
 !
@@ -2737,7 +2712,7 @@
 
 ! !INPUT PARAMETERS:
 
-   real (r8), dimension(nx_block,ny_block,km,nt), intent(in) :: &
+   real (r8), dimension(nx_block,ny_block,km,2), intent(in) :: &
       TRCR                ! tracers at current time
 
    type (block), intent(in) :: &
@@ -2871,7 +2846,7 @@
 
 ! !INPUT PARAMETERS:
 
-   real (r8), dimension(nx_block,ny_block,km,nt), intent(in) :: &
+   real (r8), dimension(nx_block,ny_block,km,2), intent(in) :: &
       TRCR                ! tracers at current time
 
    type (block), intent(in) :: &
@@ -3036,11 +3011,10 @@
 
 !***********************************************************************
 !BOP
-! !IROUTINE: smooth_hblt
+! !IROUTINE: smooth_hmxl
 ! !INTERFACE:
 
- subroutine smooth_hblt (overwrite_hblt, use_hmxl, &
-                         bid, HBLT, KBL, SMOOTH_OUT)
+ subroutine smooth_hmxl (bid, HMXL, SMOOTH_OUT)
 
 ! !DESCRIPTION:
 !  This subroutine uses a 1-1-4-1-1 Laplacian filter one time
@@ -3052,28 +3026,16 @@
 
 ! !INPUT PARAMETERS:
 
-   logical (log_kind), intent(in) :: &
-      overwrite_hblt,   &    ! if .true.,  HBLT is overwritten
-                             ! if .false., the result is returned in
-                             !  a dummy array
-      use_hmxl               ! if .true., smooth HMXL
-                             ! if .false., smooth HBLT
-
    integer (int_kind), intent(in) :: &
       bid                    ! local block address
 
-! !INPUT/OUTPUT PARAMETERS:
-
-   real (r8), dimension(nx_block,ny_block), optional, intent(inout) :: &
-      HBLT                   ! boundary layer depth
-
-   integer (int_kind), dimension(nx_block,ny_block), optional, intent(inout) :: &
-      KBL                    ! index of first lvl below hbl
+   real (r8), dimension(nx_block,ny_block),intent(in) :: &
+      HMXL        ! Mixed layer depth
 
 ! !OUTPUT PARAMETERS:
 
-   real (r8), dimension(nx_block,ny_block), optional, intent(out) ::  &
-      SMOOTH_OUT              ! optional output array containing the
+   real (r8), dimension(nx_block,ny_block), intent(out) ::  &
+      SMOOTH_OUT              ! output array containing the
                               !  smoothened field if overwrite_hblt is false
 
 !EOP
@@ -3099,43 +3061,12 @@
 
 !-----------------------------------------------------------------------
 !
-!     consistency checks 
-!
-!-----------------------------------------------------------------------
-
-   if ( overwrite_hblt  .and.  ( .not.present(KBL)  .or.        &
-                                 .not.present(HBLT) ) ) then      
-     message = 'incorrect subroutine arguments for smooth_hblt, error # 1'
-     call exit_POP (sigAbort, trim(message))
-   endif
-
-   if ( .not.overwrite_hblt  .and.  .not.present(SMOOTH_OUT) ) then 
-     message = 'incorrect subroutine arguments for smooth_hblt, error # 2'
-     call exit_POP (sigAbort, trim(message))
-   endif
-
-   if ( use_hmxl .and. .not.present(SMOOTH_OUT) ) then          
-     message = 'incorrect subroutine arguments for smooth_hblt, error # 3'
-     call exit_POP (sigAbort, trim(message))
-   endif
-
-   if ( overwrite_hblt  .and.  use_hmxl ) then                  
-     message = 'incorrect subroutine arguments for smooth_hblt, error # 4'
-     call exit_POP (sigAbort, trim(message))
-   endif
-
-!-----------------------------------------------------------------------
-!
 !     perform one smoothing pass since we cannot do the necessary 
 !     boundary updates for multiple passes.
 !
 !-----------------------------------------------------------------------
 
-   if ( use_hmxl ) then
-     WORK2 = HMXL(:,:,bid)
-   else
-     WORK2 = HBLT
-   endif
+   WORK2 = HMXL
 
    WORK1 = WORK2
    do j=2,ny_block-1
@@ -3190,38 +3121,151 @@
      enddo
    enddo
 
-   if ( overwrite_hblt  .and.  .not.use_hmxl ) then
+   SMOOTH_OUT = WORK2
 
-     HBLT = WORK2
+!-----------------------------------------------------------------------
 
-     do k=1,km
-       do j=2,ny_block-1
-         do i=2,nx_block-1
+ end subroutine smooth_hmxl
 
-           if (partial_bottom_cells) then
-             ztmp = -zgrid(k-1) + p5*(DZT(i,j,k-1,bid) + &
-                                      DZT(i,j,k  ,bid))
-           else
-             ztmp = -zgrid(k)
-           endif
+!***********************************************************************
+!BOP
+! !IROUTINE: smooth_hblt
+! !INTERFACE:
 
-           if ( KMT(i,j,bid) /= 0            .and.  &
-                ( HBLT(i,j) >  -zgrid(k-1) ) .and.  &
-                ( HBLT(i,j) <= ztmp        ) ) KBL(i,j) = k
-     
-         enddo
+ subroutine smooth_hblt (bid, HBLT, KBL)
+
+! !DESCRIPTION:
+!  This subroutine uses a 1-1-4-1-1 Laplacian filter one time
+!  on HBLT or HMXL to reduce any horizontal two-grid-point noise.
+!  If HBLT is overwritten, KBL is adjusted after smoothing.
+!  WW: copied original version and customized for call in coeffs 
+!  to simplify implementation of pseudo-tracers
+!
+! !REVISION HISTORY:
+!  same as module
+
+! !INPUT PARAMETERS:
+
+   integer (int_kind), intent(in) :: &
+      bid                    ! local block address
+
+! !INPUT/OUTPUT PARAMETERS:
+
+   real (r8), dimension(nx_block,ny_block), intent(inout) :: &
+      HBLT                   ! boundary layer depth
+
+   integer (int_kind), dimension(nx_block,ny_block), intent(inout) ::&
+      KBL                    ! index of first lvl below hbl
+
+! !OUTPUT PARAMETERS:
+
+!EOP
+!BOC
+!-----------------------------------------------------------------------
+!
+!     local variables
+!
+!-----------------------------------------------------------------------
+   character (char_len) ::  &
+      message
+
+   integer (int_kind) :: &
+      i, j,              &  ! horizontal loop indices
+      k                     ! vertical level index
+
+   real (r8), dimension(nx_block,ny_block) ::  &
+      WORK1, WORK2
+
+   real (r8) ::  &
+     cc, cw, ce, cn, cs, &  ! averaging weights
+     ztmp                   ! temp for level depth
+
+!-----------------------------------------------------------------------
+!
+!     perform one smoothing pass since we cannot do the necessary 
+!     boundary updates for multiple passes.
+!
+!-----------------------------------------------------------------------
+   WORK2 = HBLT
+
+   WORK1 = WORK2
+   do j=2,ny_block-1
+     do i=2,nx_block-1
+       if ( KMT(i,j,bid) /= 0 ) then
+         cw = p125
+         ce = p125
+         cn = p125
+         cs = p125
+         cc = p5
+         if ( KMT(i-1,j,bid) == 0 ) then
+           cc = cc + cw
+           cw = c0
+         endif
+         if ( KMT(i+1,j,bid) == 0 ) then
+           cc = cc + ce
+           ce = c0
+         endif
+         if ( KMT(i,j-1,bid) == 0 ) then
+           cc = cc + cs
+           cs = c0
+         endif
+         if ( KMT(i,j+1,bid) == 0 ) then
+           cc = cc + cn
+           cn = c0
+         endif
+         WORK2(i,j) =  cw * WORK1(i-1,j)   &
+                     + ce * WORK1(i+1,j)   &
+                     + cs * WORK1(i,j-1)   &
+                     + cn * WORK1(i,j+1)   &
+                     + cc * WORK1(i,j)
+       endif
+     enddo
+   enddo
+   do k=1,km
+     do j=2,ny_block-1
+       do i=2,nx_block-1
+
+         if (partial_bottom_cells) then
+           ztmp = -zgrid(k-1) + p5*(DZT(i,j,k-1,bid) + &
+                                    DZT(i,j,k  ,bid))
+         else
+           ztmp = -zgrid(k)
+         endif
+
+         if ( k == KMT(i,j,bid)  .and.  WORK2(i,j) > ztmp ) then
+           WORK2(i,j) = ztmp
+         endif
+
        enddo
      enddo
+   enddo
 
-   else
+   HBLT = WORK2
 
-     SMOOTH_OUT = WORK2
+   do k=1,km
+     do j=2,ny_block-1
+       do i=2,nx_block-1
 
-   endif
+         if (partial_bottom_cells) then
+           ztmp = -zgrid(k-1) + p5*(DZT(i,j,k-1,bid) + &
+                                    DZT(i,j,k  ,bid))
+         else
+           ztmp = -zgrid(k)
+         endif
+
+         if ( KMT(i,j,bid) /= 0            .and.  &
+              ( HBLT(i,j) >  -zgrid(k-1) ) .and.  &
+              ( HBLT(i,j) <= ztmp        ) ) KBL(i,j) = k
+
+       enddo
+     enddo
+   enddo
 
 !-----------------------------------------------------------------------
 
  end subroutine smooth_hblt
+!***********************************************************************
+
 
 !***********************************************************************
 !BOP
@@ -3229,7 +3273,7 @@
 ! !INTERFACE:
 
  subroutine compute_niw_energy_flux (VISC,VDC,UUU,VVV,KE_mix,UCUR,VCUR,KE_cur,  &
-                                     DBLOC, KPP_HBLT,KBL,En,this_block)
+                                     DBLOC, HBLT,KBL,En,this_block)
 
 ! !DESCRIPTION:
 !  Compute niw energy flux
@@ -3243,7 +3287,7 @@
       UCUR,VCUR    ! velocities at current time
 
    real (r8), dimension(nx_block,ny_block), intent(in) :: &
-      KPP_HBLT   
+      HBLT   
 
    type (block), intent(in) :: &
       this_block   ! block information for current block
@@ -3401,7 +3445,7 @@
 !
 !-----------------------------------------------------------------------
 
-     call niw_mix(DBLOC, KPP_HBLT, KBL, En, VISC, VDC, this_block)
+     call niw_mix(DBLOC, HBLT, KBL, En, VISC, VDC, this_block)
 
 !-----------------------------------------------------------------------
 

@@ -405,7 +405,7 @@
 
    ML_DEPTH = zw(1)
    if ( vmix_itype == vmix_type_kpp )  &
-     ML_DEPTH(:,:) = HMXL(:,:,bid) 
+     ML_DEPTH(:,:) = HMXL(:,:,1,bid) 
    
 
    CONTINUE_INTEGRAL = .true.
