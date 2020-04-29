@@ -80,7 +80,7 @@
 <topography_file ocn_grid="gx3v7"  >ocn/pop/gx3v7/grid/topography_20100105.ieeei4</topography_file>
 <topography_file ocn_grid="tx1v1"  >ocn/pop/tx1v1/grid/topography_20050510.ieeei4</topography_file>
 <topography_file ocn_grid="tx0.1v2">ocn/pop/tx0.1v2/grid/topography_200709.ieeei4</topography_file>
-<topography_file ocn_grid="tx0.3v2">ocn/pop/tx0.3v2/grid/kmt.hmin13_scl2.0_100levMin6Max150Depth6000_NoHen_minRatio0.4+BlackCaspian</topography_file>
+<topography_file ocn_grid="tx0.3v2">ocn/pop/tx0.3v2/grid/kmt.hmin13_scl2.0_100levMin6Max150Depth6000_NoHen_minRatio0.4+BlackCaspian.deepenNares</topography_file>
 
 <region_mask_file ocn_grid="gx3v7"  >ocn/pop/gx3v7/grid/region_mask_20090831.ieeei4</region_mask_file>
 <region_mask_file ocn_grid="gx1v6"  >ocn/pop/gx1v6/grid/region_mask_20090205.ieeei4</region_mask_file> 
@@ -112,7 +112,7 @@
 <init_ts_file ocn_grid="tx1v1">  ocn/pop/tx1v1/ic/ts_jan_ic_20050510.ieeer8</init_ts_file>
 <init_ts_file ocn_grid="tx0.1v2">ocn/pop/tx0.1v2/ic/GC007v3.pop.r.0001-01-16-00000</init_ts_file>
 <init_ts_hdr_file ocn_grid="tx0.1v2">ocn/pop/tx0.1v2/ic/GC007v3.pop.r.0001-01-16-00000.hdr</init_ts_hdr_file>
-<init_ts_file ocn_grid="tx0.3v2">ocn/pop/tx0.3v2/ic/TS_CUR.r.t0.3v2_100l_init1c.00000111</init_ts_file>
+<init_ts_file ocn_grid="tx0.3v2">ocn/pop/tx0.3v2/ic/TS_CUR.r.t0.3v2_100l_init1c_deepenNares.00000111</init_ts_file>
 
 <init_ts_file_fmt>'bin'</init_ts_file_fmt>
 
