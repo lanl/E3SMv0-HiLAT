@@ -137,7 +137,7 @@ Currently the following streams are supported
 <strm_taxmode    stream="rof.jra55_0.25">cycle</strm_taxmode>
 <strm_domdir     stream="rof.jra55_0.25">$DIN_LOC_ROOT/share/domains</strm_domdir>
 <strm_domfil     stream="rof.jra55_0.25">domain.roff.JRA025.170111.nc</strm_domfil>
-<strm_datdir     stream="rof.jra55_0.25">$DIN_LOC_ROOT/ocn/jra55/v1.4_noleap</strm_datdir>
+<strm_datdir     stream="rof.jra55_0.25">$DIN_LOC_ROOT/lnd/dlnd7/JRA55</strm_datdir>
 <strm_datfil     stream="rof.jra55_0.25">
            JRA.v1.4.runoff.1958.190214.nc
            JRA.v1.4.runoff.1959.190214.nc
